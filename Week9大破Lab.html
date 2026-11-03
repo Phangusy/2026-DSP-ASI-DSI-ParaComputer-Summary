@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STM32F407 · 实时功率 / 能量 / RMS 测量 —— 完整手册</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --ink:#15171c; --muted:#666c78; --line:#e4e7ee;
+  --blue:#1a73e8; --orange:#e8710a; --green:#188038; --red:#d93025;
+  --purple:#7b3fe4; --code:#f2f4f8; --shadow:0 1px 2px rgba(16,24,40,.05),0 4px 16px rgba(16,24,40,.06);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
+  font-size:15.5px;line-height:1.78;-webkit-font-smoothing:antialiased;
+}
+code,kbd,.mono{font-family:"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace}
+
+/* ---------- 顶栏 ---------- */
+nav{
+  position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+}
+nav .bar{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:6px;
+  padding:0 20px;height:54px;overflow-x:auto;scrollbar-width:none}
+nav .bar::-webkit-scrollbar{display:none}
+nav .brand{font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap;margin-right:10px}
+nav a{color:var(--muted);text-decoration:none;font-size:13.5px;padding:6px 10px;
+  border-radius:7px;white-space:nowrap;transition:.15s}
+nav a:hover{background:var(--code);color:var(--blue)}
+
+main{max-width:1120px;margin:0 auto;padding:34px 20px 90px}
+
+/* ---------- 标题 ---------- */
+.hero{padding:14px 0 28px}
+.hero .eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--blue);font-weight:700;margin-bottom:10px}
+.hero h1{font-size:36px;line-height:1.24;margin:0 0 14px;letter-spacing:-.02em;font-weight:750}
+.hero p.lead{font-size:17px;color:var(--muted);margin:0;max-width:840px}
+.hero .meta{margin-top:18px;font-size:13px;color:var(--muted);
+  display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{background:var(--card);border:1px solid var(--line);border-radius:999px;
+  padding:4px 12px}
+
+/* ---------- 章节 ---------- */
+section{margin:0 0 44px}
+h2{font-size:24px;margin:0 0 6px;letter-spacing:-.01em;font-weight:700;
+  display:flex;align-items:center;gap:10px}
+h2 .num{display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:9px;background:var(--blue);color:#fff;
+  font-size:14px;font-weight:700;flex:0 0 auto}
+h2 + .sub{color:var(--muted);margin:0 0 18px;font-size:15px}
+h3{font-size:17.5px;margin:26px 0 8px;font-weight:680}
+h4{font-size:15px;margin:18px 0 6px;font-weight:680;color:#333}
+
+/* ---------- 卡片 ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:22px 24px;box-shadow:var(--shadow);margin:16px 0}
+.card > :first-child{margin-top:0}
+.card > :last-child{margin-bottom:0}
+
+/* ---------- 数字卡 ---------- */
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin:18px 0}
+.kv .item{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;box-shadow:var(--shadow)}
+.kv .k{font-size:12.5px;color:var(--muted);margin-bottom:5px}
+.kv .v{font-family:"Cascadia Mono",Consolas,monospace;font-size:21px;font-weight:700;
+  letter-spacing:-.02em;line-height:1.25}
+.kv .u{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
+.c-blue{color:var(--blue)} .c-orange{color:var(--orange)} .c-green{color:var(--green)}
+.c-red{color:var(--red)} .c-purple{color:var(--purple)}
+
+/* ---------- 表格 ---------- */
+.tw{overflow-x:auto;margin:16px 0;border:1px solid var(--line);border-radius:12px;
+  background:var(--card);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);
+  vertical-align:top}
+th{background:#fafbfd;font-weight:680;font-size:13px;color:#3b414d;
+  letter-spacing:.01em;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fbfcfe}
+td.n,th.n{text-align:right;font-family:"Cascadia Mono",Consolas,monospace;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hl td{background:#eef5ff}
+tr.bad td{background:#fff2f0}
+tbody tr.hl:hover td{background:#e5efff}
+tbody tr.bad:hover td{background:#ffe8e5}
+
+/* ---------- 提示框 ---------- */
+.box{border-radius:12px;padding:15px 18px;margin:18px 0;font-size:14.5px;
+  border:1px solid;display:flex;gap:12px}
+.box .ico{flex:0 0 auto;font-weight:800;font-size:15px;line-height:1.6}
+.box > div > :first-child{margin-top:0}
+.box > div > :last-child{margin-bottom:0}
+.box p{margin:0 0 8px}
+.warn{background:#fff7ed;border-color:#fed7a5;color:#7c4110}
+.warn .ico{color:#c2410c}
+.danger{background:#fef2f2;border-color:#fecaca;color:#8a1c1c}
+.danger .ico{color:#dc2626}
+.tip{background:#eff6ff;border-color:#bfdbfe;color:#1e3a68}
+.tip .ico{color:#1d4ed8}
+.ok{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}
+.ok .ico{color:#15803d}
+
+/* ---------- 数值链 ---------- */
+.chain{display:flex;align-items:stretch;gap:0;margin:22px 0;flex-wrap:wrap}
+.chain .step{flex:1 1 150px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:14px 14px;box-shadow:var(--shadow);position:relative;margin:6px 0}
+.chain .arrow{display:flex;align-items:center;justify-content:center;flex:0 0 34px;
+  color:var(--muted);font-size:19px;font-weight:700}
+.chain .step .lab{font-size:11.5px;color:var(--muted);letter-spacing:.05em;
+  text-transform:uppercase;font-weight:650}
+.chain .step .val{font-family:"Cascadia Mono",Consolas,monospace;font-size:17px;
+  font-weight:700;margin:3px 0 2px}
+.chain .step .frm{font-size:12px;color:var(--muted);font-family:"Cascadia Mono",Consolas,monospace}
+
+/* ---------- 公式 ---------- */
+.formula{background:var(--code);border-left:3px solid var(--blue);border-radius:0 10px 10px 0;
+  padding:13px 18px;margin:14px 0;font-family:"Cascadia Mono",Consolas,monospace;
+  font-size:14.5px;overflow-x:auto;line-height:1.9}
+.formula .cm{color:var(--muted)}
+sub,sup{font-size:.76em}
+
+/* ---------- 代码 ---------- */
+pre{background:#1e2229;color:#e6e9ef;border-radius:12px;padding:15px 18px;
+  overflow-x:auto;font-size:13.5px;line-height:1.7;margin:14px 0}
+pre .k{color:#c792ea} pre .s{color:#a5d6a7} pre .c{color:#7a8599}
+pre .n{color:#ffcb6b} pre .f{color:#82aaff}
+code.i{background:var(--code);border:1px solid var(--line);border-radius:5px;
+  padding:1px 6px;font-size:13px;color:#c7254e}
+
+/* ---------- 图例色块 ---------- */
+.dot{display:inline-block;width:9px;height:9px;border-radius:3px;
+  margin-right:6px;vertical-align:1px}
+.lg-b{background:var(--blue)} .lg-o{background:var(--orange)} .lg-g{background:var(--green)}
+
+/* ---------- 徽标 ---------- */
+.tag{display:inline-block;font-size:11.5px;font-weight:700;padding:1px 8px;
+  border-radius:999px;vertical-align:1.5px;letter-spacing:.02em}
+.tag-e{background:#e7f4ec;color:#15803d;border:1px solid #b7e0c6}
+.tag-i{background:#fff4e5;color:#b45309;border:1px solid #fcd9a4}
+.tag-g{background:#f3e8ff;color:#6b21a8;border:1px solid #dcc0f7}
+
+/* ---------- 其它 ---------- */
+hr{border:none;border-top:1px solid var(--line);margin:34px 0}
+ul,ol{padding-left:22px;margin:10px 0}
+li{margin:5px 0}
+.fine{font-size:13px;color:var(--muted)}
+.center{text-align:center}
+figure{margin:20px 0}
+figure img{width:100%;border-radius:12px;border:1px solid var(--line);
+  box-shadow:var(--shadow);display:block}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){
+  .grid2{grid-template-columns:1fr}
+  .hero h1{font-size:27px}
+  main{padding:24px 14px 70px}
+}
+@media(max-width:600px){
+  .chain .arrow{flex:0 0 100%;height:22px}
+  .chain .step{flex:1 1 100%}
+}
+</style>
+</head>
+<body>
+
+<nav><div class="bar">
+  <span class="brand">STM32F407 功率计</span>
+  <a href="#what">这是什么</a>
+  <a href="#wire">接线</a>
+  <a href="#chain">数值链</a>
+  <a href="#theory">理论值</a>
+  <a href="#scope">示波器</a>
+  <a href="#pc">上位机</a>
+  <a href="#recon">三处对账</a>
+  <a href="#error">误差来源</a>
+  <a href="#fs">采样率</a>
+  <a href="#nyq">奈奎斯特</a>
+  <a href="#build">编译刷写</a>
+  <a href="#ref">参数速查</a>
+</div></nav>
+
+<main>
+
+<div class="hero">
+  <div class="eyebrow">Week 9 · 实时能量与 RMS 测量</div>
+  <h1>一台归一化的数字功率计<br>——从 ADC 码值到示波器读数的完整账本</h1>
+  <p class="lead">
+    这个工程只做一件事：把 PA1 上的电压每 20.83 µs 采一个点，算出这个点偏离 1.65 V 多少，
+    平方，然后同时用三种不同方式平均。所有数字都是<strong>以 1.65 V 为基准的归一化值</strong>，
+    不是伏特也不是瓦特。这份手册把"理论应该是多少、实际会是多少、为什么不一样、
+    在哪三个地方能读到它、这四处读数怎么互相换算"全部摊开写清楚。
+  </p>
+  <div class="meta">
+    <span>STM32F407G-DISC1</span>
+    <span>Keil MDK 5.40 · AC6 · StdPeriph 1.9.0</span>
+    <span>48 kHz / 12 bit / DMA 乒乓</span>
+    <span>USB-VCP 115200 · 约 94 行/秒</span>
+  </div>
+</div>
+
+<div class="box tip">
+  <span class="ico">i</span>
+  <div>
+    <p><strong>先看这一条，能省掉你两个小时的抓狂：</strong>
+    波形发生器接 PA1 之前，<strong>必须把输出直流偏置设到 1.65 V</strong>。
+    发生器默认输出是绕 0 V 摆的，2 Vpp 就是 −1 V ~ +1 V，直接怼到 STM32 的模拟输入上：
+    负半周会被芯片内部的 ESD 保护二极管钳到约 −0.3 V（绝对最大额定 V<sub>SS</sub>−0.3 V，
+    余量只有 0.3 V，<strong>有损伤引脚的风险</strong>），而且算出来的功率会飞到理论值的
+    <strong>近 4 倍</strong>（实测 +285%，见 <a href="#error">第 7 节</a>）。</p>
+  </div>
+</div>
+
+<!-- ============================================================ 1 -->
+<section id="what">
+  <h2><span class="num">1</span>这是什么</h2>
+  <p class="sub">一句话：PA1 进、三种功率估计、两个出口。</p>
+
+  <div class="card">
+    <p>一根模拟输入线，两个输出口：</p>
+    <ul>
+      <li><strong>模拟表盘</strong> —— PA4 输出一个和 RMS 成正比的<strong>直流电压</strong>。
+        万用表或示波器直接量，读数 ÷ 2 就是输入信号的 Vrms。<strong>不开电脑也能读数。</strong></li>
+      <li><strong>数字表盘</strong> —— PA2 每约 10.7 ms 发一行 7 列 CSV 给 PC，
+        上位机实时画 5 条曲线，并能导出。</li>
+    </ul>
+    <p class="fine">这两个出口说的是同一件事的两种表示。第 <a href="#recon">6 节</a>
+      有一张"三处读数对账表"，专门解决"示波器上读到的和电脑上看到的是不是一回事"。</p>
+  </div>
+
+  <h3>数据流</h3>
+  <div class="card">
+<pre><span class="c">PA1 (0~3.3 V，必须绕 1.65 V 摆)</span>
+     │  TIM2 每 20.83 µs 触发一次（48 kHz）
+     ▼
+<span class="f">ADC1</span> 12 位 ──<span class="f">DMA2_Stream0</span> 循环搬运──► <span class="n">Sample_Buf[512]</span>（乒乓）
+     │                                        │
+     │                     半满(256点) / 全满(256点) 各进一次中断
+     │                                        ▼
+     │                    x = (码值 − 2048) / 2048      <span class="c">← 归一化</span>
+     │                    p = x²                       <span class="c">← 瞬时功率</span>
+     │                                        │
+     │        ┌───────────────┬───────────────┴──────────────┐
+     │        ▼               ▼                              ▼
+     │   <span class="s">累积能量</span>        <span class="s">滑动窗口 (1024 点)</span>              <span class="s">指数平均 (α=0.99)</span>
+     │   E += p          Pwin = mean(最近 1024 个 p)    Pexp = 0.99·Pexp + 0.01·p
+     │                        │                              │
+     ▼                        └──────────┬───────────────────┘
+<span class="c">PA4 (DAC1)</span> ◄── RMSwin × 3.3 V ────────┤
+  = 输入 Vrms × 2                       ▼
+                              <span class="f">USART2</span> ──► PC（CSV 7 列）</pre>
+  </div>
+
+  <h3>代码分工</h3>
+  <div class="tw"><table>
+    <thead><tr><th>文件</th><th>职责</th></tr></thead>
+    <tbody>
+      <tr><td><code class="i">Hardware/Sample.c</code></td><td>ADC + DMA + 三种估计器（工程核心）</td></tr>
+      <tr><td><code class="i">Hardware/Dac.c</code></td><td>DAC1 / PA4 直流输出</td></tr>
+      <tr><td><code class="i">Hardware/Usart.c</code></td><td>USART2 + DMA 发送（带传输出错恢复）</td></tr>
+      <tr><td><code class="i">User/main.c</code></td><td><code>main()</code> 和所有 <code>xxx_IRQHandler</code></td></tr>
+      <tr><td><code class="i">附带工程/serial_monitor.py</code></td><td>上位机：5 个独立图表 + 换算 + 导出</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ 2 -->
+<section id="wire">
+  <h2><span class="num">2</span>接线</h2>
+  <p class="sub">四个针，三个共地。</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>引脚</th><th>功能</th><th>要求</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PA1</strong></td><td>模拟输入（ADC1_IN1）</td>
+        <td>0~3.3 V，<strong>必须绕 1.65 V 摆动</strong>（代码把 2048 码值当零点）</td></tr>
+      <tr><td><strong>PA4</strong></td><td>DAC1_OUT1</td>
+        <td>输出直流，理论 0~3.3 V，等于 2 × 输入 Vrms</td></tr>
+      <tr><td><strong>PA2</strong></td><td>USART2_TX</td><td>接 PC（板载 VCP 或外接 CH340 的 RXD）</td></tr>
+      <tr><td><strong>PA3</strong></td><td>USART2_RX</td><td>本工程不接收，接着也无妨</td></tr>
+      <tr><td><strong>GND</strong></td><td>地</td>
+        <td><strong>发生器、开发板、示波器三方必须共地</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box danger">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>加偏置的三种做法，按推荐顺序：</strong></p>
+      <p><strong>① 发生器直接设 DC 偏置 1.65 V（最省事）</strong><br>
+      大多数函数发生器有 <code class="i">Offset</code> 或 <code class="i">DC Offset</code> 旋钮/菜单。
+      设 1.65 V，幅度 1 V（即 2 Vpp）。示波器量一下输出确实是 0.65 V ~ 2.65 V 再接到板子上。</p>
+      <p><strong>② 1.65 V 直流源 + 串联隔直电容</strong><br>
+      需要两个电阻分压出 1.65 V（比如 3.3 V 经两个等值电阻），再串一个 1~10 µF 电容把交流叠上去。
+      优点是不需要发生器有偏置功能；缺点是<strong>加电/断电瞬间电容充放电会产生冲击</strong>，
+      务必先接好再上电。</p>
+      <p><strong>③ 只用发生器、不加偏置 —— 不要这么做。</strong>
+      见<a href="#error">第 7 节</a>的实测数字。</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>偏置不是"差不多就行"。</strong>代码里 2048 码值硬编码为"零"，
+      而 2048 码值对应的真实电压是 V<sub>DDA</sub>/2。偏 49 mV 就吃掉 0.54% 精度，
+      偏 149 mV 就吃掉 4.5%，偏 250 mV 就吃掉 12.5%。
+      如果你是用电阻分压凑的 1.65 V，先拿万用表量准了再上板。</p>
+      <p class="fine">顺便：DISC1 用 USB 供电时 V<sub>DDA</sub> 实测常在 3.28~3.35 V 飘，
+      这会让"1.65 V"这个基准本身有一点偏差 —— 属于全局乘性误差，无法在固件里消除，
+      只能实测后在校准里补偿。</p>
+    </div>
+  </div>
+
+  <h3>数据线两种接法，代码完全一样</h3>
+  <div class="grid2">
+    <div class="card">
+      <h4>A. 板载 ST-LINK 虚拟串口（推荐）</h4>
+      <p class="fine">一根 USB 线插开发板即可。PA2/PA3 在板内已连到 ST-LINK，
+        PC 上出现 <code class="i">STMicroelectronics Virtual COM Port (COMx)</code>。</p>
+    </div>
+    <div class="card">
+      <h4>B. 外接 CH340</h4>
+      <p class="fine">PA2(TX) → CH340 RXD，PA3(RX) → CH340 TXD，GND ↔ GND。
+        PC 上出现 <code class="i">USB-SERIAL CH340 (COMx)</code>。</p>
+    </div>
+  </div>
+  <p class="fine">串口列表里如果看到"蓝牙链接上的标准串行"，那不是板子，别选错。</p>
+</section>
+
+<!-- ============================================================ 3 -->
+<section id="chain">
+  <h2><span class="num">3</span>数值链 —— 一个电压的五次变身</h2>
+  <p class="sub">这是整份手册的核心。搞懂这一节，后面全部自动通。</p>
+
+  <p>下面用一个具体例子走完全程：<strong>1 kHz、2 Vpp 正弦，绕 1.65 V 摆动</strong>
+  （也就是教材第 9 节的基线信号）。"2 Vpp" 意味着峰值 1.65+1 = 2.65 V、谷值 0.65 V，
+  <strong>幅度 A = 1 V</strong>。</p>
+
+  <div class="chain">
+    <div class="step">
+      <div class="lab">① 输入端电压</div>
+      <div class="val">0.65 ~ 2.65 V</div>
+      <div class="frm">幅度 A = 1 V</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="lab">② ADC 码值</div>
+      <div class="val">807 ~ 3290</div>
+      <div class="frm">V / 3.3 × 4096</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="lab">③ 归一化 x</div>
+      <div class="val">−0.606 ~ +0.606</div>
+      <div class="frm">(码值 − 2048) / 2048</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="lab">④ 瞬时功率 p</div>
+      <div class="val">0 ~ 0.367</div>
+      <div class="frm">x²</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="lab">⑤ 平均功率</div>
+      <div class="val c-blue">0.183655</div>
+      <div class="frm">mean(p)</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <div class="lab">⑥ RMS + PA4</div>
+      <div class="val c-purple">0.428550</div>
+      <div class="frm">√P → ×3.3 = 1.414 V</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">关键的三步换算，必须记住</h3>
+    <div class="formula">
+      <span class="cm">// 第 ① 步：把码值变成"偏离中点的比例"</span><br>
+      x = (码值 − 2048) / 2048 &nbsp;&nbsp; <span class="cm">= (V − 1.65) / 1.65，范围 −1 ~ +1</span>
+    </div>
+    <div class="formula">
+      <span class="cm">// 第 ② 步：功率就是 x 的平方（归一化）</span><br>
+      p = x² &nbsp;&nbsp; <span class="cm">// 物理功率 = p × 1.65² = p × 2.7225 [V²]</span>
+    </div>
+    <div class="formula">
+      <span class="cm">// 第 ③ 步：三种平均 → RMS → 两个出口</span><br>
+      RMSwin = √(mean(p)) &nbsp;&nbsp;&nbsp; <span class="cm">// 归一化 0~1</span><br>
+      输入 Vrms  = RMSwin × 1.65 V &nbsp;&nbsp;&nbsp; <span class="cm">// ← 上位机"输入 Vrms"那一格</span><br>
+      PA4 电压   = RMSwin × 3.3 V  &nbsp; = 2 × 输入 Vrms &nbsp;&nbsp; <span class="cm">// ← 示波器读到的</span>
+    </div>
+  </div>
+
+  <div class="box ok">
+    <span class="ico">✓</span>
+    <div>
+      <p><strong>"为什么 PA4 是输入 Vrms 的两倍？"</strong>
+      因为归一化把 1.65 V 压成了 1.0，而 DAC 的满量程是 3.3 V。
+      两者之比正好是 2，于是 3.3 V 的 DAC 输出恰好等于 2 × Vrms。</p>
+      <p>这不是巧合，也不是设计失误 —— 它的好处是<strong>满幅方波正好顶到 DAC 满量程</strong>，
+      一点量程都不浪费。代价是你必须记住"看到 1.414 V 其实是 0.707 Vrms"。</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>全部数字都是归一化的，这一条最容易翻车。</strong>
+      CSV 里的 <code class="i">Pwin = 0.183655</code> 不是 0.18 瓦特，是"以 1.65 V 为基准的相对功率"。
+      想变成物理量：</p>
+      <div class="formula" style="margin:8px 0 0">
+        物理功率 P = Pwin × 1.65² = Pwin × 2.7225 &nbsp;[V²]<br>
+        <span class="cm">若负载 1 Ω，数值上就等于瓦特（0.183655 × 2.7225 = 0.5000 W）</span><br><br>
+        物理能量 = E × 1.65² / 48000 &nbsp;[V²·s]
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 4 -->
+<section id="theory">
+  <h2><span class="num">4</span>理论值速查表</h2>
+  <p class="sub">教材让你"计算理论 RMS"，但没给公式也没给数。这里全给了。</p>
+
+  <p>正弦波幅度 A（峰峰值 A<sub>pp</sub> = 2A），绕 1.65 V 摆动：</p>
+  <div class="formula">
+    Pwin<sub>理论</sub> = (A / 1.65)² / 2 &nbsp;&nbsp;·&nbsp;&nbsp;
+    RMSwin<sub>理论</sub> = A / (1.65·√2) &nbsp;&nbsp;·&nbsp;&nbsp;
+    Vrms = A / √2 &nbsp;&nbsp;·&nbsp;&nbsp;
+    PA4 = 2·Vrms = A·√2
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>输入正弦</th><th class="n">幅度 A</th><th class="n">实际 Vrms</th>
+      <th class="n">RMSwin</th><th class="n">Pwin</th><th class="n">Pexp / Pall</th><th class="n">PA4 电压</th>
+    </tr></thead>
+    <tbody>
+      <tr class="hl">
+        <td><strong>2 Vpp（教材基线）</strong></td>
+        <td class="n">1.000 V</td><td class="n">0.707107</td>
+        <td class="n c-blue"><strong>0.428550</strong></td>
+        <td class="n c-blue"><strong>0.183655</strong></td>
+        <td class="n">0.183655</td>
+        <td class="n c-purple"><strong>1.414214 V</strong></td>
+      </tr>
+      <tr>
+        <td>1 Vpp</td><td class="n">0.500 V</td><td class="n">0.353553</td>
+        <td class="n">0.214275</td><td class="n">0.045914</td>
+        <td class="n">0.045914</td><td class="n">0.707107 V</td>
+      </tr>
+      <tr>
+        <td>0.5 Vpp</td><td class="n">0.250 V</td><td class="n">0.176777</td>
+        <td class="n">0.107137</td><td class="n">0.011478</td>
+        <td class="n">0.011478</td><td class="n">0.353553 V</td>
+      </tr>
+      <tr>
+        <td>3.3 Vpp（满幅）</td><td class="n">1.650 V</td><td class="n">1.166726</td>
+        <td class="n">0.707107</td><td class="n">0.500000</td>
+        <td class="n">0.500000</td><td class="n">2.333452 V</td>
+      </tr>
+      <tr>
+        <td>方波 0↔3.3 V（满幅）</td><td class="n">1.650 V</td><td class="n">1.650000</td>
+        <td class="n">1.000000</td><td class="n">1.000000</td>
+        <td class="n">1.000000</td><td class="n">3.300000 V</td>
+      </tr>
+      <tr>
+        <td>无信号（恒定 1.65 V）</td><td class="n">0</td><td class="n">0</td>
+        <td class="n">0</td><td class="n">0</td><td class="n">0</td><td class="n">0 V</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <p class="fine">注：<code class="i">Pall</code> 在稳态下等于 <code class="i">Pwin</code>，
+  但<strong>刚开机的头几秒不是</strong> —— 它把开机前那段"没信号"的零也平均进分母了。
+  详见 <a href="#pc">第 5 节</a>。</p>
+
+  <div class="box tip">
+    <span class="ico">i</span>
+    <div>
+      <p><strong>怎么验算 0.183655 对不对？</strong>
+      三条路必须一致：</p>
+      <p>① 公式：(1/1.65)²/2 = 0.1836547<br>
+      ② 反推功率：0.428550² = 0.1836550<br>
+      ③ 物理验算：0.183655 × 1.65² = 0.500000 W = (0.707107 V)² → 1 Ω 下正确</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 5 -->
+<section id="scope">
+  <h2><span class="num">5</span>示波器上看到的是什么</h2>
+  <p class="sub">一根直流线，但它的"平不平"藏着信息。</p>
+
+  <h3>第一件事：必须切 DC 耦合</h3>
+  <div class="box danger">
+    <span class="ico">!</span>
+    <div>
+      <p>PA4 输出的是<strong>纯直流</strong>。示波器如果停在 AC 耦合，
+      直流成分会被高通滤掉，屏幕上只剩噪声和纹波，读数接近 0 ——
+      然后你会开始怀疑板子坏了、固件没跑、DAC 没使能。</p>
+      <p><strong>先把耦合切到 DC。</strong>探针接 PA4，地夹接 GND。</p>
+    </div>
+  </div>
+
+  <h3>第二件事：它应该是一条水平线</h3>
+  <div class="kv">
+    <div class="item"><div class="k">1 kHz / 2 Vpp 输入</div>
+      <div class="v c-purple">1.414<span class="u">V</span></div></div>
+    <div class="item"><div class="k">1 kHz / 1 Vpp 输入</div>
+      <div class="v c-purple">0.707<span class="u">V</span></div></div>
+    <div class="item"><div class="k">100 Hz / 2 Vpp 输入</div>
+      <div class="v c-purple">1.414<span class="u">V</span><span class="u">± 8%</span></div></div>
+    <div class="item"><div class="k">50 Hz / 2 Vpp 输入</div>
+      <div class="v c-purple">1.414<span class="u">V</span><span class="u">± 6%</span></div></div>
+  </div>
+
+  <h3>第三件事：这条线的"纹波"由输入频率决定</h3>
+  <p>这不是故障，是滑动窗口的物理必然。窗口固定 1024 点 = <strong>21.33 ms</strong>，
+  如果输入信号的周期比窗口还长（低频），窗口里装不满一个完整周期，平均值就会跟着相位起伏。</p>
+
+  <p>而真正起作用的是 <strong>x² 的频率（2f）</strong>，不是 f 本身 ——
+  正弦平方会把它变成两倍频率再加一个直流分量：</p>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>输入频率</th><th class="n">窗口里含几个周期</th>
+      <th class="n">Pwin 纹波（峰峰）</th><th class="n">Pexp 纹波（峰峰）</th>
+      <th>示波器上看起来</th>
+    </tr></thead>
+    <tbody>
+      <tr class="bad"><td>10 Hz</td><td class="n">0.21 个</td>
+        <td class="n">145%</td><td class="n">194%</td><td>PA4 在 0 和满量之间来回扫，完全失效</td></tr>
+      <tr class="bad"><td>50 Hz</td><td class="n">1.07 个</td>
+        <td class="n">12.1%</td><td class="n">122%</td><td>能看到明显的 100 Hz 起伏</td></tr>
+      <tr><td>100 Hz</td><td class="n">2.13 个</td>
+        <td class="n">11.1%</td><td class="n">72%</td><td>还能看出起伏</td></tr>
+      <tr class="hl"><td><strong>1 kHz（教材基线）</strong></td><td class="n">21.33 个</td>
+        <td class="n"><strong>1.3%</strong></td><td class="n">7.7%</td>
+        <td>基本是一条直线，纹波约 ±9 mV</td></tr>
+      <tr><td>10 kHz</td><td class="n">213 个</td>
+        <td class="n">0.2%</td><td class="n">1.0%</td><td>完全平</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="fine">数字来自把固件算法原样搬到 numpy 里跑的仿真（含 12 位量化、开机填充、
+  α 逐点递推），不是估算。<span class="tag tag-e">E</span></p>
+
+  <div class="box tip">
+    <span class="ico">i</span>
+    <div>
+      <p><strong>为什么 1 kHz 的纹波只有 1.3%，而 2 kHz 分量应该被压得更狠？</strong>
+      滑动平均对频率 f 的增益是 |sin(πfT)/(πfT)|。窗口 T = 21.33 ms：</p>
+      <p>· f = 2 kHz（1 kHz 信号产生）→ πfT = 134 rad → 增益 0.65%<br>
+      · f = 100 Hz（50 Hz 信号产生）→ πfT = 6.7 rad → 增益 <strong>6%</strong></p>
+      <p>所以 50 Hz 的纹波是 1 kHz 的九倍。这条正好能拿去答教材 A1、A2。</p>
+    </div>
+  </div>
+
+  <h3>第四件事：还有一个 94 Hz 的台阶</h3>
+  <p>PA4 每 10.67 ms 才更新一次（跟着串口上报节奏），把示波器时基调到 1 ms/div
+  细看，能看到阶梯状逼近。稳态时台阶可忽略，但你在改信号幅度时，
+  会看到一条<strong>约 94 Hz 的阶梯曲线</strong>在逼近新值 —— 这是正常的。</p>
+
+  <div class="box warn">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>"没信号时 PA4 是不是 0 V？"</strong>理论上是，实际不是。
+      12 位量化的 LSB 是 3.3/4096 = 0.806 mV，量化噪声约 0.233 mVrms；
+      再叠加参考电压抖动和输入端拾取的噪声，实测 PA4 会停在
+      <strong>几毫伏到几十毫伏</strong>。如果你输入端有 5 mVrms 的噪声，PA4 就停在大约 10 mV。</p>
+      <p class="fine"><span class="tag tag-i">I</span> 具体数值取决于你的信号源和板子噪声，
+      方向一定对，量级参考上面的仿真。</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>DAC 输出缓冲的两端有约 0.2 V 的不可达区。</strong>
+      带输出缓冲时，PA4 实际能到的范围大约是 0.2 V ~ (V<sub>DDA</sub> − 0.2 V)，
+      不是精确的 0 ~ 3.3 V。所以：</p>
+      <p>· 满幅方波时 PA4 顶不到 3.3 V，会在 3.1 V 附近饱和；<br>
+      · 无信号时也下不到 0 V。</p>
+      <p>因此<strong>"PA4 = 2 × Vrms" 这个关系在两端 10% 的范围内会失真</strong>。
+      做精度实验请把工作点放在中间区域（0.5 ~ 2.5 V）。</p>
+      <p class="fine"><span class="tag tag-i">I</span> 具体不可达区的数值请查你那颗芯片的
+      datasheet 的 DAC 特性表，并用万用表实测确认 —— 我这里只能告诉你"有这个现象、方向如此"。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 6 -->
+<section id="pc">
+  <h2><span class="num">6</span>上位机：五张图、十二个数字</h2>
+  <p class="sub">五条曲线拆成五个独立图，各自独立纵轴 —— 因为它们的量程差十倍，叠在一起必互相压扁。</p>
+
+  <figure>
+    <img src="附带工程/_preview_v2.png" alt="上位机五图分开的效果">
+    <figcaption>五个独立图。这段模拟数据的剧情：0.8 s 接入 1 kHz / 2 Vpp；
+      1.6 s 降到半幅；2.4 s 换成 50 Hz。<strong>注意 Pexp 在 50 Hz 段剧烈摆动
+      （122% 纹波），而 Pwin 只是轻微起伏（12%）</strong> —— 这就是两种估计器最直观的差别。</figcaption>
+  </figure>
+
+  <h3>为什么必须分图</h3>
+  <div class="tw"><table>
+    <thead><tr><th>曲线</th><th class="n">典型量程（2 Vpp 正弦）</th><th>如果和别的图叠一起会怎样</th></tr></thead>
+    <tbody>
+      <tr><td><span class="dot lg-b"></span>Pwin</td><td class="n">0 ~ 0.19</td>
+        <td rowspan="3">Pall 在开机头十几秒只有 0.05 左右，Pwin 已经 0.18 ——
+          同轴显示时 Pall 会被压成贴着 x 轴的一条平线，完全看不出它的"缓慢爬升"特征</td></tr>
+      <tr><td><span class="dot lg-o"></span>Pexp</td><td class="n">0.04 ~ 0.29</td></tr>
+      <tr><td><span class="dot lg-g"></span>Pall</td><td class="n">0 ~ 0.18（慢）</td></tr>
+      <tr><td><span class="dot lg-b"></span>RMSwin</td><td class="n">0 ~ 0.43</td>
+        <td>这是 √Pwin，和 Pwin 是同一件事的两种表示 —— 所以用同一种蓝色</td></tr>
+      <tr><td><span class="dot lg-o"></span>RMSexp</td><td class="n">0.2 ~ 0.55（摆）</td>
+        <td>和 RMSwin 同色系橙，一眼能对上</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>实时数据面板：每一格是什么</h3>
+  <div class="tw"><table>
+    <thead><tr><th>格子</th><th>含义</th><th>怎么来的</th><th>拿它干什么</th></tr></thead>
+    <tbody>
+      <tr><td><strong>点数 N</strong></td><td>开机至今采了多少个点</td>
+        <td>板子直接发；64 位，不会回绕</td>
+        <td>N ÷ 48000 = 开机秒数</td></tr>
+      <tr><td><strong>时间 (s)</strong></td><td>横轴时间</td>
+        <td><code class="i">N / fs</code></td><td>跟示波器的时间轴对账</td></tr>
+      <tr><td><strong>能量 E</strong></td><td>Σx²，单调只增</td>
+        <td>板子直接发</td>
+        <td>反映总能量，<strong>看不出当前强弱</strong></td></tr>
+      <tr class="hl"><td><strong>Pwin</strong></td><td>最近 1024 点的平均功率</td>
+        <td>板子直接发</td>
+        <td><strong>最权威的读数</strong>，平滑但滞后 21.33 ms</td></tr>
+      <tr><td><strong>Pexp</strong></td><td>指数平均功率（α=0.99）</td>
+        <td>板子直接发</td>
+        <td>跟得快（τ≈2.07 ms）但纹波大，<strong>低频时会剧烈摆动</strong></td></tr>
+      <tr><td><strong>Pall</strong></td><td>E ÷ N，全局平均</td>
+        <td>板子直接发</td>
+        <td>反例：<strong>几乎不响应任何变化</strong></td></tr>
+      <tr><td><strong>RMSwin</strong></td><td>√Pwin</td><td>板子直接发</td>
+        <td>× 1.65 = 输入 Vrms</td></tr>
+      <tr><td><strong>RMSexp</strong></td><td>√Pexp</td><td>板子直接发</td>
+        <td>注意：是"功率平均后开根号"，<strong>不是</strong>"开根号后平均"</td></tr>
+      <tr class="hl"><td><strong>输入 Vrms</strong></td><td>换算后的实际电压</td>
+        <td><code class="i">RMSwin × 1.65</code></td>
+        <td><strong>这个才是有物理意义的伏特数</strong></td></tr>
+      <tr class="hl"><td><strong>PA4 示波器读数</strong></td><td>板子 DAC 实际输出的电压</td>
+        <td><code class="i">RMSwin × 3.3</code></td>
+        <td><strong>和你示波器上量到的是同一个数</strong></td></tr>
+      <tr><td><strong>物理功率 (1Ω)</strong></td><td>换算后的瓦特数</td>
+        <td><code class="i">Pwin × 1.65²</code></td>
+        <td>1 Ω 负载下数值上就是瓦特</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box tip">
+    <span class="ico">i</span>
+    <div>
+      <p><strong>双击任意一张图</strong>可以弹出该曲线的放大窗口（1.6 倍大，可以自由缩放平移）。
+      点【全部放大图】一次开五个。放大窗口会跟着主界面一起刷新。</p>
+      <p>取消勾选上面的曲线名可以临时隐藏某个图，腾出纵向空间。</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>Pexp 在低频时摆得厉害，不是坏了。</strong>
+      α = 0.99 的时间常数只有 2.07 ms，比 50 Hz 的周期（20 ms）短得多 ——
+      它"跟得太快"，于是把 x² 的 100 Hz 起伏原原本本跟出来了。50 Hz 输入时纹波高达 122%，
+      橙线会在 0 和 0.37 之间来回跳。要看稳态值请读 Pwin。</p>
+      <p>教材 A4 问"α 趋近 1 会怎样" —— 答案就在这个反直觉的地方：<strong>α 越大越平滑，
+      但 τ 越小？</strong>不对。τ = −1/(ln α)/fs，α 越接近 1，分母越小，τ 越<em>大</em>，
+      越平滑越慢。α=0.99 时 τ=2.07 ms；α=0.999 时 τ=20.7 ms，就会明显更平滑也更迟钝。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 7 -->
+<section id="recon">
+  <h2><span class="num">7</span>三处读数怎么对账</h2>
+  <p class="sub">同一个信号，你会从三个地方读到数。它们必须互相自洽，否则就是有地方错了。</p>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>读数来源</th><th class="n">1 kHz / 2 Vpp 时应该读到</th><th>物理含义</th><th>可靠性</th>
+    </tr></thead>
+    <tbody>
+      <tr class="hl">
+        <td><strong>示波器量 PA4</strong></td>
+        <td class="n">1.414 V</td>
+        <td>板子 DAC 输出的直流电平</td>
+        <td>高。<strong>必须 DC 耦合</strong></td>
+      </tr>
+      <tr class="hl">
+        <td><strong>万用表量 PA4</strong></td>
+        <td class="n">1.414 V</td>
+        <td>同上</td>
+        <td>高。但要注意万用表在直流档下的输入阻抗</td>
+      </tr>
+      <tr class="hl">
+        <td><strong>上位机"PA4 示波器读数"</strong></td>
+        <td class="n">1.414 V</td>
+        <td>程序按 RMSwin × 3.3 算出来的预测值</td>
+        <td>高。它和上面两个<strong>应该完全一致</strong></td>
+      </tr>
+      <tr class="hl">
+        <td><strong>上位机"输入 Vrms"</strong></td>
+        <td class="n">0.707 V</td>
+        <td>输入信号的有效值</td>
+        <td>高。等于示波器读数 ÷ 2</td>
+      </tr>
+      <tr>
+        <td>示波器量 PA1（输入本身）</td>
+        <td class="n">0.707 Vrms<br><span class="fine">（峰峰 2 V，均值 1.65 V）</span></td>
+        <td>输入信号的真身</td>
+        <td>最高。<strong>这是唯一不经过板子的读数</strong></td>
+      </tr>
+      <tr>
+        <td>发生器面板显示</td>
+        <td class="n">2 Vpp</td>
+        <td>发生器自己以为自己输出多大</td>
+        <td>最低。<strong>负载变化时会掉</strong>，别信面板</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h3>对账的三条铁律</h3>
+  <div class="card">
+    <p><strong>① 示波器 PA4 读数 ÷ 2 = 上位机"输入 Vrms"。</strong>
+    如果不等，先查示波器是不是 AC 耦合，再查是不是探头衰减比设错了（10X 探头但示波器认为 1X，
+    读数会小十倍）。</p>
+    <p><strong>② 上位机"输入 Vrms"× √2 × 2 = 输入信号的峰峰值。</strong>
+    0.707 × 1.414 × 2 = 2.000 Vpp ✓。用它反过来验证发生器设得对不对。</p>
+    <p><strong>③ 用示波器直接量 PA1 的峰峰值，比发生器面板可信得多。</strong>
+    很多发生器带 50 Ω 输出阻抗，接上负载（哪怕只是探头）电压就会掉几个百分点；
+    还有的不带负载时读数是开路值。教材 A5 问"为什么 MATLAB 和硬件结果可能不同" ——
+    <strong>发生器面板值不等于实际输出，就是最常被忽略的一条。</strong></p>
+  </div>
+
+  <div class="box ok">
+    <span class="ico">✓</span>
+    <div>
+      <p><strong>一个自洽性检查（建议每次实验都做）：</strong>
+      在 1 kHz / 2 Vpp 下，把上位机这三格抄下来：</p>
+      <div class="formula" style="margin:8px 0 0">
+        Pwin = 0.183655 &nbsp;·&nbsp; RMSwin = 0.428550 &nbsp;·&nbsp; 输入 Vrms = 0.7071 V<br>
+        <span class="cm">三者必须满足 Pwin = (RMSwin)² 且 RMSwin = Vrms / 1.65</span><br>
+        <span class="cm">误差超过 1% 说明：偏置不准 / 发生器实际输出不是 2 Vpp / VDDA 明显偏离 3.3 V</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 8 -->
+<section id="error">
+  <h2><span class="num">8</span>实际值偏离理论值的原因（量化版）</h2>
+  <p class="sub">"为什么我量到的不是 0.183655？"——下面这张表按影响大小排序。</p>
+
+  <p>方法：把固件算法原样搬到 numpy（含 12 位量化、滑动窗口用实际填充数做除数、
+  α 逐点递推），逐项改变一个条件，看 Pwin 偏离理论值的百分比。</p>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>实验条件</th><th class="n">实测 Pwin</th><th class="n">相对误差</th><th>说明</th>
+    </tr></thead>
+    <tbody>
+      <tr class="hl"><td>理想：精确绕 1.65 V</td><td class="n">0.183730</td>
+        <td class="n c-green"><strong>+0.04%</strong></td>
+        <td>这就是 12 位量化的本底误差，很难再低</td></tr>
+      <tr><td>直流中心 1.60 V</td><td class="n">0.184646</td>
+        <td class="n">+0.54%</td>
+        <td>偏 49 mV</td></tr>
+      <tr><td>直流中心 1.50 V</td><td class="n">0.191924</td>
+        <td class="n c-orange">+4.5%</td>
+        <td>偏 149 mV</td></tr>
+      <tr><td>直流中心 1.40 V</td><td class="n">0.206595</td>
+        <td class="n c-orange">+12.5%</td>
+        <td>偏 250 mV</td></tr>
+      <tr class="bad"><td><strong>发生器绕 0 V，直接接 PA1</strong></td><td class="n">0.706509</td>
+        <td class="n c-red"><strong>+285%</strong></td>
+        <td>负半周被钳掉，半波整流效应</td></tr>
+      <tr class="bad"><td>发生器偏置 0.3 V</td><td class="n">0.594293</td>
+        <td class="n c-red">+224%</td><td>同上，轻一些</td></tr>
+      <tr class="bad"><td>发生器偏置 0.8 V</td><td class="n">0.414789</td>
+        <td class="n c-red">+126%</td><td>同上</td></tr>
+      <tr><td>24 kHz 采样</td><td class="n">0.183695</td><td class="n">+0.02%</td>
+        <td rowspan="3">采样率对<strong>稳态正弦</strong>的 RMS 几乎无影响，见第 10 节</td></tr>
+      <tr><td>48 kHz 采样</td><td class="n">0.183730</td><td class="n">+0.04%</td></tr>
+      <tr><td>96 kHz 采样</td><td class="n">0.183677</td><td class="n">+0.01%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="card">
+    <h3 style="margin-top:0">为什么直流偏置的误差是"平方级"的？</h3>
+    <p>设真实信号是 <code class="i">v = d + a·sin(ωt)</code>，其中 <code class="i">d</code> 是偏置误差。那么</p>
+    <div class="formula">
+      x = (d + a·sin) / 1.65<br>
+      x² = (d² + 2ad·sin + a²·sin²) / 1.65²<br>
+      <span class="cm">// 对一个完整周期取平均，sin 项归零，sin² 项 → 1/2</span><br>
+      <strong>mean(x²) = (d² + a²/2) / 1.65²</strong>
+    </div>
+    <p>看到那个 <code class="i">d²</code> 了吗？<strong>直流分量不论正负，都会变成正能量加进去。</strong>
+    这是不可逆的 —— 你无法在后期从结果里把 d² 减掉，因为不知道 d 是多少（除非另外量）。</p>
+    <p>所以：<strong>偏置必须用示波器或万用表量准，不能靠"看起来差不多"。</strong></p>
+  </div>
+
+  <div class="box tip">
+    <span class="ico">i</span>
+    <div>
+      <p><strong>还有两个无法消除的系统误差：</strong></p>
+      <p>① <strong>V<sub>DDA</sub> 不等于 3.3 V。</strong>代码把 2048 码值当 1.65 V，
+      但真实关系是 2048 码值 = V<sub>DDA</sub>/2。DISC1 用 USB 供电时实测 3.28~3.35 V 飘，
+      于是"1.65"这个基准本身有 ±1% 的偏差，直接变成全局乘性误差。</p>
+      <p>② <strong>ADC 的积分非线性（INL/DNL）。</strong>F407 的 12 位 ADC 典型 INL ±2 LSB，
+      折算到 Pwin 是 0.1% 量级。</p>
+      <p class="fine"><span class="tag tag-i">I</span> 这两条的数值来自器件手册的典型值，
+      没有在你的板子上实测。想验证第一条：用万用表量 VDDA 引脚（PA1 附近有测试点）。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 9 -->
+<section id="fs">
+  <h2><span class="num">9</span>采样率实验的三个坑</h2>
+  <p class="sub">教材第 11 节让你测 24 / 48 / 96 kHz。改一个宏就行，但下面三件事会让你得出错误结论。</p>
+
+  <p>好消息：本工程把采样率做成了宏，改 <code class="i">SAMPLE_FS_HZ</code> 一个数，
+  TIM2 的 ARR 会自动跟着算，三个目标值都能整除：</p>
+  <div class="formula">
+    24 kHz → ARR = 84e6/24000 − 1 = <strong>3499</strong> &nbsp;·&nbsp;
+    48 kHz → <strong>1749</strong> &nbsp;·&nbsp;
+    96 kHz → <strong>874</strong>
+  </div>
+
+  <h3>坑 ①：窗口的"点数"不变，但"时长"变了</h3>
+  <p><code class="i">SAMPLE_WIN_M</code> 固定 1024 点，<code class="i">SAMPLE_ALPHA</code>
+  固定 0.99 —— 所以改采样率时，<strong>滤波器的时间尺度也跟着变了</strong>：</p>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>采样率</th><th class="n">窗口时长<br>(1024 点)</th>
+      <th class="n">50 Hz 在窗口里</th><th class="n">α=0.99 的 τ</th>
+      <th class="n">实测 Pwin 纹波</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>24 kHz</td><td class="n"><strong>42.67 ms</strong></td>
+        <td class="n">2.13 周期</td><td class="n">4.15 ms</td><td class="n">0.63%</td></tr>
+      <tr class="hl"><td><strong>48 kHz</strong></td><td class="n"><strong>21.33 ms</strong></td>
+        <td class="n">1.07 周期</td><td class="n">2.07 ms</td><td class="n">1.28%</td></tr>
+      <tr><td>96 kHz</td><td class="n"><strong>10.67 ms</strong></td>
+        <td class="n">0.53 周期</td><td class="n">1.04 ms</td><td class="n">2.58%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box danger">
+    <span class="ico">!</span>
+    <div>
+      <p>看到最后两列了吗？<strong>采样率越高，纹波越大</strong> —— 但这不是"采样率高精度差"，
+      而是<strong>你把窗口缩短了 4 倍</strong>。</p>
+      <p>如果照着这个工程直接做教材 A2（"RMS 精度如何随采样率变化"），
+      你会得出一个<strong>错误结论</strong>。正确做法有两种，二选一，报告里必须说清楚你选了哪个：</p>
+      <p><strong>做法 A（推荐）：保持窗口时长不变。</strong>
+      改 <code class="i">SAMPLE_FS_HZ</code> 时同步改 <code class="i">SAMPLE_WIN_M</code>，
+      让 <code class="i">WIN_M / FS</code> 恒等于 21.33 ms：<br>
+      24 kHz → <code class="i">SAMPLE_WIN_M = 512</code>；48 kHz → 1024；96 kHz → 2048。<br>
+      α 也要同步：保持 τ = 2.07 ms → 24 kHz 用 0.995，48 kHz 用 0.99，96 kHz 用 0.9786。</p>
+      <p><strong>做法 B：承认窗口变短。</strong>
+      报告里明确写"本实验固定窗口点数，因此滤波器时间常数随采样率同比变化"，
+      然后<strong>把纹波变化归因于窗口变短，而不是采样率本身</strong>。</p>
+    </div>
+  </div>
+
+  <h3>坑 ②：96 kHz 时串口一定丢行</h3>
+  <p>115200 8N1 的可用带宽是 <strong>11520 字节/秒</strong>（每位 1 个 bit，每字节 10 bit）。
+  每块 DMA 数据 256 点，块时长 = 256 / 采样率。行宽实测 64~72 字节（E 涨到 8 位数后变长）。</p>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th>采样率</th><th class="n">SAMPLE_TX_BLOCKS</th><th class="n">上报间隔</th>
+      <th class="n">行/秒</th><th class="n">需要带宽</th><th class="n">占用率</th><th>结果</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>24 kHz</td><td class="n">1</td><td class="n">10.67 ms</td><td class="n">93.8</td>
+        <td class="n">6656 B/s</td><td class="n">58%</td><td class="c-green">正常</td></tr>
+      <tr class="hl"><td><strong>48 kHz</strong></td><td class="n"><strong>2</strong></td>
+        <td class="n">10.67 ms</td><td class="n">93.8</td><td class="n">6750 B/s</td>
+        <td class="n">59%</td><td class="c-green"><strong>正常（默认）</strong></td></tr>
+      <tr class="bad"><td>48 kHz</td><td class="n">1</td><td class="n">5.33 ms</td><td class="n">187.5</td>
+        <td class="n">13500 B/s</td><td class="n">117%</td><td class="c-red">必丢行</td></tr>
+      <tr class="bad"><td>96 kHz</td><td class="n">2</td><td class="n">5.33 ms</td><td class="n">187.5</td>
+        <td class="n">13500 B/s</td><td class="n">117%</td><td class="c-red"><strong>必丢行</strong></td></tr>
+      <tr><td>96 kHz</td><td class="n">4</td><td class="n">10.67 ms</td><td class="n">93.8</td>
+        <td class="n">6750 B/s</td><td class="n">59%</td><td class="c-green">正常</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="fine">占用率 117% 不是"稍微丢一点"，是<strong>稳定地每两行丢一行</strong>。
+  丢行由 <code class="i">Usart_SendLine</code> 主动丢弃（上一包没发完就返回 0），
+  不阻塞主循环 —— 所以采样照常，只是上位机少几行。上位机状态栏会显示"丢 N 行"。</p>
+
+  <h3>坑 ③：上位机的采样率参数必须同步改</h3>
+  <p>上位机横轴是 <code class="i">N / fs</code>。<strong>固件改成 96 kHz 而上位机还留 48000，
+  横轴时间会变成真实时间的一半</strong>，你会看着一条被横向拉长的曲线纳闷。
+  改完固件记得在参数行把"采样率"也改掉，按回车生效。</p>
+
+  <h3>正确的实验步骤</h3>
+  <div class="card">
+    <ol>
+      <li>改 <code class="i">SAMPLE_FS_HZ</code>（必须）</li>
+      <li>改 <code class="i">SAMPLE_TX_BLOCKS</code>：24 kHz 用 1，48 kHz 用 2，96 kHz 用 4</li>
+      <li>按"做法 A"决定要不要同步改 <code class="i">SAMPLE_WIN_M</code> 和 <code class="i">SAMPLE_ALPHA</code></li>
+      <li>编译 → F8 下载</li>
+      <li>上位机参数行改采样率，按回车</li>
+      <li>记录 Pwin / RMSwin / 输入 Vrms，<strong>以及你选的窗口配置</strong></li>
+    </ol>
+    <p class="fine">注意 ADC 采样时间 84 个 ADC 时钟 = 4.0 µs。
+    96 kHz 时触发周期只有 10.4 µs，"采样+转换"（84+12 周期 = 4.57 µs）占 44% ——
+    仍然可行，但没有更多余量了。如果要上 192 kHz，得先把这个值降下来。</p>
+  </div>
+</section>
+
+<!-- ============================================================ 10 -->
+<section id="nyq">
+  <h2><span class="num">10</span>奈奎斯特：一个反直觉的结论</h2>
+  <p class="sub">教材 A1 问"输入频率接近奈奎斯特极限时会发生什么"。多数人会答错。</p>
+
+  <p>直觉答案："超过 Nyquist 就混叠了，RMS 会算错。" —— <strong>对单频正弦，这是错的。</strong>
+  我把频率从 10 kHz 扫到 20 kHz（24 kHz 采样，Nyquist 是 12 kHz）实测了一遍：</p>
+
+  <div class="tw"><table>
+    <thead><tr>
+      <th class="n">采样率</th><th class="n">输入频率</th><th class="n">相对 Nyquist</th>
+      <th class="n">实测 Pwin</th><th class="n">误差</th><th>现象</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="n">24 kHz</td><td class="n">10 kHz</td><td class="n">83%</td>
+        <td class="n">0.18369</td><td class="n c-green">+0.02%</td><td>正常</td></tr>
+      <tr><td class="n">24 kHz</td><td class="n">11 kHz</td><td class="n">92%</td>
+        <td class="n">0.18369</td><td class="n c-green">+0.02%</td><td>正常</td></tr>
+      <tr class="bad"><td class="n">24 kHz</td><td class="n"><strong>12 kHz</strong></td>
+        <td class="n"><strong>100%</strong></td><td class="n"><strong>0.00000</strong></td>
+        <td class="n c-red"><strong>−100%</strong></td>
+        <td>采样点全落在过零点 → 全部读到 2048 → x≡0</td></tr>
+      <tr><td class="n">24 kHz</td><td class="n">13 kHz</td><td class="n">108%</td>
+        <td class="n">0.18369</td><td class="n c-green">+0.02%</td>
+        <td><strong>已经混叠，但功率对</strong></td></tr>
+      <tr><td class="n">24 kHz</td><td class="n">20 kHz</td><td class="n">167%</td>
+        <td class="n">0.18368</td><td class="n c-green">+0.01%</td>
+        <td>严重混叠，功率依然对</td></tr>
+      <tr><td class="n">48 kHz</td><td class="n">24 kHz</td><td class="n">100%</td>
+        <td class="n">0.00000</td><td class="n c-red">−100%</td><td>同上，同样归零</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box ok">
+    <span class="ico">✓</span>
+    <div>
+      <p><strong>正确结论（可以照着答 A1/A2）：</strong></p>
+      <p>对<strong>单频正弦</strong>，RMS 是一个<strong>二阶统计量</strong>（方差），
+      而混叠只改变频率的归属、<strong>不改变总功率</strong>。
+      这就是帕塞瓦尔定理的直接体现：时域能量 = 频域能量，采样只是重新分配了频谱的位置。</p>
+      <p>所以 <strong>RMS 测量对采样率极不敏感</strong>（上面全是 ±0.02%）。
+      采样率真正影响的是<strong>波形形状的保真度</strong>和<strong>宽带信号的正确归属</strong>，
+      不是单频信号的功率。</p>
+      <p>唯一的例外是<strong>恰好 f = f<sub>s</sub>/2</strong> 这个退化点：
+      采样点如果正好全落在过零点（相位锁定），会读到全是 2048，Pwin 归零。
+      这是"采样与信号同步"的极端情况，实际会看到读数在 0 和正常值之间跳。</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>那什么时候采样率真的会影响 RMS 精度？</strong></p>
+      <p>① <strong>信号不是单频</strong>（方波、三角波、含谐波、含噪声）→ 高次谐波被折返，会改变功率分布；<br>
+      ② <strong>抗混叠滤波器缺失</strong> → F407 的 ADC 前端没有抗混叠滤波，超过 Nyquist 的噪声会折返进基带，
+      让读数偏高（这部分是真实的额外功率，不是误差）；<br>
+      ③ <strong>窗口时长变了</strong>（见第 9 节坑 ①）→ 纹波变化会让"单次读数"偏离稳态值。</p>
+      <p>所以 A2 的完整答案应该是："<strong>对纯正弦、稳态测量，RMS 精度几乎不随采样率变化；
+      但采样率会改变滤波器时间常数、影响宽带信号的正确性、并决定能否分辨波形</strong>。"</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 11 -->
+<section id="build">
+  <h2><span class="num">11</span>编译与刷写</h2>
+
+  <div class="card">
+    <ol>
+      <li>双击 <code class="i">MDK-ARM\F407_Template.uvprojx</code>，按 <kbd>F7</kbd> 编译。</li>
+      <li><code class="i">Options for Target → Debug</code> 里选你的下载器（第一次要自己设）。</li>
+      <li>按 <kbd>F8</kbd> 下载运行。</li>
+      <li>打开 <code class="i">附带工程\serial_monitor.py</code>，选串口、连接。</li>
+      <li>拿万用表量 PA4，读数 ÷ 2 就是输入 Vrms —— 不开电脑也能验证。</li>
+    </ol>
+  </div>
+
+  <h3>本版编译结果（命令行 <code class="i">UV4 -b</code> 实测）</h3>
+  <div class="kv">
+    <div class="item"><div class="k">错误 / 警告</div><div class="v c-green">0 / 0</div></div>
+    <div class="item"><div class="k">Code</div><div class="v">8524<span class="u">B</span></div></div>
+    <div class="item"><div class="k">RO-data</div><div class="v">476<span class="u">B</span></div></div>
+    <div class="item"><div class="k">RW-data</div><div class="v">4<span class="u">B</span></div></div>
+    <div class="item"><div class="k">ZI-data</div><div class="v">10564<span class="u">B</span></div></div>
+  </div>
+  <p class="fine">ZI 从上一版的 6452 涨到 10564，是因为滑动窗口的环形缓冲从
+  <code class="i">float[1024]</code>（4 KB）改成了 <code class="i">double[1024]</code>（8 KB），
+  换来每点少两次软件浮点转换。SRAM 共 128 KB，占比 8%，不紧张。</p>
+
+  <h3>时钟依赖（这一条错了全盘皆错）</h3>
+  <div class="tw"><table>
+    <thead><tr><th>项目</th><th>值</th><th>为什么重要</th></tr></thead>
+    <tbody>
+      <tr><td>HSE 晶振</td><td>8 MHz</td><td rowspan="4">采样率 = 84 MHz ÷ 1750。定时器时钟来自 APB1×2，
+        而 APB1 来自 PLL。任一处错，48 kHz 就不是 48 kHz，所有时间/频率结论全部作废</td></tr>
+      <tr><td>PLL_M / N / P</td><td>8 / 336 / 2</td></tr>
+      <tr><td>SYSCLK</td><td>168 MHz</td></tr>
+      <tr><td>APB1 → 定时器时钟</td><td>42 MHz → <strong>84 MHz</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p class="fine">晶振不是 8 MHz 时，<strong>两处必须一起改</strong>：
+  <code class="i">User\system_stm32f4xx.c</code> 的 <code class="i">PLL_M</code>，
+  和 Keil 的 <code class="i">Options → C/C++ → Define</code> 里的 <code class="i">HSE_VALUE</code>。
+  只改一处会让主频跑偏，串口波特率会跟着变成约 38400 —— 上位机会报"收到的不是文本"。</p>
+</section>
+
+<!-- ============================================================ 12 -->
+<section id="ref">
+  <h2><span class="num">12</span>参数速查</h2>
+  <p class="sub">全部在 <code class="i">Hardware/Sample.h</code> 顶部。</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>宏</th><th class="n">默认值</th><th>作用</th><th>改它会影响</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td><code class="i">SAMPLE_FS_HZ</code></td><td class="n">48000</td>
+        <td>采样率</td><td>ARR 自动跟着算；窗口时长、串口带宽都跟着变</td></tr>
+      <tr><td><code class="i">SAMPLE_BUF_LEN</code></td><td class="n">512</td>
+        <td>DMA 缓冲点数</td><td>每块处理量、中断频率</td></tr>
+      <tr><td><code class="i">SAMPLE_WIN_M</code></td><td class="n">1024</td>
+        <td>滑动窗口点数</td><td>窗口时长 = 1024/fs；越大越平滑越滞后</td></tr>
+      <tr><td><code class="i">SAMPLE_ALPHA</code></td><td class="n">0.99</td>
+        <td>指数平均系数</td><td>τ = −1/(ln α)/fs；越接近 1 越平滑越慢</td></tr>
+      <tr><td><code class="i">SAMPLE_TX_BLOCKS</code></td><td class="n">2</td>
+        <td>每几块发一行</td><td>上报频率和串口带宽占用</td></tr>
+      <tr><td><code class="i">SAMPLE_ADC_MID</code></td><td class="n">2048.0</td>
+        <td>零点码值</td><td>改了就等于改了"1.65 V"这个基准</td></tr>
+      <tr><td><code class="i">SAMPLE_ADC_SCALE</code></td><td class="n">2048.0</td>
+        <td>归一化尺度</td><td>一般不动</td></tr>
+      <tr><td><code class="i">USART_BAUD_HZ</code></td><td class="n">115200</td>
+        <td>波特率（Usart.h）</td><td>可用带宽 = 波特率/10</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>常用频率下的关键数字</h3>
+  <div class="tw"><table>
+    <thead><tr><th class="n">采样率</th><th class="n">ARR</th><th class="n">Nyquist</th>
+      <th class="n">每块时长<br>(256 点)</th><th class="n">建议 TX_BLOCKS</th></tr></thead>
+    <tbody>
+      <tr><td class="n">8 kHz</td><td class="n">10499</td><td class="n">4 kHz</td>
+        <td class="n">32 ms</td><td class="n">1</td></tr>
+      <tr><td class="n">16 kHz</td><td class="n">5249</td><td class="n">8 kHz</td>
+        <td class="n">16 ms</td><td class="n">1</td></tr>
+      <tr><td class="n">24 kHz</td><td class="n">3499</td><td class="n">12 kHz</td>
+        <td class="n">10.67 ms</td><td class="n">1</td></tr>
+      <tr class="hl"><td class="n"><strong>48 kHz</strong></td><td class="n">1749</td>
+        <td class="n">24 kHz</td><td class="n">5.33 ms</td><td class="n">2</td></tr>
+      <tr><td class="n">96 kHz</td><td class="n">874</td><td class="n">48 kHz</td>
+        <td class="n">2.67 ms</td><td class="n">4</td></tr>
+    </tbody>
+  </table></div>
+  <p class="fine">注意 8 kHz / 16 kHz / 96 kHz 虽然都能整除，但窗口时长会变成
+  128 ms / 64 ms / 10.67 ms —— 做低频实验时窗口可能反而"太短"，请看第 9 节坑 ①。</p>
+</section>
+
+<!-- ============================================================ 附录 -->
+<section id="appendix">
+  <h2><span class="num">A</span>附录：公式推导</h2>
+
+  <h3>为什么 mean(sin²) = 1/2</h3>
+  <div class="formula">
+    sin²θ = (1 − cos 2θ) / 2<br>
+    <span class="cm">// cos 2θ 在一个完整周期内积分为 0</span><br>
+    mean(sin²) = 1/2
+  </div>
+
+  <h3>正弦的归一化功率</h3>
+  <div class="formula">
+    设 v = 1.65 + A·sin(ωt)<br>
+    x = (v − 1.65)/1.65 = (A/1.65)·sin(ωt)<br>
+    <span class="cm">// 记 a = A/1.65（归一化幅度）</span><br>
+    p = x² = a²·sin²(ωt)<br>
+    <strong>mean(p) = a²/2 = (A/1.65)²/2</strong> &nbsp;<span class="cm">✓ 与第 4 节一致</span>
+  </div>
+
+  <h3>滑动平均的频率响应（用来算纹波）</h3>
+  <div class="formula">
+    H(f) = |sin(πfT) / (πfT)| &nbsp;&nbsp; <span class="cm">T = 窗口时长</span><br><br>
+    <span class="cm">// 48 kHz、WIN=1024 → T = 21.33 ms</span><br>
+    f = 100 Hz（50 Hz 信号产生）→ πfT = 6.70 → H = <strong>6.0%</strong><br>
+    f = 2 kHz（1 kHz 信号产生）→ πfT = 134 &nbsp;→ H = <strong>0.65%</strong>
+  </div>
+
+  <h3>指数平均的时间常数</h3>
+  <div class="formula">
+    y[n] = α·y[n−1] + (1−α)·x[n]<br>
+    <span class="cm">// 等价于连续域的一阶低通，τ = 1/(1−α) 个采样点</span><br>
+    <strong>τ = 1 / ((1−α)·f<sub>s</sub>)</strong> &nbsp;&nbsp;
+    <span class="cm">α=0.99, fs=48k → τ = 2.083 ms（严格式 −1/(ln α·fs) = 2.074 ms）</span>
+  </div>
+
+  <h3>能量与功率的关系</h3>
+  <div class="formula">
+    E(n) = Σ<sub>k=0..n</sub> x²[k] &nbsp;&nbsp; <span class="cm">// 离散求和，无时间单位</span><br>
+    Pall = E(n) / n &nbsp;&nbsp; <span class="cm">// 时域平均 = Pwin 的极限</span><br><br>
+    <span class="cm">// 换成物理能量要乘采样间隔</span><br>
+    E<sub>物理</sub> = E × 1.65² / f<sub>s</sub> &nbsp;[V²·s]
+  </div>
+
+  <hr>
+
+  <h2><span class="num">B</span>附录：本版做了什么，以及证据等级</h2>
+  <p class="sub">按本仓库的规矩，每个数字都要能指出出处。</p>
+
+  <h3>本版对固件的改动</h3>
+  <div class="tw"><table>
+    <thead><tr><th>改动</th><th>为什么</th><th>验证方式</th></tr></thead>
+    <tbody>
+      <tr><td>滑动窗口环形缓冲 float → double</td>
+        <td>Cortex-M4F 只有单精度 FPU（<code class="i">-mfpu=fpv4-sp-d16</code>），
+          double 全是软件模拟。原来每点要做两次 float→double 转换</td>
+        <td>反汇编：省掉 2 次 <code class="i">__aeabi_f2d</code></td></tr>
+      <tr><td>累积能量改块内 float 累加、块末一次性转 double</td>
+        <td>同上，省掉每点一次转换 + 一次软浮点加法</td>
+        <td>反汇编：<code class="i">VADD.F32</code> 在循环内、<code class="i">dadd</code> 在块末</td></tr>
+      <tr><td>滑动窗口除法移到块末，满窗后改乘法</td>
+        <td>原来<strong>每个点</strong>做一次 <code class="i">__aeabi_ddiv</code>，是整块中断里最贵的一行</td>
+        <td>反汇编：循环体内已无 ddiv；每块只剩 1 次</td></tr>
+      <tr class="hl"><td><strong>软浮点调用：8 次/点 → 3 次/点</strong></td>
+        <td>中断耗时大约减半</td>
+        <td>逐条数反汇编里的 <code class="i">BL __aeabi_*</code></td></tr>
+      <tr><td><code class="i">Sample_GetResult</code> 加 PRIMASK 临界区</td>
+        <td>原来 count 和 energy 分两次裸读，DMA 中断插在中间会让
+          <code class="i">Pall = E/N</code> 用"新能量除旧点数"，开机头几十行能偏 25%</td>
+        <td>反汇编：<code class="i">MRS PRIMASK → CPSID i → 读 → MSR PRIMASK</code></td></tr>
+      <tr><td>RMS 开根号前钳负值</td>
+        <td>浮点漂移让 PSum 微小变负时，<code class="i">sqrtf</code> 返回 NaN，
+          NaN 会一路污染 DAC 和 CSV</td>
+        <td>代码审查 + 逻辑推理</td></tr>
+      <tr><td><code class="i">Dac_SetRms</code> 的 NaN 钳位和四舍五入</td>
+        <td>原来 <code class="i">if (u &lt; 0)</code> 对 NaN 不成立（IEEE-754 无序），
+          NaN 会静默输出 0 V；另外截断取整有 1 LSB 偏差</td>
+        <td>反汇编：<code class="i">VCMP</code> + <code class="i">IT GT</code> 结构，NaN 落到 0</td></tr>
+      <tr><td>USART 打开 TE 中断并实现恢复</td>
+        <td>只开 TC 的话，一次 DMA 总线错误会让流被硬件关掉而 TC 永不来，
+          串口<strong>永久哑掉且无任何提示</strong></td>
+        <td>代码审查</td></tr>
+      <tr><td><code class="i">Usart_SendLine</code> 的等流关闭循环加超时</td>
+        <td>原来裸 <code class="i">while</code>，若 EN 位不归零会把主循环永久卡死</td>
+        <td>代码审查</td></tr>
+      <tr><td>计数改 64 位</td>
+        <td>48 kHz 下 32 位 24.85 小时回绕，<code class="i">Pall = E/N</code> 会跳变</td>
+        <td>类型审查；CSV 用 <code class="i">%.0f</code> 输出，不依赖 MicroLIB 对 <code class="i">ll</code> 的支持</td></tr>
+      <tr><td>修正"双缓冲"的错误注释</td>
+        <td>原注释说"一块在发、另一块在准备下一行"，但忙碌检查在 memcpy 之前，
+          永远走不到那条路</td><td>代码审查</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>证据等级说明</h3>
+  <div class="card">
+    <p><span class="tag tag-e">E</span> <strong>实证</strong> —— 能当场指出哪个文件、哪条反汇编、哪行代码。
+    本手册里标 E 的包括：归一化公式、理论值、误差表和纹波表（固件算法仿真）、
+    编译尺寸（Keil map 文件）、软浮点调用次数（fromelf 反汇编）、
+    奈奎斯特扫描结果（仿真）、串口带宽核算。</p>
+    <p><span class="tag tag-i">I</span> <strong>推断</strong> —— 有依据但没在你的板子上实测。
+    本手册里标 I 的包括：DAC 输出缓冲的不可达区、V<sub>DDA</sub> 的实际偏差量、
+    ADC 的 INL/DNL 影响、中断耗时的绝对值（调用结构是 E，cycle 数是估的）。</p>
+    <p><span class="tag tag-g">G</span> <strong>猜测</strong> —— 纯为观感手调，没有数据支撑。
+    <strong>本手册没有 G 级数据。</strong>所有数值要么是公式推的，要么是仿真量的，
+    要么是从编译产物读的。</p>
+  </div>
+
+  <div class="box warn">
+    <span class="ico">!</span>
+    <div>
+      <p><strong>还没验证的部分（诚实说明）：</strong>
+      固件只验证了编译（0 Error / 0 Warning）和反汇编级别的逻辑正确性，
+      <strong>没有上板实测</strong>。上板后请重点确认三件事：</p>
+      <p>① 48 kHz 是否准确（用示波器量 PA4 的更新节奏，或让板子输出方波对比）；<br>
+      ② PA4 的电压是否等于 2 × Vrms（这是整条链路的最终验收）；<br>
+      ③ 串口能否持续收到数据而不丢行（看上位机状态栏的"丢 N 行"）。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
