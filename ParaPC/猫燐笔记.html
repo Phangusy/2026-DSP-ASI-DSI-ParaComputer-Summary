@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>并行计算机 · 手写笔记整理</title>
+<style>
+  :root{
+    --paper:#fdfcf9;
+    --paper-2:#f7f4ed;
+    --ink:#22272e;
+    --ink-soft:#5c636e;
+    --ink-faint:#8b929c;
+    --line:#e4dfd3;
+    --line-soft:#eeeae0;
+    --accent:#1f4e79;
+    --accent-2:#2f6d9e;
+    --accent-bg:#edf2f8;
+    --warm:#a8542a;
+    --warm-bg:#fbf0e9;
+    --code-bg:#f6f4ee;
+    --radius:10px;
+  }
+
+  *{box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Segoe UI","Noto Sans SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-size:16px;
+    line-height:1.78;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- 页头 ---------- */
+  .cover{
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#fff 0%,var(--paper) 100%);
+    padding:56px 32px 40px;
+  }
+  .cover-inner{max-width:1120px;margin:0 auto;}
+  .kicker{
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 14px;
+  }
+  .cover h1{
+    margin:0;font-size:38px;line-height:1.25;font-weight:700;letter-spacing:-.01em;
+  }
+  .cover h1 .sub{
+    display:block;font-size:16px;font-weight:400;color:var(--ink-soft);
+    letter-spacing:.02em;margin-top:12px;
+  }
+  .cover-meta{
+    margin-top:26px;display:flex;flex-wrap:wrap;gap:10px 26px;
+    font-size:13px;color:var(--ink-soft);
+  }
+  .cover-meta span b{color:var(--ink);font-weight:600;}
+
+  /* ---------- 布局 ---------- */
+  .layout{
+    max-width:1120px;margin:0 auto;padding:0 32px;
+    display:grid;grid-template-columns:246px minmax(0,1fr);gap:44px;
+    align-items:start;
+  }
+
+  nav.toc{
+    position:sticky;top:0;max-height:100vh;overflow-y:auto;
+    padding:40px 0 60px;font-size:13.5px;
+    border-right:1px solid var(--line-soft);
+  }
+  nav.toc h2{
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 16px;font-weight:600;
+  }
+  nav.toc ol{list-style:none;margin:0;padding:0 20px 0 0;}
+  nav.toc ol li{margin:0 0 6px;}
+  nav.toc ol li a{
+    display:block;color:var(--ink-soft);text-decoration:none;
+    padding:3px 0 3px 11px;border-left:2px solid transparent;line-height:1.5;
+    transition:color .15s,border-color .15s;
+  }
+  nav.toc ol li a:hover{color:var(--accent);border-left-color:var(--accent-2);}
+  nav.toc ol li .num{
+    font-variant-numeric:tabular-nums;color:var(--ink-faint);
+    font-size:11.5px;margin-right:7px;
+  }
+  nav.toc .sec{margin-top:18px;}
+  nav.toc .sub-list{list-style:none;margin:2px 0 0;padding:0 0 0 4px;}
+  nav.toc .sub-list li{margin:0;}
+  nav.toc .sub-list a{font-size:12.5px;color:var(--ink-faint);padding:2px 0 2px 20px;border-left:1px solid var(--line-soft);}
+  nav.toc .sub-list a:hover{color:var(--accent-2);border-left-color:var(--accent-2);}
+
+  main{padding:40px 0 100px;min-width:0;}
+
+  /* ---------- 章节 ---------- */
+  section.chapter{margin:0 0 64px;scroll-margin-top:24px;}
+  section.chapter > h2{
+    font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em;
+    padding-bottom:14px;border-bottom:2px solid var(--ink);
+    display:flex;align-items:baseline;gap:14px;
+  }
+  section.chapter > h2 .cn{
+    font-size:13px;font-weight:600;color:var(--accent);
+    letter-spacing:.12em;text-transform:uppercase;flex:none;
+  }
+  section.chapter > h2 .tag{
+    font-size:11px;font-weight:500;color:var(--ink-faint);
+    letter-spacing:.06em;margin-left:auto;flex:none;
+  }
+  h3{
+    font-size:18px;font-weight:650;margin:38px 0 12px;
+    scroll-margin-top:24px;color:var(--ink);
+  }
+  h3::before{
+    content:"";display:inline-block;width:8px;height:8px;
+    background:var(--accent-2);margin-right:10px;vertical-align:2px;
+    border-radius:2px;
+  }
+  h4{
+    font-size:15px;font-weight:650;margin:24px 0 8px;color:var(--accent);
+    letter-spacing:.01em;
+  }
+
+  p{margin:0 0 12px;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+
+  /* ---------- 术语 / 定义 ---------- */
+  dl.terms{
+    margin:16px 0 20px;border-top:1px solid var(--line);
+  }
+  dl.terms div{
+    display:grid;grid-template-columns:172px minmax(0,1fr);gap:18px;
+    padding:11px 2px;border-bottom:1px solid var(--line-soft);
+    align-items:baseline;
+  }
+  dl.terms dt{
+    font-weight:650;color:var(--accent);font-size:14.5px;
+    display:flex;flex-direction:column;gap:1px;
+  }
+  dl.terms dt .cn{font-weight:500;color:var(--ink-soft);font-size:13px;}
+  dl.terms dd{margin:0;font-size:14.8px;}
+
+  /* ---------- 列表 ---------- */
+  ul,ol{padding-left:22px;margin:0 0 14px;}
+  li{margin:0 0 6px;}
+  ul.plain{list-style:none;padding-left:0;}
+  ul.plain li{padding-left:18px;position:relative;}
+  ul.plain li::before{
+    content:"";position:absolute;left:3px;top:11px;width:5px;height:5px;
+    background:var(--accent-2);border-radius:50%;
+  }
+
+  /* ---------- 强调 ---------- */
+  b,strong{font-weight:650;}
+  em{font-style:italic;color:var(--ink-soft);}
+  .term{color:var(--accent);font-weight:600;}
+  .hl{
+    background:linear-gradient(180deg,transparent 58%,#fce9b8 58%);
+    padding:0 2px;
+  }
+  code{
+    font-family:"Cascadia Code","Consolas","SFMono-Regular",monospace;
+    font-size:.9em;background:var(--code-bg);padding:1.5px 5px;
+    border-radius:4px;border:1px solid var(--line-soft);color:#2b3a49;
+  }
+
+  /* ---------- 注释块 ---------- */
+  .note{
+    margin:18px 0;padding:13px 18px;background:var(--accent-bg);
+    border-left:3px solid var(--accent-2);border-radius:0 6px 6px 0;
+    font-size:14.4px;color:#2c3e50;
+  }
+  .note .lbl{
+    display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent-2);margin-right:9px;
+  }
+  .note.warm{background:var(--warm-bg);border-left-color:var(--warm);color:#5b3a26;}
+  .note.warm .lbl{color:var(--warm);}
+  .note p:last-child{margin-bottom:0;}
+
+  /* ---------- 代码 ---------- */
+  pre{
+    margin:16px 0;padding:16px 18px;background:var(--code-bg);
+    border:1px solid var(--line);border-radius:var(--radius);
+    overflow-x:auto;font-size:13.2px;line-height:1.72;
+  }
+  pre code{
+    background:none;border:none;padding:0;font-size:inherit;color:#26313c;
+  }
+  pre .cmt{color:#8a8f7d;font-style:italic;}
+  pre .kw{color:#8a4a8f;font-weight:600;}
+  pre .fn{color:#1f4e79;}
+  pre .str{color:#8a5a1a;}
+  pre .macro{color:#a8542a;font-weight:600;}
+
+  /* ---------- 表格 ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;}
+  table{
+    border-collapse:collapse;width:100%;font-size:14.2px;
+    font-variant-numeric:tabular-nums;
+  }
+  caption{
+    caption-side:top;text-align:left;font-size:12.5px;letter-spacing:.03em;
+    color:var(--ink-faint);padding-bottom:8px;
+  }
+  th,td{
+    padding:8px 14px;border-bottom:1px solid var(--line-soft);text-align:left;
+  }
+  thead th:first-child,tbody tr > :first-child{width:1%;white-space:nowrap;}
+  thead th{
+    border-bottom:1.5px solid var(--ink);font-weight:650;font-size:13.2px;
+    color:var(--ink);white-space:nowrap;
+  }
+  tbody tr:hover{background:var(--paper-2);}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+  tfoot td{border-top:1.5px solid var(--line);border-bottom:none;font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- 图 ---------- */
+  figure{
+    margin:24px 0;padding:20px 18px 14px;background:#fff;
+    border:1px solid var(--line);border-radius:var(--radius);
+  }
+  figure svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+  figcaption{
+    margin-top:14px;padding-top:11px;border-top:1px dashed var(--line);
+    font-size:12.8px;color:var(--ink-soft);text-align:center;line-height:1.6;
+  }
+  figcaption b{color:var(--ink);font-weight:600;}
+
+  /* SVG 内通用 */
+  .svg-box{fill:#fff;stroke:#33414f;stroke-width:1.6;}
+  .svg-box-accent{fill:var(--accent-bg);stroke:var(--accent);stroke-width:1.6;}
+  .svg-box-warm{fill:var(--warm-bg);stroke:var(--warm);stroke-width:1.6;}
+  .svg-txt{font-family:"Segoe UI","Noto Sans SC",sans-serif;fill:#22272e;}
+  .svg-lbl{font-family:"Segoe UI","Noto Sans SC",sans-serif;fill:#5c636e;}
+  .svg-ann{font-family:"Segoe UI","Noto Sans SC",sans-serif;fill:#1f4e79;font-weight:600;}
+  .svg-warm{font-family:"Segoe UI","Noto Sans SC",sans-serif;fill:#a8542a;font-weight:600;}
+  .svg-line{fill:none;stroke:#33414f;stroke-width:1.6;}
+  .svg-line-accent{fill:none;stroke:#1f4e79;stroke-width:1.8;}
+  .svg-dash{fill:none;stroke:#8b929c;stroke-width:1.3;stroke-dasharray:5 4;}
+
+  /* ---------- 公式 ---------- */
+  .formula{
+    margin:18px 0;padding:16px 20px;background:#fff;border:1px solid var(--line);
+    border-radius:var(--radius);text-align:center;font-size:16px;
+  }
+  .formula .where{
+    margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);
+    font-size:13px;color:var(--ink-soft);text-align:left;
+  }
+  .frac{
+    display:inline-flex;flex-direction:column;vertical-align:-0.55em;
+    text-align:center;font-size:.94em;margin:0 .2em;line-height:1.28;
+  }
+  .frac > span:first-child{
+    border-bottom:1.3px solid currentColor;padding:0 .34em .08em;
+  }
+  .frac > span:last-child{padding:.08em .34em 0;}
+  var{font-style:italic;font-family:Georgia,"Cambria",serif;font-size:1.04em;}
+
+  /* ---------- 页脚 ---------- */
+  footer{
+    max-width:1120px;margin:0 auto;padding:26px 32px 60px;
+    border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-faint);
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:900px){
+    .layout{grid-template-columns:minmax(0,1fr);gap:0;padding:0 20px;}
+    nav.toc{
+      position:static;max-height:none;border-right:none;
+      border-bottom:1px solid var(--line);padding:24px 0 20px;margin-bottom:8px;
+    }
+    nav.toc ol{columns:2;column-gap:18px;padding-right:0;}
+    .cover{padding:40px 20px 30px;}
+    .cover h1{font-size:29px;}
+    main{padding:24px 0 60px;}
+    dl.terms div{grid-template-columns:minmax(0,1fr);gap:2px;}
+    section.chapter > h2{font-size:22px;flex-wrap:wrap;}
+    section.chapter > h2 .tag{margin-left:0;width:100%;}
+  }
+
+  @media print{
+    nav.toc{display:none;}
+    .layout{grid-template-columns:minmax(0,1fr);}
+    body{font-size:11pt;background:#fff;}
+    section.chapter{page-break-inside:auto;}
+    figure,pre,.formula,table{page-break-inside:avoid;}
+    section.chapter > h2{page-break-after:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <div class="cover-inner">
+    <p class="kicker">Parallel Computing · 课堂手写笔记整理</p>
+    <h1>并行计算机
+      <span class="sub">云计算 · 并行度量 · 集群调度 · MPI / OpenMP · 分布式与 Grid · GPU</span>
+    </h1>
+    <div class="cover-meta">
+      <span><b>共 18 页</b> 手写原稿</span>
+      <span>整理为 <b>9 章</b></span>
+      <span>全部图例以 <b>SVG</b> 重绘</span>
+      <span>术语保留原文中英混排</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li class="sec"><a href="#ch1"><span class="num">01</span>云计算与交付模型</a>
+      <ul class="sub-list">
+        <li><a href="#ch1-1">服务模型 IaaS / FaaS / PaaS / SaaS</a></li>
+        <li><a href="#ch1-2">五大特征</a></li>
+        <li><a href="#ch1-3">CapEx 与 OpEx</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch2"><span class="num">02</span>并行计算的基本量</a>
+      <ul class="sub-list">
+        <li><a href="#ch2-1">Work / Task / Worker</a></li>
+        <li><a href="#ch2-2">依赖图与关键路径</a></li>
+        <li><a href="#ch2-3">数据并行与任务并行</a></li>
+        <li><a href="#ch2-4">Amdahl 定律</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch3"><span class="num">03</span>集群架构与作业调度</a>
+      <ul class="sub-list">
+        <li><a href="#ch3-1">进程、线程与并行接口</a></li>
+        <li><a href="#ch3-2">集群的层级结构</a></li>
+        <li><a href="#ch3-3">执行时间模型与三种负载</a></li>
+        <li><a href="#ch3-4">作业能否放下</a></li>
+        <li><a href="#ch3-5">调度器与核心指标</a></li>
+        <li><a href="#ch3-6">调度策略</a></li>
+        <li><a href="#ch3-7">能耗</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch4"><span class="num">04</span>MPI 编程</a>
+      <ul class="sub-list">
+        <li><a href="#ch4-1">SPMD 与 Hello World</a></li>
+        <li><a href="#ch4-2">阻塞、死锁与非阻塞</a></li>
+        <li><a href="#ch4-3">halo 交换的完整例子</a></li>
+        <li><a href="#ch4-4">集合通信</a></li>
+        <li><a href="#ch4-5">通信时间模型</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch5"><span class="num">05</span>OpenMP 编程</a>
+      <ul class="sub-list">
+        <li><a href="#ch5-1">Fork-Join</a></li>
+        <li><a href="#ch5-2">竞态与四种同步手段</a></li>
+        <li><a href="#ch5-3">数据作用域</a></li>
+        <li><a href="#ch5-4">task 与 depend</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch6"><span class="num">06</span>并行性能度量</a>
+      <ul class="sub-list">
+        <li><a href="#ch6-1">T / S / E / C</a></li>
+        <li><a href="#ch6-2">强缩放与弱缩放</a></li>
+        <li><a href="#ch6-3">Work Law</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch7"><span class="num">07</span>分布式计算与 Grid</a>
+      <ul class="sub-list">
+        <li><a href="#ch7-1">Cluster / Grid / Cloud / Edge</a></li>
+        <li><a href="#ch7-2">VO 虚拟组织</a></li>
+        <li><a href="#ch7-3">Grid 的分层</a></li>
+        <li><a href="#ch7-4">两次辨析</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch8"><span class="num">08</span>Grid 安全</a>
+      <ul class="sub-list">
+        <li><a href="#ch8-1">访问请求的四个问题</a></li>
+        <li><a href="#ch8-2">密钥对</a></li>
+        <li><a href="#ch8-3">PKI 与 X.509</a></li>
+        <li><a href="#ch8-4">Proxy 与 SSH 证书</a></li>
+        <li><a href="#ch8-5">零信任</a></li>
+      </ul>
+    </li>
+    <li class="sec"><a href="#ch9"><span class="num">09</span>GPU 与异构计算</a>
+      <ul class="sub-list">
+        <li><a href="#ch9-1">CPU 与 GPU 的分工</a></li>
+        <li><a href="#ch9-2">kernel 与数据搬运</a></li>
+        <li><a href="#ch9-3">框架抽象层</a></li>
+      </ul>
+    </li>
+  </ol>
+</nav>
+
+<main>
+<!-- ============ 第一章 ============ -->
+<section class="chapter" id="ch1">
+  <h2><span class="cn">01</span>云计算与交付模型<span class="tag">原稿 p.1</span></h2>
+
+  <p class="lead"><span class="term">cloud</span>：云技术，按需提供资源。</p>
+
+  <h3 id="ch1-1">服务模型 Service Model</h3>
+  <p>按"供应商替用户管到哪一层"来划分，四层从底层往上依次是：</p>
+
+  <dl class="terms">
+    <div>
+      <dt>IaaS<span class="cn">Infrastructure · 基础设施</span></dt>
+      <dd>最基础的一层。例：创建／管理一台虚拟机。</dd>
+    </div>
+    <div>
+      <dt>FaaS<span class="cn">Function · 函数</span></dt>
+      <dd>例：生命周期很短的函数功能。</dd>
+    </div>
+    <div>
+      <dt>PaaS<span class="cn">Platform · 平台</span></dt>
+      <dd>例：上传资源至平台。</dd>
+    </div>
+    <div>
+      <dt>SaaS<span class="cn">Software · 软件</span></dt>
+      <dd>例：在线应用（以帐号使用）。</dd>
+    </div>
+  </dl>
+
+  <h3 id="ch1-2">五大特征</h3>
+  <dl class="terms">
+    <div>
+      <dt>On-demand self-service</dt>
+      <dd>按需自助。</dd>
+    </div>
+    <div>
+      <dt>Broad network access</dt>
+      <dd>广泛网络访问。</dd>
+    </div>
+    <div>
+      <dt>Resource pooling</dt>
+      <dd>资源池化。</dd>
+    </div>
+    <div>
+      <dt>Rapid elasticity</dt>
+      <dd>快速弹性收缩。</dd>
+    </div>
+    <div>
+      <dt>Measured service</dt>
+      <dd>可计量服务。</dd>
+    </div>
+  </dl>
+
+  <div class="note warm">
+    <span class="lbl">原文旁注</span>
+    上面几条特征连起来划了个括号，旁边写：<b>故全天候运行不等于 cloud</b>。
+    一条服务 7×24 跑着，并不自动等于它就是云——云的判据是"按需自助 + 池化 + 弹性 + 可计量"这一整套特征。
+  </div>
+
+  <h3 id="ch1-3">CapEx 与 OpEx</h3>
+  <dl class="terms">
+    <div>
+      <dt>Capital expenditure<span class="cn">CapEx · 资本性支出</span></dt>
+      <dd>一次性买下来的投入，比如自己买服务器、建机房。</dd>
+    </div>
+    <div>
+      <dt>Operational expenditure<span class="cn">OpEx · 运营性支出</span></dt>
+      <dd>按使用量持续付出的开销，比如按小时租云主机。</dd>
+    </div>
+  </dl>
+  <p>云把 CapEx 转成了 OpEx —— 这是"按需提供资源"在财务侧的表述。</p>
+</section>
+
+<!-- ============ 第二章 ============ -->
+<section class="chapter" id="ch2">
+  <h2><span class="cn">02</span>并行计算的基本量<span class="tag">原稿 p.2</span></h2>
+
+  <h3 id="ch2-1">Work / Task / Worker</h3>
+  <dl class="terms">
+    <div>
+      <dt>Work<span class="cn">工作</span></dt>
+      <dd>工作目标，全部运算操作的总量。<br>
+      使用的衡量方式：<b>仅用 1 个 worker 时所用的时间</b>。</dd>
+    </div>
+    <div>
+      <dt>Task<span class="cn">任务</span></dt>
+      <dd>计算分片，把总工作切分得更小的片段。<br>
+      <b>Task 之间可以存在依赖关系。</b></dd>
+    </div>
+    <div>
+      <dt>Worker<span class="cn">执行单元</span></dt>
+      <dd>实际执行运算的算力载体，抽取 tasks 并执行。</dd>
+    </div>
+  </dl>
+
+  <h3 id="ch2-2">依赖图与关键路径</h3>
+  <p><span class="term">dependency graph</span>（依赖图）用来描述 Task 之间的先后约束，由它可以算出
+  <span class="term">minimum completion time</span>（最小完成时间）。</p>
+
+  <figure>
+    <svg viewBox="0 0 640 250" role="img" aria-label="六个任务的依赖图">
+      <defs>
+        <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <path class="svg-line-accent" marker-end="url(#arw)" d="M102,112 L164,76"></path>
+      <path class="svg-line-accent" marker-end="url(#arw)" d="M102,132 L164,168"></path>
+      <path class="svg-line-accent" marker-end="url(#arw)" d="M242,72 L304,108"></path>
+      <path class="svg-line-accent" marker-end="url(#arw)" d="M242,172 L304,136"></path>
+      <path class="svg-line-accent" marker-end="url(#arw)" d="M382,108 L452,74"></path>
+      <path class="svg-line-accent" marker-end="url(#arw)" d="M382,136 L452,170"></path>
+
+      <rect class="svg-box" x="30" y="95" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="66" y="118" font-size="18" font-weight="600" text-anchor="middle">A</text>
+      <text class="svg-txt" x="66" y="137" font-size="13" text-anchor="middle">2ms</text>
+
+      <rect class="svg-box" x="170" y="35" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="206" y="58" font-size="18" font-weight="600" text-anchor="middle">B</text>
+      <text class="svg-txt" x="206" y="77" font-size="13" text-anchor="middle">4ms</text>
+
+      <rect class="svg-box" x="170" y="155" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="206" y="178" font-size="18" font-weight="600" text-anchor="middle">C</text>
+      <text class="svg-txt" x="206" y="197" font-size="13" text-anchor="middle">3ms</text>
+
+      <rect class="svg-box" x="310" y="95" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="346" y="118" font-size="18" font-weight="600" text-anchor="middle">D</text>
+      <text class="svg-txt" x="346" y="137" font-size="13" text-anchor="middle">2ms</text>
+
+      <rect class="svg-box" x="460" y="35" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="496" y="58" font-size="18" font-weight="600" text-anchor="middle">E</text>
+      <text class="svg-txt" x="496" y="77" font-size="13" text-anchor="middle">3ms</text>
+
+      <rect class="svg-box" x="460" y="155" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="496" y="178" font-size="18" font-weight="600" text-anchor="middle">F</text>
+      <text class="svg-txt" x="496" y="197" font-size="13" text-anchor="middle">1ms</text>
+
+      <text class="svg-ann" x="30" y="228" font-size="13">critical path: A → B → D → E = 2 + 4 + 2 + 3 = 11ms</text>
+    </svg>
+    <figcaption><b>图 2-1</b>　任务依赖图。A 分叉出 B、C 两路，在 D 处汇合，D 之后再分叉到 E、F。</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table>
+      <caption>各任务的起止时间（单位 ms）</caption>
+      <thead>
+        <tr><th>Task</th><th class="num">Start</th><th class="num">Finish</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A</td><td class="num">0</td><td class="num">2</td></tr>
+        <tr><td>B</td><td class="num">2</td><td class="num">6</td></tr>
+        <tr><td>C</td><td class="num">2</td><td class="num">5</td></tr>
+        <tr><td>D</td><td class="num">6</td><td class="num">8</td></tr>
+        <tr><td>E</td><td class="num">8</td><td class="num">11</td></tr>
+        <tr><td>F</td><td class="num">8</td><td class="num">9</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td colspan="3">D 必须等 B（6ms 结束）和 C（5ms 结束）都完成才能开始，所以 D 从 6ms 起算；最小完成时间由最慢的一条链决定，即 11ms。</td></tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <h3 id="ch2-3">数据并行与任务并行</h3>
+  <p>两种并行方式的分界线：<b>是"同一段代码作用在不同数据上"，还是"不同的代码段前后接力"。</b></p>
+
+  <figure>
+    <svg viewBox="0 0 660 200" role="img" aria-label="数据并行示意图">
+      <defs>
+        <marker id="arw2" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#33414f"></path>
+        </marker>
+      </defs>
+
+      <text class="svg-txt" x="40" y="52" font-size="16">x<tspan font-size="11" dy="4">0</tspan></text>
+      <text class="svg-txt" x="98" y="52" font-size="16">x<tspan font-size="11" dy="4">1</tspan></text>
+      <text class="svg-txt" x="156" y="52" font-size="16">x<tspan font-size="11" dy="4">2</tspan></text>
+      <text class="svg-txt" x="214" y="52" font-size="16">x<tspan font-size="11" dy="4">3</tspan></text>
+      <text class="svg-txt" x="272" y="52" font-size="16">x<tspan font-size="11" dy="4">4</tspan></text>
+      <text class="svg-txt" x="330" y="52" font-size="16">x<tspan font-size="11" dy="4">5</tspan></text>
+      <text class="svg-txt" x="378" y="52" font-size="16">…</text>
+      <text class="svg-txt" x="416" y="52" font-size="16">x<tspan font-size="11" dy="4">n</tspan></text>
+
+      <path class="svg-line" marker-end="url(#arw2)" d="M44,66 L44,104"></path>
+      <path class="svg-line" marker-end="url(#arw2)" d="M102,66 L102,104"></path>
+      <path class="svg-line" marker-end="url(#arw2)" d="M160,66 L160,104"></path>
+      <path class="svg-line" marker-end="url(#arw2)" d="M218,66 L218,104"></path>
+      <path class="svg-line" marker-end="url(#arw2)" d="M276,66 L276,104"></path>
+      <path class="svg-line" marker-end="url(#arw2)" d="M334,66 L334,104"></path>
+      <path class="svg-line" marker-end="url(#arw2)" d="M420,66 L420,104"></path>
+
+      <text class="svg-txt" x="40" y="148" font-size="16">y<tspan font-size="11" dy="4">0</tspan></text>
+      <text class="svg-txt" x="98" y="148" font-size="16">y<tspan font-size="11" dy="4">1</tspan></text>
+      <text class="svg-txt" x="156" y="148" font-size="16">y<tspan font-size="11" dy="4">2</tspan></text>
+      <text class="svg-txt" x="214" y="148" font-size="16">y<tspan font-size="11" dy="4">3</tspan></text>
+      <text class="svg-txt" x="272" y="148" font-size="16">y<tspan font-size="11" dy="4">4</tspan></text>
+      <text class="svg-txt" x="330" y="148" font-size="16">y<tspan font-size="11" dy="4">5</tspan></text>
+      <text class="svg-txt" x="416" y="148" font-size="16">y<tspan font-size="11" dy="4">n</tspan></text>
+
+      <text class="svg-ann" x="500" y="72" font-size="15">同样操作</text>
+      <text class="svg-ann" x="500" y="150" font-size="15">多次执行</text>
+      <text class="svg-lbl" x="500" y="112" font-size="12">同一函数，不同数据</text>
+    </svg>
+    <figcaption><b>图 2-2</b>　数据并行 Data Parallelism：每个元素走同样的操作，只是把同一段代码执行很多次。</figcaption>
+  </figure>
+
+  <figure>
+    <svg viewBox="0 0 660 120" role="img" aria-label="任务并行示意图">
+      <defs>
+        <marker id="arw3" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#33414f"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="50" y="32" width="64" height="46" rx="3"></rect>
+      <text class="svg-txt" x="82" y="61" font-size="18" font-weight="600" text-anchor="middle">A</text>
+
+      <rect class="svg-box" x="190" y="32" width="64" height="46" rx="3"></rect>
+      <text class="svg-txt" x="222" y="61" font-size="18" font-weight="600" text-anchor="middle">B</text>
+
+      <rect class="svg-box" x="330" y="32" width="64" height="46" rx="3"></rect>
+      <text class="svg-txt" x="362" y="61" font-size="18" font-weight="600" text-anchor="middle">D</text>
+
+      <rect class="svg-box" x="470" y="32" width="64" height="46" rx="3"></rect>
+      <text class="svg-txt" x="502" y="61" font-size="18" font-weight="600" text-anchor="middle">E</text>
+
+      <path class="svg-line" marker-end="url(#arw3)" d="M116,55 L186,55"></path>
+      <path class="svg-line" marker-end="url(#arw3)" d="M256,55 L326,55"></path>
+      <path class="svg-line" marker-end="url(#arw3)" d="M396,55 L466,55"></path>
+
+      <text class="svg-ann" x="556" y="48" font-size="15">不同操作</text>
+      <text class="svg-ann" x="556" y="70" font-size="15">依次执行</text>
+    </svg>
+    <figcaption><b>图 2-3</b>　任务并行 Task Parallelism：几个不同的操作沿依赖链依次往下走。</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th></th><th>数据并行 Data Parallelism</th><th>任务并行 Task Parallelism</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>执行的内容</th><td>同样操作</td><td>不同操作</td></tr>
+        <tr><th>执行的方式</th><td>多次执行</td><td>依次执行</td></tr>
+        <tr><th>典型形态</th><td>x₀…xₙ 各自算出 y₀…yₙ</td><td>A → B → D → E 一条依赖链</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch2-4">Amdahl 定律</h3>
+  <p><span class="term">Amdahl's Law</span>：P 个 workers 下的最大加速比。</p>
+
+  <div class="formula">
+    <var>S</var>(<var>P</var>) =
+    <span class="frac">
+      <span>1</span>
+      <span><var>f</var> + (1 − <var>f</var>) / <var>P</var></span>
+    </span>
+    <div class="where">
+      <b>f</b>：串行部分所占的比例　｜　<b>P</b>：并行节点的数量
+    </div>
+  </div>
+
+  <p><b>注：f 是性能瓶颈</b>，所以 P 越大，增益越小。</p>
+  <p>当 workers 数 <var>P</var> → ∞ 时：</p>
+
+  <div class="formula">
+    <var>S</var> ≤ <span class="frac"><span>1</span><span><var>f</var></span></span>
+    <div class="where"><span class="term">absolute speedup limit</span>　绝对加速比上限 —— 无论加多少核，都超不过 1/f。</div>
+  </div>
+</section>
+
+<!-- ============ 第三章 ============ -->
+<section class="chapter" id="ch3">
+  <h2><span class="cn">03</span>集群架构与作业调度<span class="tag">原稿 p.3 – p.5</span></h2>
+
+  <h3 id="ch3-1">进程、线程与并行接口</h3>
+  <dl class="terms">
+    <div>
+      <dt>Process<span class="cn">进程</span></dt>
+      <dd>正在运行的程序。</dd>
+    </div>
+    <div>
+      <dt>Thread<span class="cn">线程</span></dt>
+      <dd>进程内部的执行单元。<b>线程属于进程。</b></dd>
+    </div>
+  </dl>
+
+  <figure>
+    <svg viewBox="0 0 620 150" role="img" aria-label="进程与线程的包含关系">
+      <rect class="svg-box" x="46" y="24" width="300" height="92" rx="4"></rect>
+      <text class="svg-lbl" x="196" y="46" font-size="13" text-anchor="middle">Process 进程</text>
+
+      <rect class="svg-box-accent" x="62" y="58" width="82" height="42" rx="3"></rect>
+      <text class="svg-txt" x="103" y="84" font-size="13" text-anchor="middle">Thread 1</text>
+
+      <rect class="svg-box-accent" x="155" y="58" width="82" height="42" rx="3"></rect>
+      <text class="svg-txt" x="196" y="84" font-size="13" text-anchor="middle">Thread 2</text>
+
+      <rect class="svg-box-accent" x="248" y="58" width="82" height="42" rx="3"></rect>
+      <text class="svg-txt" x="289" y="84" font-size="13" text-anchor="middle">…</text>
+
+      <text class="svg-lbl" x="386" y="72" font-size="13">一个进程里</text>
+      <text class="svg-lbl" x="386" y="92" font-size="13">可以有很多线程</text>
+    </svg>
+    <figcaption><b>图 3-1</b>　Process 是容器，Thread 是容器里真正在跑的执行单元。</figcaption>
+  </figure>
+
+  <h4>MPI：跨节点</h4>
+  <p><span class="term">MPI</span>：在不同节点间搬运数据，将数据拆分为多个节点上的各个进程。</p>
+
+  <figure>
+    <svg viewBox="0 0 620 130" role="img" aria-label="MPI 进程间消息传递">
+      <defs>
+        <marker id="arw4" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="40" y="46" width="90" height="44" rx="3"></rect>
+      <text class="svg-txt" x="85" y="74" font-size="15" font-weight="600" text-anchor="middle">Rank 1</text>
+
+      <rect class="svg-box" x="245" y="46" width="90" height="44" rx="3"></rect>
+      <text class="svg-txt" x="290" y="74" font-size="15" font-weight="600" text-anchor="middle">Rank 2</text>
+
+      <rect class="svg-box" x="450" y="46" width="90" height="44" rx="3"></rect>
+      <text class="svg-txt" x="495" y="74" font-size="15" font-weight="600" text-anchor="middle">Rank 3</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw4)" d="M134,68 L240,68"></path>
+      <path class="svg-line-accent" marker-end="url(#arw4)" d="M339,68 L445,68"></path>
+
+      <text class="svg-ann" x="158" y="56" font-size="12">message</text>
+      <text class="svg-ann" x="363" y="56" font-size="12">message</text>
+
+      <text class="svg-lbl" x="40" y="26" font-size="12">数据被拆开，一个节点一份</text>
+    </svg>
+    <figcaption><b>图 3-2</b>　MPI 的 rank 之间靠显式消息通信。</figcaption>
+  </figure>
+
+  <h4>OpenMP：单节点内</h4>
+  <p><span class="term">OpenMP</span>：在单节点内利用全部 CPU，线程之间通过 <b>共享变量与内存</b> 交换数据。</p>
+
+  <figure>
+    <svg viewBox="0 0 620 160" role="img" aria-label="OpenMP 线程共享变量">
+      <defs>
+        <marker id="arw5" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box-accent" x="40" y="20" width="104" height="40" rx="3"></rect>
+      <text class="svg-txt" x="92" y="45" font-size="13" text-anchor="middle">Thread 1</text>
+
+      <rect class="svg-box-accent" x="40" y="72" width="104" height="40" rx="3"></rect>
+      <text class="svg-txt" x="92" y="97" font-size="13" text-anchor="middle">Thread 2</text>
+
+      <rect class="svg-box-accent" x="40" y="124" width="104" height="40" rx="3"></rect>
+      <text class="svg-txt" x="92" y="149" font-size="13" text-anchor="middle">Thread 3</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw5)" d="M148,40 L278,80"></path>
+      <path class="svg-line-accent" marker-end="url(#arw5)" d="M148,92 L278,92"></path>
+      <path class="svg-line-accent" marker-end="url(#arw5)" d="M148,144 L278,104"></path>
+
+      <rect class="svg-box" x="284" y="52" width="290" height="80" rx="4"></rect>
+      <text class="svg-txt" x="429" y="86" font-size="14" text-anchor="middle">Shared variables</text>
+      <text class="svg-txt" x="429" y="108" font-size="14" text-anchor="middle">and arrays</text>
+
+      <text class="svg-lbl" x="284" y="38" font-size="12">同一块内存，大家都能读写</text>
+    </svg>
+    <figcaption><b>图 3-3</b>　OpenMP 的线程共享同一份变量与数组 —— 这也是后面竞态条件的根源。</figcaption>
+  </figure>
+
+  <h4>SSI 单系统映像</h4>
+  <p><span class="term">SSI</span>（Single System Image，单系统映像）：在 <b>cluster workload</b> 中利用多台电脑，
+  物理上连接，再<b>以软件将集群统一为完整系统</b>。</p>
+  <div class="note">
+    <span class="lbl">然而</span>
+    它仍然会受<b>硬件故障、传输损耗</b>等硬件方面的故障影响 —— 软件层面的"像一台机器"，挡不住底层硬件出问题。
+  </div>
+
+  <h3 id="ch3-2">集群的层级结构</h3>
+  <p>自顶向下拆解：</p>
+
+  <figure>
+    <svg viewBox="0 0 640 120" role="img" aria-label="集群到核心的层级">
+      <defs>
+        <marker id="arw6" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="16" y="30" width="118" height="56" rx="3"></rect>
+      <text class="svg-txt" x="75" y="54" font-size="14" font-weight="600" text-anchor="middle">cluster</text>
+      <text class="svg-lbl" x="75" y="74" font-size="12" text-anchor="middle">集群</text>
+
+      <rect class="svg-box" x="176" y="30" width="118" height="56" rx="3"></rect>
+      <text class="svg-txt" x="235" y="54" font-size="14" font-weight="600" text-anchor="middle">node</text>
+      <text class="svg-lbl" x="235" y="74" font-size="12" text-anchor="middle">一台计算机</text>
+
+      <rect class="svg-box" x="336" y="30" width="118" height="56" rx="3"></rect>
+      <text class="svg-txt" x="395" y="54" font-size="14" font-weight="600" text-anchor="middle">socket</text>
+      <text class="svg-lbl" x="395" y="74" font-size="12" text-anchor="middle">CPU 插槽</text>
+
+      <rect class="svg-box-accent" x="496" y="30" width="118" height="56" rx="3"></rect>
+      <text class="svg-txt" x="555" y="54" font-size="14" font-weight="600" text-anchor="middle">core</text>
+      <text class="svg-lbl" x="555" y="74" font-size="12" text-anchor="middle">核心 · 基础单元</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw6)" d="M138,58 L172,58"></path>
+      <path class="svg-line-accent" marker-end="url(#arw6)" d="M298,58 L332,58"></path>
+      <path class="svg-line-accent" marker-end="url(#arw6)" d="M458,58 L492,58"></path>
+    </svg>
+    <figcaption><b>图 3-4</b>　集群 → 节点 → 插槽 → 核心：一路缩小到真正干活的单元。</figcaption>
+  </figure>
+
+  <p>集群里按角色分工，共有五类组件：</p>
+
+  <dl class="terms">
+    <div>
+      <dt>Head node<span class="cn">头节点</span></dt>
+      <dd>用户接入，提交 tasks。</dd>
+    </div>
+    <div>
+      <dt>Compute nodes<span class="cn">计算节点</span></dt>
+      <dd>执行 tasks。</dd>
+    </div>
+    <div>
+      <dt>Interconnect<span class="cn">互联网络</span></dt>
+      <dd>传输控制消息与程序数据。</dd>
+    </div>
+    <div>
+      <dt>Storage<span class="cn">存储系统</span></dt>
+      <dd>提供统一的文件与数据访问。</dd>
+    </div>
+    <div>
+      <dt>I/O nodes<span class="cn">I/O 节点</span></dt>
+      <dd>在节点之间搬运资源。</dd>
+    </div>
+  </dl>
+
+  <h3 id="ch3-3">执行时间模型与三种负载</h3>
+
+  <div class="formula">
+    <var>T</var><sub>total</sub> ≈
+    <span class="frac"><span><var>T</var><sub>parallelwork</sub></span><span><var>P</var></span></span>
+    + <var>T</var><sub>serial</sub>
+    + <var>T</var><sub>communication</sub>
+    + <var>T</var><sub>imbalance</sub>
+    <div class="where">
+      总时间 = 并行部分摊到 P 个 worker 上的时间 ＋ 串行部分 ＋ 通信开销 ＋ 负载不均造成的空等。
+      <b>后面三项都是加不掉的"税"。</b>
+    </div>
+  </div>
+
+  <p>按用途，集群承担三种不同的负载：</p>
+
+  <dl class="terms">
+    <div>
+      <dt>HPC<span class="cn">高性能</span></dt>
+      <dd>倾尽集群算力解决复杂问题。</dd>
+    </div>
+    <div>
+      <dt>HTC<span class="cn">高通量</span></dt>
+      <dd>完成大量独立 tasks。</dd>
+    </div>
+    <div>
+      <dt>HA<span class="cn">高可用</span></dt>
+      <dd>发生硬件故障后，仍可持续监视平台。</dd>
+    </div>
+  </dl>
+
+  <h3 id="ch3-4">作业能否放下</h3>
+  <p><span class="term">When does a job fit</span>：一个作业能被放到某个节点上，必须同时满足两个条件 ——</p>
+  <div class="formula">
+    申请 CPU ≤ 节点空闲 CPU<br>
+    申请内存 ≤ 节点空闲内存
+  </div>
+
+  <h3 id="ch3-5">调度器与核心指标</h3>
+  <p><span class="term">job scheduler</span>（工作负载管理器，如 <b>slurm</b>）做三件事：</p>
+  <ul class="plain">
+    <li>为用户分配一段计算时间内的计算资源；</li>
+    <li>在已分配的资源上启动、监控任务；</li>
+    <li>根据申请量严格控制资源，解决多作业竞争。</li>
+  </ul>
+  <div class="note warm">
+    <span class="lbl">反例</span>
+    没有这种"严格按申请量控制"的话，会出两类问题：<b>资源调配失衡</b>、<b>计算资源被个别用户占用</b>。
+  </div>
+
+  <h4>分配量与成本</h4>
+  <div class="formula">
+    CPU allocated = tasks × CPUs_per_task
+    <div class="where"><b>分配 CPU 总数</b> = 任务数 × 每个任务的 CPU 数</div>
+  </div>
+  <div class="formula">
+    core-hours = CPU allocated × hours
+    <div class="where"><b>核时</b> = 分配的 CPU 总数 × 运行小时数</div>
+  </div>
+
+  <h4>效率与吞吐</h4>
+  <div class="formula">
+    efficiency =
+    <span class="frac">
+      <span>core-hours actually used</span>
+      <span>core-hours allocated</span>
+    </span>
+    <div class="where">实际所用 CPUs ÷ 分配 CPU 总数 —— 分配了却没干活的核，会把这个数字拉低。</div>
+  </div>
+  <p><span class="term">throughput</span>（吞吐率）：单位时间内能处理多少 tasks。</p>
+
+  <h4>等待与周转</h4>
+
+  <figure>
+    <svg viewBox="0 0 660 190" role="img" aria-label="作业的时间轴：到达、等待、开始、完成">
+      <defs>
+        <marker id="arw7" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#33414f"></path>
+        </marker>
+        <marker id="arw7a" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+        <marker id="arw7w" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#a8542a"></path>
+        </marker>
+      </defs>
+
+      <path class="svg-line" marker-end="url(#arw7)" d="M50,100 L620,100"></path>
+
+      <path class="svg-line" d="M110,86 L110,114"></path>
+      <path class="svg-line" d="M300,86 L300,114"></path>
+      <path class="svg-line" d="M520,86 L520,114"></path>
+
+      <text class="svg-txt" x="110" y="134" font-size="14" text-anchor="middle">arrive</text>
+      <text class="svg-txt" x="300" y="134" font-size="14" text-anchor="middle">start</text>
+      <text class="svg-txt" x="520" y="134" font-size="14" text-anchor="middle">Finish</text>
+
+      <path class="svg-line-accent" marker-start="url(#arw7a)" marker-end="url(#arw7a)" d="M110,56 L300,56"></path>
+      <text class="svg-ann" x="205" y="44" font-size="13" text-anchor="middle">Wasting time</text>
+
+      <path class="svg-line-accent" marker-start="url(#arw7a)" marker-end="url(#arw7a)" d="M110,162 L520,162"></path>
+      <text class="svg-ann" x="315" y="182" font-size="13" text-anchor="middle">Turn-around time</text>
+    </svg>
+    <figcaption><b>图 3-5</b>　Wasting time 是从到达到真正开始跑的排队空耗；Turn-around time 从到达一直算到完成。</figcaption>
+  </figure>
+
+  <div class="formula">
+    Utilisation =
+    <span class="frac">
+      <span>node-minutes used by jobs</span>
+      <span>nodes × total minutes</span>
+    </span>
+    <div class="where">所有运行节点时长 ÷ 节点总时长 —— 集群整体被用满了多少。</div>
+  </div>
+
+  <h3 id="ch3-6">调度策略</h3>
+
+  <h4>Pareto 最优</h4>
+  <p><span class="term">Pareto optimality</span>（帕累托最优）：有两个任务 X、Y，
+  如果 X 在<b>平均等待时间、平均周转时间、资源利用率</b>上均不逊于 Y，且至少有一点优于 Y，
+  则称 <b>X dominates Y</b>。</p>
+
+  <p>下面这个例子是笔记里的核心：三个作业，两种调度顺序，指标完全不同。</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>三个作业的规模</caption>
+      <thead>
+        <tr><th>Job</th><th class="num">Nodes</th><th class="num">Runtime</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A</td><td class="num">4</td><td class="num">30</td></tr>
+        <tr><td>B</td><td class="num">2</td><td class="num">10</td></tr>
+        <tr><td>C</td><td class="num">2</td><td class="num">10</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <caption>两种调度策略的指标对比</caption>
+      <thead>
+        <tr>
+          <th>策略</th>
+          <th>Wait</th><th class="num">avg. W</th>
+          <th>Turnaround</th><th class="num">avg. T</th>
+          <th class="num">Utilisation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Policy 1</b></td>
+          <td>0, 30, 30</td><td class="num">20</td>
+          <td>30, 40, 40</td><td class="num">36.7</td>
+          <td class="num">100%</td>
+        </tr>
+        <tr>
+          <td><b>Policy 2</b></td>
+          <td>0, 0, 10</td><td class="num">3.3</td>
+          <td>10, 10, 40</td><td class="num">20</td>
+          <td class="num">100%</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr><td colspan="6">
+          <b>Policy 2 是第一任务即刻执行的策略</b> —— 利用率一样都是 100%，但平均等待和平均周转都明显更好，
+          所以 Policy 2 dominates Policy 1。
+        </td></tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <p>但如果节点数有限呢？若为 <b>4 核驱动</b>，则哪个更好：</p>
+  <ol>
+    <li><b>A 先，BC 后</b>：A 一个人吃满 4 个节点，B、C 只能等它跑完再并行；</li>
+    <li><b>BC 先，A 后</b>：B、C 各占 2 个节点，先把 4 个节点凑满，A 等它们跑完再独占。</li>
+  </ol>
+
+  <h4>Backfilling 回填调度</h4>
+  <p><span class="term">Backfilling</span>（回填调度）：在不影响排队作业的前提下利用资源。要同时满足两个条件 ——</p>
+  <div class="formula">
+    所需 nodes ≤ 空闲 nodes<br>
+    当前时刻 + 运行时刻 ≤ 排队时刻
+  </div>
+  <p>小作业可以从队列后面"插空"塞进大作业等待的时间缝隙里，前提是不会把大作业的开工时间往后推。</p>
+
+  <h4>Priority 优先级</h4>
+  <div class="formula">
+    Priority = <var>W</var><sub>age</sub> × Age
+    + <var>W</var><sub>fs</sub> × FairShare
+    + <var>W</var><sub>size</sub> × Size
+    <div class="where">
+      三项分别对应：<b>等待时长</b>、<b>公平份额</b>、<b>作业规模</b>。
+      根据权重分配，得分越高越优先。
+    </div>
+  </div>
+
+  <h4>Fairshare 公平份额</h4>
+  <div class="formula">
+    Fairshare = 2<sup>(−usage/share)</sup>
+    <div class="where">
+      <b>usage</b>：用户已消耗的份额　｜　<b>share</b>：分配给该用户的份额<br>
+      用得越多、超过自己的份额越多，这个值越小，优先级就越低。
+    </div>
+  </div>
+
+  <h4>DRF 主导资源公平性</h4>
+  <p><span class="term">Dominant Resource Fairness</span>（主导资源公平性）：
+  在多资源下，取用户<b>占比最高的那一类资源比例</b>来进行对比。</p>
+  <p>比如一个人用了 80% 的 CPU、10% 的内存，另一个用了 40% 的 CPU、40% 的内存 ——
+  不能只看 CPU，要拿各自最"占便宜"的那一项来比，才不会让某种资源被悄悄吃空。</p>
+
+  <h3 id="ch3-7">能耗</h3>
+  <div class="formula">
+    <var>E</var> = <var>P</var> × <var>t</var>
+    <div class="where">所以 <b>运行速度并非越快越好</b> —— 提高功率缩短时间，总能耗未必下降。</div>
+  </div>
+</section>
+
+<!-- ============ 第四章 ============ -->
+<section class="chapter" id="ch4">
+  <h2><span class="cn">04</span>MPI 编程<span class="tag">原稿 p.6 – p.8</span></h2>
+
+  <p class="lead"><span class="term">MPI</span>（Message Passing Interface，消息传递接口）：通过消息交换数据，
+  遵循 <b>SPMD（单程序、多数据）</b> 模型 —— 每个进程跑的是同一份代码，只是各自的数据和 rank 不同。</p>
+
+  <h3 id="ch4-1">SPMD 与 Hello World</h3>
+
+  <pre><code><span class="macro">#include</span> <span class="str">&lt;mpi.h&gt;</span>    <span class="cmt">/* MPI 头文件 */</span>
+<span class="macro">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> <span class="fn">main</span>(<span class="kw">int</span> argc, <span class="kw">char</span> **argv)
+{
+    <span class="fn">MPI_Init</span>(&amp;argc, &amp;argv);        <span class="cmt">/* MPI 初始化、启动环境 */</span>
+
+    <span class="kw">int</span> rank, size;
+    <span class="fn">MPI_Comm_rank</span>(MPI_COMM_WORLD, &amp;rank);   <span class="cmt">/* 取当前进程的 rank */</span>
+    <span class="fn">MPI_Comm_size</span>(MPI_COMM_WORLD, &amp;size);   <span class="cmt">/* 取总进程数量 */</span>
+
+    <span class="fn">printf</span>(<span class="str">"Hello from rank %d of %d\n"</span>, rank, size);   <span class="cmt">/* 每个 MPI 进程都会打印一次 */</span>
+
+    <span class="fn">MPI_Finalize</span>();
+    <span class="kw">return</span> 0;
+}</code></pre>
+
+  <p><code>MPI_COMM_WORLD</code> 是<b>全局通信子</b>，代表这次启动的全部 MPI 进程。</p>
+
+  <div class="note warm">
+    <span class="lbl">勘误</span>
+    原笔记把取进程数那一行也写成了 <code>MPI_Comm_rank</code>，实际取总进程数用的是
+    <code>MPI_Comm_size</code> —— 两者参数形式一样，但一个取 rank、一个取 size。
+  </div>
+
+  <h4>编译与运行</h4>
+  <pre><code><span class="cmt"># 编译</span>
+mpicc main.c -o main
+
+<span class="cmt"># 运行：-n 后面是目标进程数，比如 4</span>
+mpirun -n 4 ./main</code></pre>
+
+  <h4>输出</h4>
+  <pre><code>Hello from rank 2 of 4
+Hello from rank 0 of 4
+Hello from rank 3 of 4
+Hello from rank 1 of 4</code></pre>
+  <p><b>由于并行计算，输出顺序完全随机</b> —— 进程 ID 是 0～3 这 4 个，但谁先拿到终端说不准。</p>
+
+  <h4>补充的三个常用函数</h4>
+  <dl class="terms">
+    <div>
+      <dt>MPI_Barrier</dt>
+      <dd>计时前同步所有进程 —— 保证起跑线一致。</dd>
+    </div>
+    <div>
+      <dt>MPI_Wtime</dt>
+      <dd>返回墙钟（wall-clock）时间。</dd>
+    </div>
+    <div>
+      <dt>MPI_MAX</dt>
+      <dd>获取最慢进程的运行时间 —— 并行程序的总耗时由最慢的那个决定。</dd>
+    </div>
+  </dl>
+
+  <h3 id="ch4-2">阻塞、死锁与非阻塞</h3>
+
+  <h4>Blocking 阻塞</h4>
+  <p><code>MPI_Send</code> / <code>MPI_Recv</code> 均需等本地操作完成后才返回。</p>
+  <div class="note warm">
+    <span class="lbl">危险</span>
+    若收发双方都在等待对方，就触发了<b>死锁（deadlock）</b>。
+  </div>
+
+  <p>所以可用<b>非阻塞函数</b>：函数将立即返回，先把请求挂上，之后再用 <code>MPI_Waitall</code> 统一等。</p>
+
+  <pre><code><span class="fn">MPI_Isend</span> / <span class="fn">MPI_Irecv</span>(&amp;value, 1, MPI_INT, 0, 10, MPI_COMM, &amp;request);</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <caption>非阻塞收发函数的参数</caption>
+      <thead>
+        <tr><th>参数</th><th>含义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&amp;value</code></td><td>接收／发送缓冲区，数据存入这个变量</td></tr>
+        <tr><td><code>1</code></td><td>元素个数</td></tr>
+        <tr><td><code>MPI_INT</code></td><td>数据类型</td></tr>
+        <tr><td><code>0</code></td><td>信息源／目标进程</td></tr>
+        <tr><td><code>10</code></td><td>标签 tag，<b>收发双方必须一致</b></td></tr>
+        <tr><td><code>MPI_COMM</code></td><td>通信子</td></tr>
+        <tr><td><code>&amp;request</code></td><td>取回请求句柄，供之后 Wait 使用</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch4-3">halo 交换的完整例子</h3>
+  <p>这是非阻塞通信最典型的用法：每个进程把自己的边界数据发给右邻居，同时从左邻居收边界。</p>
+
+  <pre><code><span class="kw">int</span> right = (rank + 1) % size;
+<span class="kw">int</span> left  = (rank + size - 1) % size;
+MPI_Request req[2];
+
+<span class="fn">MPI_Isend</span>(halo_out, n, MPI_DOUBLE, right, 0, MPI_COMM_WORLD, &amp;req[0]);
+<span class="fn">MPI_Irecv</span>(halo_in,  n, MPI_DOUBLE, left,  0, MPI_COMM_WORLD, &amp;req[1]);
+
+<span class="fn">update_interior</span>();   <span class="cmt">/* 网格内部单元计算，与通信重叠 */</span>
+
+<span class="fn">MPI_Waitall</span>(2, req, MPI_STATUSES_IGNORE);   <span class="cmt">/* 等待，直至所有 req 完成 */</span>
+
+<span class="fn">update_boundary</span>(halo_in);   <span class="cmt">/* 取上一个 thread 的边界，更新下一个 thread 的边界 */</span></code></pre>
+
+  <div class="note">
+    <span class="lbl">作用</span>
+    用相邻 thread 的边界来更新下一个 thread 的边界。关键在于 <code>update_interior()</code> 被夹在发收与等待之间 ——
+    <b>通信和计算重叠</b>，这才是非阻塞的收益所在。
+  </div>
+
+  <h3 id="ch4-4">集合通信</h3>
+  <p><span class="term">Collective communication</span>（集合通信）：<b>一个函数调用，多个进程参与。</b></p>
+
+  <h4>MPI_Bcast 广播</h4>
+  <pre><code><span class="fn">MPI_Bcast</span>(&amp;step, 1, MPI_INT, 0, MPI_COMM_WORLD);</code></pre>
+  <p>将<b>同一个变量</b>广播至所有进程。</p>
+
+  <figure>
+    <svg viewBox="0 0 620 200" role="img" aria-label="MPI_Bcast 广播示意">
+      <defs>
+        <marker id="arw8" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box-accent" x="240" y="20" width="140" height="52" rx="3"></rect>
+      <text class="svg-txt" x="310" y="42" font-size="14" font-weight="600" text-anchor="middle">Rank 0</text>
+      <text class="svg-txt" x="310" y="62" font-size="13" text-anchor="middle">step = 100</text>
+
+      <rect class="svg-box" x="40" y="128" width="140" height="52" rx="3"></rect>
+      <text class="svg-txt" x="110" y="150" font-size="14" font-weight="600" text-anchor="middle">Rank 1</text>
+      <text class="svg-txt" x="110" y="170" font-size="13" text-anchor="middle">step = 100</text>
+
+      <rect class="svg-box" x="240" y="128" width="140" height="52" rx="3"></rect>
+      <text class="svg-txt" x="310" y="150" font-size="14" font-weight="600" text-anchor="middle">Rank 2</text>
+      <text class="svg-txt" x="310" y="170" font-size="13" text-anchor="middle">step = 100</text>
+
+      <rect class="svg-box" x="440" y="128" width="140" height="52" rx="3"></rect>
+      <text class="svg-txt" x="510" y="150" font-size="14" font-weight="600" text-anchor="middle">Rank 3</text>
+      <text class="svg-txt" x="510" y="170" font-size="13" text-anchor="middle">step = 100</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw8)" d="M275,76 L140,124"></path>
+      <path class="svg-line-accent" marker-end="url(#arw8)" d="M310,76 L310,124"></path>
+      <path class="svg-line-accent" marker-end="url(#arw8)" d="M345,76 L480,124"></path>
+    </svg>
+    <figcaption><b>图 4-1</b>　Bcast：一份变量从根进程复制到所有进程，大家的 step 都变成 100。</figcaption>
+  </figure>
+
+  <h4>MPI_Scatter / MPI_Gather 分发与汇总</h4>
+  <p>适用于<b>广播多个不同的数据</b> —— Bcast 发的是同一份，Scatter 会把数组切开一人一块。</p>
+
+  <pre><code><span class="kw">int</span> sendbuf[4] = {10, 20, 30, 40};
+<span class="kw">int</span> recvbuf;
+<span class="kw">int</span> result[4];
+
+<span class="fn">MPI_Scatter</span>(sendbuf, 1, MPI_INT, &amp;recvbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
+<span class="fn">MPI_Gather</span>(&amp;recvbuf, 1, MPI_INT, result, 1, MPI_INT, 0, MPI_COMM_WORLD);</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>参数位置</th><th>含义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>第 1 组（<code>sendbuf</code> 那侧）</td><td>发送方的元素</td></tr>
+        <tr><td>第 2 组（<code>result</code> 那侧）</td><td>接收方的元素</td></tr>
+        <tr><td><code>0</code></td><td>源进程（根进程）</td></tr>
+        <tr><td><code>MPI_COMM_WORLD</code></td><td>通信子</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 680 230" role="img" aria-label="Scatter 分发与 Gather 汇总">
+      <defs>
+        <marker id="arw9" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+        <marker id="arw9o" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#a8542a"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box-accent" x="40" y="88" width="130" height="56" rx="3"></rect>
+      <text class="svg-txt" x="105" y="112" font-size="14" font-weight="600" text-anchor="middle">Rank 0</text>
+      <text class="svg-txt" x="105" y="132" font-size="12" text-anchor="middle">{10,20,30,40}</text>
+
+      <rect class="svg-box" x="270" y="24" width="120" height="44" rx="3"></rect>
+      <text class="svg-txt" x="330" y="52" font-size="13" text-anchor="middle">Rank 1 : 10</text>
+
+      <rect class="svg-box" x="270" y="94" width="120" height="44" rx="3"></rect>
+      <text class="svg-txt" x="330" y="122" font-size="13" text-anchor="middle">Rank 2 : 20</text>
+
+      <rect class="svg-box" x="270" y="164" width="120" height="44" rx="3"></rect>
+      <text class="svg-txt" x="330" y="192" font-size="13" text-anchor="middle">Rank 3 : 30</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw9)" d="M174,104 L264,50"></path>
+      <path class="svg-line-accent" marker-end="url(#arw9)" d="M174,116 L264,116"></path>
+      <path class="svg-line-accent" marker-end="url(#arw9)" d="M174,128 L264,182"></path>
+
+      <rect class="svg-box-warm" x="520" y="88" width="130" height="56" rx="3"></rect>
+      <text class="svg-txt" x="585" y="112" font-size="14" font-weight="600" text-anchor="middle">Result</text>
+      <text class="svg-txt" x="585" y="132" font-size="12" text-anchor="middle">回到 Rank 0</text>
+
+      <path class="svg-line" stroke="#a8542a" marker-end="url(#arw9o)" d="M394,46 L516,104"></path>
+      <path class="svg-line" stroke="#a8542a" marker-end="url(#arw9o)" d="M394,116 L516,116"></path>
+      <path class="svg-line" stroke="#a8542a" marker-end="url(#arw9o)" d="M394,186 L516,128"></path>
+
+      <text class="svg-ann" x="196" y="220" font-size="12">Scatter 分发</text>
+      <text class="svg-warm" x="404" y="220" font-size="12">Gather 汇总</text>
+    </svg>
+    <figcaption><b>图 4-2</b>　Scatter 把 <code>{10,20,30,40}</code> 切成一人一个；Gather 再把各位的结果收回根进程。</figcaption>
+  </figure>
+
+  <h4>MPI_Reduce 归约</h4>
+  <p>归约运算：将多个进程的结果处理，并保存在 <b>root</b>（根进程）。</p>
+
+  <pre><code><span class="kw">double</span> local = 0.0;
+<span class="kw">for</span> (<span class="kw">long</span> i = rank; i &lt; n; i += size) {   <span class="cmt">/* 每个进程分到的部分 */</span>
+    <span class="cmt">/* 运算 */</span>
+}
+
+<span class="kw">double</span> total = 0.0;
+<span class="fn">MPI_Reduce</span>(&amp;local, &amp;total, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);</code></pre>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>参数</th><th>含义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>&amp;local</code>, <code>&amp;total</code></td><td>发送／接收缓冲区</td></tr>
+        <tr><td><code>1</code></td><td>每个进程的元素数</td></tr>
+        <tr><td><code>MPI_SUM</code></td><td>对元素进行什么操作（求和）</td></tr>
+        <tr><td><code>0</code></td><td>结果保存在哪个进程</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 620 200" role="img" aria-label="MPI_Reduce 归约示意">
+      <defs>
+        <marker id="arw10" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="40" y="20" width="110" height="42" rx="3"></rect>
+      <text class="svg-txt" x="95" y="47" font-size="13" text-anchor="middle">Rank 1</text>
+
+      <rect class="svg-box" x="40" y="80" width="110" height="42" rx="3"></rect>
+      <text class="svg-txt" x="95" y="107" font-size="13" text-anchor="middle">Rank 2</text>
+
+      <rect class="svg-box" x="40" y="140" width="110" height="42" rx="3"></rect>
+      <text class="svg-txt" x="95" y="167" font-size="13" text-anchor="middle">Rank n</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw10)" d="M154,41 L266,88"></path>
+      <path class="svg-line-accent" marker-end="url(#arw10)" d="M154,101 L266,101"></path>
+      <path class="svg-line-accent" marker-end="url(#arw10)" d="M154,161 L266,114"></path>
+
+      <ellipse cx="316" cy="101" rx="46" ry="30" fill="#edf2f8" stroke="#1f4e79" stroke-width="1.6"></ellipse>
+      <text class="svg-txt" x="316" y="107" font-size="14" font-weight="600" text-anchor="middle">Sum</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw10)" d="M364,101 L444,101"></path>
+
+      <rect class="svg-box-warm" x="450" y="80" width="130" height="42" rx="3"></rect>
+      <text class="svg-txt" x="515" y="107" font-size="14" font-weight="600" text-anchor="middle">Rank 0</text>
+    </svg>
+    <figcaption><b>图 4-3</b>　Reduce：各进程的局部结果先汇成一次运算，最后只留在根进程里。</figcaption>
+  </figure>
+
+  <h3 id="ch4-5">通信时间模型</h3>
+  <div class="formula">
+    <var>T</var> ≈ <var>α</var> +
+    <span class="frac"><span><var>n</var></span><span><var>β</var></span></span>
+    <div class="where">
+      <b>α</b>：<span class="term">Latency</span> 延迟 —— 与数据量无关的固定启动开销<br>
+      <b>β</b>：<span class="term">bandwidth</span> 带宽 —— 每字节的传输代价；<b>n</b> 是数据量
+    </div>
+  </div>
+  <p>这条式子说明：<b>小消息几乎全被 α 支配</b>，所以"多发几次小包"往往比"一次发大包"更亏。</p>
+</section>
+
+<!-- ============ 第五章 ============ -->
+<section class="chapter" id="ch5">
+  <h2><span class="cn">05</span>OpenMP 编程<span class="tag">原稿 p.9 – p.10</span></h2>
+
+  <p class="lead">MPI 管的是<b>节点之间</b>，OpenMP 管的是<b>节点内部</b>。OpenMP 是 fork-join 模型的一种实现。</p>
+
+  <h3 id="ch5-1">Fork-Join</h3>
+  <p><span class="term">Fork-Join Parallelism</span>（分叉-合并）：复用 threads，降低开销。</p>
+
+  <figure>
+    <svg viewBox="0 0 680 230" role="img" aria-label="Fork-Join 模型">
+      <defs>
+        <marker id="arw11" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="40" y="88" width="120" height="54" rx="3"></rect>
+      <text class="svg-txt" x="100" y="110" font-size="13" font-weight="600" text-anchor="middle">master</text>
+      <text class="svg-txt" x="100" y="129" font-size="13" text-anchor="middle">thread</text>
+
+      <rect class="svg-box-accent" x="250" y="20" width="120" height="46" rx="3"></rect>
+      <text class="svg-txt" x="310" y="49" font-size="13" text-anchor="middle">thread 0</text>
+
+      <rect class="svg-box-accent" x="250" y="92" width="120" height="46" rx="3"></rect>
+      <text class="svg-txt" x="310" y="121" font-size="13" text-anchor="middle">thread 1</text>
+
+      <rect class="svg-box-accent" x="250" y="164" width="120" height="46" rx="3"></rect>
+      <text class="svg-txt" x="310" y="193" font-size="13" text-anchor="middle">thread 2</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw11)" d="M164,105 L244,48"></path>
+      <path class="svg-line-accent" marker-end="url(#arw11)" d="M164,115 L244,115"></path>
+      <path class="svg-line-accent" marker-end="url(#arw11)" d="M164,126 L244,182"></path>
+
+      <path class="svg-line-accent" marker-end="url(#arw11)" d="M374,43 L470,100"></path>
+      <path class="svg-line-accent" marker-end="url(#arw11)" d="M374,115 L470,115"></path>
+      <path class="svg-line-accent" marker-end="url(#arw11)" d="M374,187 L470,130"></path>
+
+      <rect class="svg-box" x="476" y="88" width="110" height="54" rx="3"></rect>
+      <text class="svg-txt" x="531" y="121" font-size="15" font-weight="600" text-anchor="middle">join</text>
+
+      <text class="svg-ann" x="176" y="212" font-size="12">fork 分叉</text>
+      <text class="svg-ann" x="396" y="212" font-size="12">join 合并</text>
+    </svg>
+    <figcaption><b>图 5-1</b>　主线程分叉出若干线程并行跑，到 join 屏障处全部收回来，主线程继续往下。</figcaption>
+  </figure>
+
+  <h4>最简单的写法</h4>
+  <pre><code><span class="macro">#include</span> <span class="str">&lt;omp.h&gt;</span>
+
+<span class="macro">#pragma</span> omp parallel          <span class="cmt">/* 创建 fork-join */</span>
+{
+    do_work(omp_get_thread_num());   <span class="cmt">/* 每个 fork 独立跑，时间可能不同，与 MPI 类似 */</span>
+}                                <span class="cmt">/* join 屏障：每个 fork 全结束后才可继续 */</span></code></pre>
+
+  <div class="note warm">
+    <span class="lbl">注意</span>
+    普通的 Fork-Join <b>仅对 threads 做合并，对数据无处理</b>。数据怎么分、怎么汇总，是你自己的事 ——
+    这正是接下来一堆同步手段要解决的问题。
+  </div>
+
+  <h3 id="ch5-2">竞态与四种同步手段</h3>
+  <p><span class="term">Race condition</span>（竞态条件）：在 fork 出来的线程进行写入时，可能会相互覆盖。</p>
+
+  <h4>① Reduction 归约</h4>
+  <p>开销最低，适用于<b>合并变量</b>。</p>
+  <pre><code><span class="kw">int</span> total = 0;
+
+<span class="macro">#pragma</span> omp parallel <span class="kw">for</span> reduction(+:total)
+{
+    total += values[i];
+}</code></pre>
+  <p>每个线程各自攒一份局部结果，退出时自动合并，不需要你手动加锁。</p>
+
+  <h4>② atomic 原子</h4>
+  <p>只保护<b>一条语句</b>，适用于单变量或嵌套场景。</p>
+  <pre><code><span class="kw">int</span> total = 0;
+
+<span class="macro">#pragma</span> omp parallel <span class="kw">for</span> shared(total, arr, n)
+<span class="kw">for</span> (<span class="kw">int</span> i = 0; i &lt; n; i++)
+{
+    <span class="macro">#pragma</span> omp atomic
+    total += arr[i];   <span class="cmt">/* 仅保护这一行 */</span>
+}</code></pre>
+
+  <h4>③ critical 临界区</h4>
+  <p>同一时间只允许一个 thread 进入，只适用于<b>互斥语句</b>。</p>
+  <div class="note warm">
+    <span class="lbl">代价</span>
+    临界区<b>代码容易退化为串行</b> —— 保护的范围越大，并行度就损失得越多。
+  </div>
+
+  <h4>④ Omp_lock_t 手动锁</h4>
+  <p>需要自己在代码中增加加锁／解锁，用于需要跨越多个语句保护同一份资源的情况。</p>
+  <pre><code>omp_init_lock / omp_destroy_lock      <span class="cmt">/* 创建 / 销毁 */</span>
+omp_set_lock  / omp_unset_lock        <span class="cmt">/* 加锁 / 解锁 */</span></code></pre>
+  <p><b>未加锁／未解锁就会锁死。</b>手动锁给你最大的自由度，也把正确性的责任全交给了你。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>手段</th><th>保护范围</th><th>开销</th><th>适用</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>reduction</code></td><td>整个变量</td><td>最低</td><td>合并变量</td></tr>
+        <tr><td><code>atomic</code></td><td>一条语句</td><td>低</td><td>单变量或嵌套</td></tr>
+        <tr><td><code>critical</code></td><td>一个代码块</td><td>较高，易退化为串行</td><td>互斥语句</td></tr>
+        <tr><td><code>Omp_lock_t</code></td><td>你指定的任意区间</td><td>看你写得多细</td><td>跨语句保护，需手动配对加解锁</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch5-3">数据作用域 Data Scope</h3>
+  <p>每个变量在线程之间到底是"共用一份"还是"各有一份"，由作用域决定。</p>
+
+  <dl class="terms">
+    <div>
+      <dt>shared</dt>
+      <dd>所有 threads 共享的变量，例：<code>a[n][n]</code>。</dd>
+    </div>
+    <div>
+      <dt>private</dt>
+      <dd>每个 thread 拥有独立副本值，例：循环里那个 <code>i</code>。</dd>
+    </div>
+    <div>
+      <dt>firstprivate</dt>
+      <dd>最开始的<b>初始化副本值</b>，例：代码开头 <code>int a = 1;</code> 的值会被带进每个副本。</dd>
+    </div>
+    <div>
+      <dt>lastprivate</dt>
+      <dd>并行结束时<b>最后一次循环的副本变量值</b>，会被带回到外面的变量里。</dd>
+    </div>
+    <div>
+      <dt>reduction</dt>
+      <dd>每个 thread 独立执行，最后归约，例：<code>total</code>。</dd>
+    </div>
+  </dl>
+
+  <h3 id="ch5-4">task 与 depend</h3>
+  <p>OpenMP 也能做细粒度的任务并行：用 <code>task</code> 把活拆开，用 <code>depend</code> 声明谁依赖谁。</p>
+
+  <pre><code><span class="macro">#pragma</span> omp parallel
+<span class="macro">#pragma</span> omp single               <span class="cmt">/* 仅一个主 thread 创建任务 */</span>
+{
+    <span class="macro">#pragma</span> omp task depend(out:a)
+    load_level(a);
+
+    <span class="macro">#pragma</span> omp task depend(in:a) depend(out:b)     <span class="cmt">/* in：输入项　out：输出项 */</span>
+    build_navigation(a, b);
+
+    <span class="macro">#pragma</span> omp task depend(in:a) depend(out:c)
+    build_visibility(a, c);
+
+    <span class="macro">#pragma</span> omp task depend(in:b, c)
+    publish_level(b, c);
+}</code></pre>
+
+  <figure>
+    <svg viewBox="0 0 680 272" role="img" aria-label="task depend 形成的依赖图">
+      <defs>
+        <marker id="arw12" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box-accent" x="60" y="96" width="150" height="56" rx="3"></rect>
+      <text class="svg-txt" x="135" y="120" font-size="13" font-weight="600" text-anchor="middle">1. load_level</text>
+      <text class="svg-lbl" x="135" y="140" font-size="12" text-anchor="middle">out: a</text>
+
+      <rect class="svg-box" x="270" y="26" width="170" height="56" rx="3"></rect>
+      <text class="svg-txt" x="355" y="50" font-size="13" font-weight="600" text-anchor="middle">2. build_nav</text>
+      <text class="svg-lbl" x="355" y="70" font-size="12" text-anchor="middle">in: a　out: b</text>
+
+      <rect class="svg-box" x="270" y="166" width="170" height="56" rx="3"></rect>
+      <text class="svg-txt" x="355" y="190" font-size="13" font-weight="600" text-anchor="middle">2. build_visibility</text>
+      <text class="svg-lbl" x="355" y="210" font-size="12" text-anchor="middle">in: a　out: c</text>
+
+      <rect class="svg-box-warm" x="500" y="96" width="150" height="56" rx="3"></rect>
+      <text class="svg-txt" x="575" y="120" font-size="13" font-weight="600" text-anchor="middle">3. publish</text>
+      <text class="svg-lbl" x="575" y="140" font-size="12" text-anchor="middle">in: b, c</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw12)" d="M214,112 L262,68"></path>
+      <path class="svg-line-accent" marker-end="url(#arw12)" d="M214,136 L262,180"></path>
+      <path class="svg-line-accent" marker-end="url(#arw12)" d="M444,54 L556,92"></path>
+      <path class="svg-line-accent" marker-end="url(#arw12)" d="M444,194 L556,158"></path>
+
+      <text class="svg-lbl" x="60" y="256" font-size="12">两个 build 可以并行，publish 要等它们都完成</text>
+    </svg>
+    <figcaption><b>图 5-2</b>　<code>depend</code> 只声明数据依赖，实际执行顺序由运行时自己排。</figcaption>
+  </figure>
+</section>
+
+<!-- ============ 第六章 ============ -->
+<section class="chapter" id="ch6">
+  <h2><span class="cn">06</span>并行性能度量<span class="tag">原稿 p.11 – p.12</span></h2>
+
+  <h3 id="ch6-1">T / S / E / C 四个量</h3>
+  <p><span class="term">Measuring Parallel Performance</span>（并行性能度量）建立在两个自变量上：</p>
+  <dl class="terms">
+    <div>
+      <dt>P</dt>
+      <dd>核心数量。</dd>
+    </div>
+    <div>
+      <dt>N</dt>
+      <dd>问题规模。</dd>
+    </div>
+  </dl>
+
+  <div class="formula">
+    <var>T</var>(<var>P</var>, <var>N</var>)：Runtime，运行时间
+  </div>
+
+  <div class="formula">
+    <var>S</var>(<var>P</var>, <var>N</var>) =
+    <span class="frac">
+      <span><var>T</var>(1, <var>N</var>)</span>
+      <span><var>T</var>(<var>P</var>, <var>N</var>)</span>
+    </span>
+    <div class="where">
+      分子是<b>单核串行耗时</b>，分母是 <b>P 核并行耗时</b>。<br>
+      <b>Speedup 加速比</b> —— 判断变快了多少倍。
+    </div>
+  </div>
+
+  <div class="formula">
+    <var>E</var>(<var>P</var>, <var>N</var>) =
+    <span class="frac">
+      <span><var>S</var>(<var>P</var>, <var>N</var>)</span>
+      <span><var>P</var></span>
+    </span>
+    <div class="where"><b>并行效率 Efficiency</b> —— 加进来的每个核，到底贡献了几成。</div>
+  </div>
+
+  <div class="formula">
+    <var>C</var>(<var>P</var>, <var>N</var>) = <var>P</var> · <var>T</var>(<var>P</var>, <var>N</var>)
+    <div class="where"><b>Parallel cost 并行开销</b> —— 代表整个程序消耗的算力总量。理想情况下应该等于 T(1,N)。</div>
+  </div>
+
+  <h3 id="ch6-2">强缩放与弱缩放</h3>
+  <p>同样是加核，问题规模<b>不变</b>还是<b>跟着变大</b>，结论完全相反。</p>
+
+  <h4>Amdahl's Law —— 固定负载（N 不变）</h4>
+  <div class="formula">
+    <var>S</var><sub>A</sub>(<var>P</var>) =
+    <span class="frac">
+      <span>1</span>
+      <span><var>S</var> + (1 − <var>S</var>) / <var>P</var></span>
+    </span>
+    <div class="where">
+      <var>S</var>：<b>串行占比</b>（另一个加数是并行占比）<br>
+      计算的是<b>固定负载下的 speedup</b>。
+    </div>
+  </div>
+  <p>这叫 <span class="term">strong scaling</span>（强缩放）：<b>效率持续下降，代表 P 越多，增益反而越来越少。</b></p>
+
+  <h4>Gustafson's Law —— 缩放负载</h4>
+  <div class="formula">
+    <var>S</var><sub>G</sub>(<var>P</var>) = <var>S</var> + <var>P</var>(1 − <var>S</var>)
+    <div class="where">计算的是<b>缩放负载下的 speedup</b>。</div>
+  </div>
+  <p>这叫 <span class="term">weak scaling</span>（弱缩放）：核变多的同时问题也变大，串行部分的比例被摊薄。</p>
+
+  <div class="formula">
+    <var>N</var>(<var>P</var>) = <var>P</var> · <var>N</var><sub>1</sub>
+    &nbsp;&nbsp;｜&nbsp;&nbsp;
+    <var>E</var> =
+    <span class="frac">
+      <span><var>T</var>(<var>N</var><sub>1</sub>)</span>
+      <span><var>T</var>(<var>P</var>, <var>N</var>)</span>
+    </span>
+    <div class="where">核数翻 P 倍，就把问题规模也放大 P 倍，再看时间涨了多少。</div>
+  </div>
+
+  <div class="note">
+    <span class="lbl">为什么两条曲线差这么多</span>
+    Amdahl 假设<b>活就那么多</b>，核多了必然有人闲着；Gustafson 假设<b>活可以跟着变多</b>，
+    核多了每人干原来那份。现实里选哪条，取决于你的问题能不能扩大规模。
+  </div>
+
+  <h3 id="ch6-3">Work Law</h3>
+  <p><span class="term">Work and span</span>：工作量下界，用来标记执行时间的边界。</p>
+
+  <div class="formula">
+    <var>T</var><sub>P</sub> ≥ max
+    <span style="font-size:1.15em">(</span>
+    <span class="frac"><span><var>T</var><sub>1</sub></span><span><var>P</var></span></span>
+    ,
+    <var>T</var><sub>∞</sub>
+    <span style="font-size:1.15em">)</span>
+    <div class="where">
+      <b>取最大值</b> —— 实际耗时不可能小于这两条下界中更大的那一个。<br>
+      <var>T</var><sub>1</sub>：<b>total work</b>，所有任务依次串行的时间<br>
+      <var>T</var><sub>∞</sub>：<b>critical / span path length</b>，当有 ∞ 个 P（核心）时的执行时间，即<b>必要时间</b>
+    </div>
+  </div>
+
+  <h4>并行平均度 Parallelism</h4>
+  <div class="formula">
+    <var>A</var> =
+    <span class="frac"><span><var>T</var><sub>1</sub></span><span><var>T</var><sub>∞</sub></span></span>
+    <div class="where">理论上最大同时运行的任务数。</div>
+  </div>
+
+  <h4>并行松弛度 Parallel Slackness</h4>
+  <div class="formula">
+    <var>σ</var> =
+    <span class="frac"><span><var>A</var></span><span><var>P</var></span></span>
+    <div class="where">
+      <b>σ &gt; 1</b>：任务足够；<br>
+      <b>σ &lt; 1</b>：核心闲置。
+    </div>
+  </div>
+
+  <h4>例题</h4>
+
+  <figure>
+    <svg viewBox="0 0 640 250" role="img" aria-label="Work Law 例题的任务依赖图">
+      <defs>
+        <marker id="arw13" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <path class="svg-line-accent" marker-end="url(#arw13)" d="M102,112 L164,76"></path>
+      <path class="svg-line-accent" marker-end="url(#arw13)" d="M102,132 L164,168"></path>
+      <path class="svg-line-accent" marker-end="url(#arw13)" d="M242,72 L304,108"></path>
+      <path class="svg-line-accent" marker-end="url(#arw13)" d="M242,172 L304,136"></path>
+      <path class="svg-line-accent" marker-end="url(#arw13)" d="M382,108 L452,74"></path>
+      <path class="svg-line-accent" marker-end="url(#arw13)" d="M382,136 L452,170"></path>
+
+      <rect class="svg-box" x="30" y="95" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="66" y="118" font-size="18" font-weight="600" text-anchor="middle">A</text>
+      <text class="svg-txt" x="66" y="137" font-size="13" text-anchor="middle">2ms</text>
+
+      <rect class="svg-box" x="170" y="35" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="206" y="58" font-size="18" font-weight="600" text-anchor="middle">B</text>
+      <text class="svg-txt" x="206" y="77" font-size="13" text-anchor="middle">6ms</text>
+
+      <rect class="svg-box" x="170" y="155" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="206" y="178" font-size="18" font-weight="600" text-anchor="middle">C</text>
+      <text class="svg-txt" x="206" y="197" font-size="13" text-anchor="middle">4ms</text>
+
+      <rect class="svg-box" x="310" y="95" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="346" y="118" font-size="18" font-weight="600" text-anchor="middle">D</text>
+      <text class="svg-txt" x="346" y="137" font-size="13" text-anchor="middle">3ms</text>
+
+      <rect class="svg-box" x="460" y="35" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="496" y="58" font-size="18" font-weight="600" text-anchor="middle">E</text>
+      <text class="svg-txt" x="496" y="77" font-size="13" text-anchor="middle">5ms</text>
+
+      <rect class="svg-box" x="460" y="155" width="72" height="54" rx="3"></rect>
+      <text class="svg-txt" x="496" y="178" font-size="18" font-weight="600" text-anchor="middle">F</text>
+      <text class="svg-txt" x="496" y="197" font-size="13" text-anchor="middle">2ms</text>
+
+      <text class="svg-lbl" x="30" y="228" font-size="12">两条分支：A→B→D→F 与 A→C→E→F</text>
+    </svg>
+    <figcaption><b>图 6-1</b>　例题的任务图，共 6 个任务，P = 4 个核心。</figcaption>
+  </figure>
+
+  <div class="formula" style="text-align:left">
+    <b>解：</b><br>
+    <var>T</var><sub>1</sub> = 2 + 6 + 4 + 3 + 5 + 2 ms = <b>22 ms</b><br>
+    <var>T</var><sub>∞</sub> = max(2+6+3+2, 2+4+5+2) = <b>13 ms</b><br>
+    <var>A</var> = <var>T</var><sub>1</sub> / <var>T</var><sub>∞</sub> = 22 / 13<br>
+    <var>T</var><sub>1</sub> / <var>P</var> = 22 / 4 = 5.5 ms<br>
+    <var>T</var><sub>P</sub> ≥ max(5.5, 13) = <b>13 ms</b>
+    <div class="where">
+      两条分支的长度都是 13ms，所以 span（关键路径）就是 13ms；work 下界只要求 5.5ms，
+      两者取大，最终下界是 13ms —— <b>说明这道题被关键路径卡住，加核也没用。</b>
+    </div>
+  </div>
+
+  <div class="note warm">
+    <span class="lbl">勘误</span>
+    原笔记这一步记作 <var>T</var><sub>∞</sub> = 2+6+5+2 = 15ms，把 B（6ms）和 E（5ms）串在了同一条路径上；
+    但按图示 B、E 分属两条不同分支，最长路径应是 A→B→D→F 或 A→C→E→F，两者都等于 13ms。
+  </div>
+</section>
+
+<!-- ============ 第七章 ============ -->
+<section class="chapter" id="ch7">
+  <h2><span class="cn">07</span>分布式计算与 Grid<span class="tag">原稿 p.13 – p.14</span></h2>
+
+  <h3 id="ch7-1">Cluster / Grid / Cloud / Edge</h3>
+  <p><span class="term">Distributed Computing</span>（分布式计算）：大量通过网络连接的<b>独立设备</b>。</p>
+  <p>而 <span class="term">Cluster</span>（集群）是紧耦合的节点（<b>tightly coupled</b>），相当于一台放大版的系统。</p>
+
+  <div class="note">
+    <span class="lbl">关键区别</span>
+    Cluster 与 Grid 的区别在于：<b>所有权是否唯一</b>。
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 680 240" role="img" aria-label="分布式计算的四个分支">
+      <defs>
+        <marker id="arw14" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box-accent" x="170" y="20" width="340" height="48" rx="4"></rect>
+      <text class="svg-txt" x="340" y="50" font-size="15" font-weight="600" text-anchor="middle">Distributed Computing 分布式计算</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw14)" d="M340,72 L340,102"></path>
+      <path class="svg-line" d="M88,106 L592,106" stroke="#1f4e79" stroke-width="1.6"></path>
+      <path class="svg-line-accent" marker-end="url(#arw14)" d="M88,106 L88,136"></path>
+      <path class="svg-line-accent" marker-end="url(#arw14)" d="M256,106 L256,136"></path>
+      <path class="svg-line-accent" marker-end="url(#arw14)" d="M424,106 L424,136"></path>
+      <path class="svg-line-accent" marker-end="url(#arw14)" d="M592,106 L592,136"></path>
+
+      <rect class="svg-box" x="28" y="140" width="120" height="52" rx="3"></rect>
+      <text class="svg-txt" x="88" y="163" font-size="14" font-weight="600" text-anchor="middle">Cluster</text>
+      <text class="svg-lbl" x="88" y="181" font-size="12" text-anchor="middle">紧耦合 · 所有权统一</text>
+
+      <rect class="svg-box" x="196" y="140" width="120" height="52" rx="3"></rect>
+      <text class="svg-txt" x="256" y="163" font-size="14" font-weight="600" text-anchor="middle">Grid</text>
+      <text class="svg-lbl" x="256" y="181" font-size="12" text-anchor="middle">多所有者 · 跨机构</text>
+
+      <rect class="svg-box" x="364" y="140" width="120" height="52" rx="3"></rect>
+      <text class="svg-txt" x="424" y="163" font-size="14" font-weight="600" text-anchor="middle">Cloud</text>
+      <text class="svg-lbl" x="424" y="181" font-size="12" text-anchor="middle">按需租用</text>
+
+      <rect class="svg-box" x="532" y="140" width="120" height="52" rx="3"></rect>
+      <text class="svg-txt" x="592" y="163" font-size="14" font-weight="600" text-anchor="middle">Edge</text>
+      <text class="svg-lbl" x="592" y="181" font-size="12" text-anchor="middle">靠向终端</text>
+
+      <text class="svg-lbl" x="28" y="222" font-size="12">四者的边界不是技术，而是"这批机器归谁"和"资源离用户多远"</text>
+    </svg>
+    <figcaption><b>图 7-1</b>　分布式计算包含 Cluster、Grid、Cloud、Edge 四种形态。</figcaption>
+  </figure>
+
+  <h4>Grid 的运作方式</h4>
+  <p><span class="term">provider mode</span>（独立所有者）通过 <span class="term">middleware</span>（中间件），
+  将多个不同的资源汇聚至一处，完成一项共同的任务。它们的地点、硬件、系统等均可能不同。</p>
+  <p>而 <span class="term">user-node</span> 看到的，只是一个<b>单一入口的 useful pool（资源池）</b> —— 底下有多杂，用户看不到。</p>
+
+  <h3 id="ch7-2">VO 虚拟组织</h3>
+  <p><span class="term">VO</span>（Virtual Organization，虚拟组织）由五样东西构成：</p>
+  <dl class="terms">
+    <div>
+      <dt>temporary</dt>
+      <dd>临时的。</dd>
+    </div>
+    <div>
+      <dt>shared goal</dt>
+      <dd>共同目标。</dd>
+    </div>
+    <div>
+      <dt>membership</dt>
+      <dd>成员资格。</dd>
+    </div>
+    <div>
+      <dt>access rights</dt>
+      <dd>访问权。</dd>
+    </div>
+    <div>
+      <dt>rules</dt>
+      <dd>规则。</dd>
+    </div>
+  </dl>
+  <p><b>它们共享使用权，但并不会合并。</b>——"一起干一件事"不等于"变成一家"。</p>
+
+  <h4>本地优先</h4>
+  <p>当本地有任务时，Grid 将排队任务自动分配到其它资源上。</p>
+
+  <h3 id="ch7-3">Grid 的分层</h3>
+
+  <figure>
+    <svg viewBox="0 0 660 300" role="img" aria-label="Grid 的四层结构">
+      <defs>
+        <marker id="arw15" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#a8542a"></path>
+        </marker>
+      </defs>
+
+      <path class="svg-line" stroke="#a8542a" marker-start="url(#arw15)" marker-end="url(#arw15)" d="M40,286 L40,26"></path>
+      <text class="svg-warm" x="24" y="34" font-size="13">高</text>
+      <text class="svg-warm" x="24" y="288" font-size="13">低</text>
+
+      <rect class="svg-box-accent" x="70" y="20" width="560" height="56" rx="3"></rect>
+      <text class="svg-txt" x="90" y="44" font-size="14" font-weight="600">Layer 1　Application　应用层</text>
+      <text class="svg-lbl" x="90" y="64" font-size="13">解决用户实际问题</text>
+
+      <rect class="svg-box" x="70" y="90" width="560" height="56" rx="3"></rect>
+      <text class="svg-txt" x="90" y="114" font-size="14" font-weight="600">Layer 2　Middleware　中间件层</text>
+      <text class="svg-lbl" x="90" y="134" font-size="13">协调 user 与 provider 的供求</text>
+
+      <rect class="svg-box" x="70" y="160" width="560" height="56" rx="3"></rect>
+      <text class="svg-txt" x="90" y="184" font-size="14" font-weight="600">Layer 3　Resources　资源层</text>
+      <text class="svg-lbl" x="90" y="204" font-size="13">暴露可用 capability</text>
+
+      <rect class="svg-box" x="70" y="230" width="560" height="56" rx="3"></rect>
+      <text class="svg-txt" x="90" y="254" font-size="14" font-weight="600">Layer 4　Fabric　织构层</text>
+      <text class="svg-lbl" x="90" y="274" font-size="13">保障 capability 能被访问</text>
+    </svg>
+    <figcaption><b>图 7-2</b>　Grid 四层，自上而下从"用户问题"落到"物理资源"。</figcaption>
+  </figure>
+
+  <div class="note warm">
+    <span class="lbl">两条边界</span>
+    <b>Middleware 与 VO 不会凭空创造资源</b> —— 它们只是把已有的东西组织起来；<br>
+    同时，<b>同一个机构可能既为 user 也为 provider</b>。
+  </div>
+
+  <h3 id="ch7-4">两次辨析</h3>
+
+  <h4>例一：500 台电脑算什么</h4>
+  <p>500 台电脑，<b>under one administrative domain</b>，那就是 <b>cluster</b>。</p>
+  <p>若想变为 Grid，则需要通过 <b>grid middleware</b> 对外暴露，并建立相同的
+  <b>access policies</b>（访问策略）。</p>
+  <p>判据还是那一条：<b>所有权与管理边界是否唯一</b>。</p>
+
+  <h4>例二：HTC 与 HPC 分别落在哪一边</h4>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th></th><th>HTC</th><th>HPC</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>典型载体</th><td>Grid</td><td>Cluster</td></tr>
+        <tr><th>负载形态</th><td>拥有大量独立作业，且作业间不通信</td><td>一个 tightly coupled 大任务</td></tr>
+        <tr><th>要求</th><td>吞吐量优先</td><td>Low Latency 低时延</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>ClassAd</h4>
+  <p>Grid 里描述"谁要什么、谁给什么"的方式：</p>
+  <dl class="terms">
+    <div>
+      <dt>Job</dt>
+      <dd>我需要什么？</dd>
+    </div>
+    <div>
+      <dt>Machine</dt>
+      <dd>我能给什么 + 策略。</dd>
+    </div>
+  </dl>
+  <p>典型实例：<b>Folding@home</b> —— 无数志愿者机器各自跑独立的小作业，谁也不跟谁通信。</p>
+</section>
+
+<!-- ============ 第八章 ============ -->
+<section class="chapter" id="ch8">
+  <h2><span class="cn">08</span>Grid 安全<span class="tag">原稿 p.15 – p.16</span></h2>
+
+  <p class="lead">Grid 访问本身就有风险。一次 <span class="term">request access</span>（访问请求）必须回答四个问题。</p>
+
+  <h3 id="ch8-1">访问请求的四个问题</h3>
+  <dl class="terms">
+    <div>
+      <dt>Authentication<span class="cn">认证</span></dt>
+      <dd>对方是谁？</dd>
+    </div>
+    <div>
+      <dt>Authorisation<span class="cn">授权</span></dt>
+      <dd>能允许做些什么？</dd>
+    </div>
+    <div>
+      <dt>Accounting &amp; audit<span class="cn">审计</span></dt>
+      <dd>监视动作记录。</dd>
+    </div>
+    <div>
+      <dt>Delegation<span class="cn">委托</span></dt>
+      <dd>权限与使用时间受限。</dd>
+    </div>
+  </dl>
+
+  <div class="note warm">
+    <span class="lbl">原文批注</span>
+    <p style="margin:6px 0"><em>A valid identity doesn't imply permission, and permission doesn't remove the need for audit.</em></p>
+    <p style="margin:0">翻译过来：<b>有身份（认证通过）不等于能授权，授权后不等于不被监视。</b>
+    —— 这四问是四件事，不能拿前一问的答案去顶后一问。</p>
+  </div>
+
+  <h3 id="ch8-2">密钥对</h3>
+  <p><span class="term">Key pair</span>（密钥对）：一对数学上配对、用途上互补的密钥。</p>
+
+  <figure>
+    <svg viewBox="0 0 700 240" role="img" aria-label="公钥与私钥的分工">
+      <defs>
+        <marker id="arw16" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#33414f"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="30" y="24" width="252" height="80" rx="4"></rect>
+      <text class="svg-txt" x="156" y="50" font-size="14.5" font-weight="600" text-anchor="middle">Public key 公钥</text>
+      <text class="svg-lbl" x="156" y="72" font-size="12.5" text-anchor="middle">后缀 .pub</text>
+      <text class="svg-ann" x="156" y="92" font-size="12.5" text-anchor="middle">shared openly 公开分享</text>
+
+      <rect class="svg-box" x="418" y="24" width="252" height="80" rx="4"></rect>
+      <text class="svg-txt" x="544" y="50" font-size="14.5" font-weight="600" text-anchor="middle">Private key 私钥</text>
+      <text class="svg-lbl" x="544" y="72" font-size="12.5" text-anchor="middle">无后缀</text>
+      <text class="svg-warm" x="544" y="92" font-size="12.5" text-anchor="middle">remain secret 必须保密</text>
+
+      <path class="svg-line" stroke-dasharray="5 4" marker-start="url(#arw16)" marker-end="url(#arw16)" d="M288,64 L414,64"></path>
+      <text class="svg-lbl" x="351" y="54" font-size="11.5" text-anchor="middle">配对</text>
+
+      <rect class="svg-box-accent" x="30" y="132" width="252" height="88" rx="4"></rect>
+      <text class="svg-txt" x="156" y="156" font-size="11.5" font-weight="600" text-anchor="middle">Encrypts data for owners</text>
+      <text class="svg-lbl" x="156" y="174" font-size="11.5" text-anchor="middle">加密数据</text>
+      <text class="svg-txt" x="156" y="196" font-size="11.5" font-weight="600" text-anchor="middle">Verifies digital signatures</text>
+      <text class="svg-lbl" x="156" y="214" font-size="11.5" text-anchor="middle">验证签名</text>
+
+      <rect class="svg-box-warm" x="418" y="132" width="252" height="88" rx="4"></rect>
+      <text class="svg-txt" x="544" y="156" font-size="11.5" font-weight="600" text-anchor="middle">Decrypts received data</text>
+      <text class="svg-lbl" x="544" y="174" font-size="11.5" text-anchor="middle">解密数据</text>
+      <text class="svg-txt" x="544" y="196" font-size="11.5" font-weight="600" text-anchor="middle">Create digital signatures</text>
+      <text class="svg-lbl" x="544" y="214" font-size="11.5" text-anchor="middle">创建签名</text>
+    </svg>
+    <figcaption><b>图 8-1</b>　两把钥匙的分工：加密与验签用公钥，解密与签名用私钥（双向）。</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>动作</th><th>用哪把钥匙</th><th>方向</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>加密数据 Encrypts data for owners</td><td>公钥</td><td>发给所有者 →</td></tr>
+        <tr><td>解密数据 Decrypts received data</td><td>私钥</td><td>← 收到后解开</td></tr>
+        <tr><td>验证签名 Verifies digital signatures</td><td>公钥</td><td>← 校验对方身份</td></tr>
+        <tr><td>创建签名 Create digital signatures</td><td>私钥</td><td>自己签 →</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="lbl">两条容易搞错的</span>
+    <p style="margin:6px 0">① <b>公钥不需保密，但公钥与身份需要绑定，故保护公钥也很重要</b> —— 公钥本身被看到没关系，被<b>换掉</b>才是灾难。</p>
+    <p style="margin:0">② <b>私钥通常是硬件载体，禁止发送给他人，否则就失去了意义</b> —— 私钥一旦离身，整套身份就归别人了。</p>
+  </div>
+
+  <h3 id="ch8-3">PKI 与 X.509</h3>
+  <p><span class="term">PKI</span>：一个 <em>connecting public keys to trusted identities</em> 的体系 ——
+  帮助使用者确认，某把公钥确实属于它所声称的那个网站、组织。</p>
+
+  <h4>X.509 certification</h4>
+  <p>证书是一份<b>公开的、被 CA 数字签名的声明</b>，绑定身份与公钥，并说明 <b>validity</b>（有效期）
+  与 <b>constraints</b>（约束）。</p>
+
+  <figure>
+    <svg viewBox="0 0 680 190" role="img" aria-label="X.509 证书的构成">
+      <defs>
+        <marker id="arw17" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="24" y="58" width="118" height="54" rx="3"></rect>
+      <text class="svg-txt" x="83" y="80" font-size="13" text-anchor="middle">identity</text>
+      <text class="svg-lbl" x="83" y="99" font-size="12" text-anchor="middle">身份</text>
+
+      <text class="svg-txt" x="152" y="90" font-size="18" text-anchor="middle">+</text>
+
+      <rect class="svg-box" x="170" y="58" width="130" height="54" rx="3"></rect>
+      <text class="svg-txt" x="235" y="80" font-size="13" text-anchor="middle">Public key</text>
+      <text class="svg-lbl" x="235" y="99" font-size="12" text-anchor="middle">公钥</text>
+
+      <text class="svg-txt" x="310" y="90" font-size="18" text-anchor="middle">+</text>
+
+      <rect class="svg-box" x="328" y="58" width="130" height="54" rx="3"></rect>
+      <text class="svg-txt" x="393" y="80" font-size="13" text-anchor="middle">Restriction</text>
+      <text class="svg-lbl" x="393" y="99" font-size="12" text-anchor="middle">限制</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw17)" d="M462,85 L538,85"></path>
+      <text class="svg-ann" x="500" y="74" font-size="12" text-anchor="middle">CA signature</text>
+
+      <rect class="svg-box-warm" x="544" y="52" width="126" height="66" rx="3"></rect>
+      <text class="svg-txt" x="607" y="80" font-size="12" font-weight="600" text-anchor="middle">X.509</text>
+      <text class="svg-txt" x="607" y="100" font-size="12" text-anchor="middle">certification</text>
+
+      <text class="svg-lbl" x="24" y="42" font-size="12">CA 验证身份后签发证书：确定"身份与公钥"的绑定可以被信赖</text>
+      <text class="svg-lbl" x="24" y="150" font-size="12">另含 validity 有效期 与 constraints 约束</text>
+    </svg>
+    <figcaption><b>图 8-2</b>　身份 + 公钥 + 限制，经 CA 签名后成为一张 X.509 证书。</figcaption>
+  </figure>
+
+  <h3 id="ch8-4">Proxy 与 SSH 证书</h3>
+
+  <h4>Proxy 证书</h4>
+  <p>特点是 <b>short lifetime</b>（短寿命），并可进一步施加约束。</p>
+  <p>Proxy 有自己的私钥签名。登录 server 时，用 Proxy certification 里的公钥验证，
+  <b>故不需要用户私钥</b> —— 这就是它存在的理由：把长期私钥留在本地，只放出一把短命的替身。</p>
+
+  <div class="note warm">
+    <span class="lbl">答题提示（原文）</span>
+    回答 Proxy 优点时，<b>一定要</b>说明保护 private key 的重要性，并说明<b>分发 private key 的缺点</b> ——
+    优点和代价要成对讲，只讲一半不算答完。
+  </div>
+
+  <h4>SSH 证书</h4>
+  <p>让用户使用 <b>CA 签名的公钥</b>，并证明自己拥有私钥，以登录 SSH server。
+  证书里写明 <b>principal</b>（身份）和 <b>lifetime</b>（有效期）。</p>
+
+  <p>服务器上三个文件各管一件事，<b><code>-I</code> 与 <code>-Z</code>，让每次被使用都能追溯签发记录</b>：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>文件</th><th>是什么</th><th>怎么用</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>id_grid</code></td>
+          <td>私钥</td>
+          <td><b>绝不外身</b></td>
+        </tr>
+        <tr>
+          <td><code>id_grid.pub</code></td>
+          <td>公钥</td>
+          <td>用来交由 CA 签名</td>
+        </tr>
+        <tr>
+          <td><code>id_grid-cert.pub</code></td>
+          <td>SSH 证书（已签名的）</td>
+          <td>登录时给 server 验证</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 680 210" role="img" aria-label="SSH 登录成功的四个条件">
+      <defs>
+        <marker id="arw18" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box" x="24" y="34" width="150" height="60" rx="3"></rect>
+      <text class="svg-txt" x="99" y="58" font-size="12.5" font-weight="600" text-anchor="middle">Trusted CA</text>
+      <text class="svg-lbl" x="99" y="78" font-size="12" text-anchor="middle">可信 CA</text>
+
+      <text class="svg-txt" x="184" y="70" font-size="17" text-anchor="middle">+</text>
+
+      <rect class="svg-box" x="196" y="34" width="150" height="60" rx="3"></rect>
+      <text class="svg-txt" x="271" y="58" font-size="12.5" font-weight="600" text-anchor="middle">valid certification</text>
+      <text class="svg-lbl" x="271" y="78" font-size="12" text-anchor="middle">有效证书</text>
+
+      <text class="svg-txt" x="356" y="70" font-size="17" text-anchor="middle">+</text>
+
+      <rect class="svg-box" x="368" y="34" width="150" height="60" rx="3"></rect>
+      <text class="svg-txt" x="443" y="58" font-size="12.5" font-weight="600" text-anchor="middle">allowed principal</text>
+      <text class="svg-lbl" x="443" y="78" font-size="12" text-anchor="middle">允许的身份</text>
+
+      <text class="svg-txt" x="528" y="70" font-size="17" text-anchor="middle">+</text>
+
+      <rect class="svg-box" x="540" y="34" width="130" height="60" rx="3"></rect>
+      <text class="svg-txt" x="605" y="58" font-size="12.5" font-weight="600" text-anchor="middle">private-key proof</text>
+      <text class="svg-lbl" x="605" y="78" font-size="12" text-anchor="middle">私钥持有证明</text>
+
+      <path class="svg-line-accent" marker-end="url(#arw18)" d="M350,100 L350,142"></path>
+      <text class="svg-ann" x="360" y="126" font-size="14">⇒</text>
+
+      <rect class="svg-box-warm" x="250" y="146" width="200" height="46" rx="3"></rect>
+      <text class="svg-txt" x="350" y="176" font-size="15" font-weight="600" text-anchor="middle">login accept</text>
+    </svg>
+    <figcaption><b>图 8-3</b>　四件事同时成立，登录才成功。少任何一项都不行。</figcaption>
+  </figure>
+
+  <h3 id="ch8-5">零信任</h3>
+  <p><span class="term">Zero-trust decisions</span>（零信任决策）：用户<b>不会因为处于组织内部就被信任</b>，
+  仍然需要走验证流程。</p>
+  <div class="note">
+    <span class="lbl">一句话</span>
+    "在内网"不是身份，"走完验证"才是。
+  </div>
+</section>
+
+<!-- ============ 第九章 ============ -->
+<section class="chapter" id="ch9">
+  <h2><span class="cn">09</span>GPU 与异构计算<span class="tag">原稿 p.17 – p.18</span></h2>
+
+  <h3 id="ch9-1">CPU 与 GPU 的分工</h3>
+  <p>两者的设计目标根本不是同一件事：<b>一个要把延迟压到最小，一个要把吞吐拉到最大。</b></p>
+
+  <dl class="terms">
+    <div>
+      <dt>CPU<span class="cn">最小化延迟</span></dt>
+      <dd>
+        <b>Powerful core</b>：大缓存（Large caches）+ 复杂控制逻辑（Complex control），
+        让少数几条线程尽快跑完。
+      </dd>
+    </div>
+    <div>
+      <dt>GPU<span class="cn">最大化吞吐 throughput</span></dt>
+      <dd>
+        <b>many threads hide latency</b>：用大量线程把延迟藏起来，
+        擅长处理大量可反复利用的独立元素。
+      </dd>
+    </div>
+  </dl>
+
+  <figure>
+    <svg viewBox="0 0 680 250" role="img" aria-label="CPU 与 GPU 的核结构对比">
+      <rect class="svg-box" x="24" y="20" width="300" height="200" rx="5"></rect>
+      <text class="svg-txt" x="174" y="46" font-size="15" font-weight="600" text-anchor="middle">CPU</text>
+      <text class="svg-lbl" x="174" y="66" font-size="12.5" text-anchor="middle">Powerful core · 最小化延迟</text>
+
+      <rect class="svg-box-accent" x="56" y="84" width="236" height="46" rx="3"></rect>
+      <text class="svg-txt" x="174" y="105" font-size="12.5" text-anchor="middle">Large caches 大缓存</text>
+      <text class="svg-lbl" x="174" y="122" font-size="11.5" text-anchor="middle">把数据留在手边</text>
+
+      <rect class="svg-box-accent" x="56" y="142" width="236" height="46" rx="3"></rect>
+      <text class="svg-txt" x="174" y="163" font-size="12.5" text-anchor="middle">Complex control 复杂控制</text>
+      <text class="svg-lbl" x="174" y="180" font-size="11.5" text-anchor="middle">分支预测、乱序执行</text>
+
+      <text class="svg-lbl" x="174" y="208" font-size="12" text-anchor="middle">少数线程，尽快跑完</text>
+
+      <rect class="svg-box" x="356" y="20" width="300" height="200" rx="5"></rect>
+      <text class="svg-txt" x="506" y="46" font-size="15" font-weight="600" text-anchor="middle">GPU</text>
+      <text class="svg-lbl" x="506" y="66" font-size="12.5" text-anchor="middle">最大化 throughput</text>
+
+      <g fill="#edf2f8" stroke="#1f4e79" stroke-width="1.3">
+        <rect x="382" y="84" width="46" height="32" rx="2"></rect>
+        <rect x="438" y="84" width="46" height="32" rx="2"></rect>
+        <rect x="494" y="84" width="46" height="32" rx="2"></rect>
+        <rect x="550" y="84" width="46" height="32" rx="2"></rect>
+        <rect x="606" y="84" width="34" height="32" rx="2"></rect>
+
+        <rect x="382" y="126" width="46" height="32" rx="2"></rect>
+        <rect x="438" y="126" width="46" height="32" rx="2"></rect>
+        <rect x="494" y="126" width="46" height="32" rx="2"></rect>
+        <rect x="550" y="126" width="46" height="32" rx="2"></rect>
+        <rect x="606" y="126" width="34" height="32" rx="2"></rect>
+
+        <rect x="382" y="168" width="46" height="32" rx="2"></rect>
+        <rect x="438" y="168" width="46" height="32" rx="2"></rect>
+        <rect x="494" y="168" width="46" height="32" rx="2"></rect>
+        <rect x="550" y="168" width="46" height="32" rx="2"></rect>
+        <rect x="606" y="168" width="34" height="32" rx="2"></rect>
+      </g>
+
+      <text class="svg-lbl" x="506" y="212" font-size="12" text-anchor="middle">many threads hide latency</text>
+    </svg>
+    <figcaption><b>图 9-1</b>　CPU 用少量强核把单条线程做快；GPU 用大量小核把整体吞吐堆高。</figcaption>
+  </figure>
+
+  <div class="note warm">
+    <span class="lbl">不适合 GPU 的三类</span>
+    <b>短的并行链</b>、<b>heavily branching</b>（分支多）、<b>过多的并行操作</b> ——
+    这三种情况启动与调度开销会吃掉并行收益，均不适合 GPU。
+  </div>
+
+  <h3 id="ch9-2">kernel 与数据搬运</h3>
+
+  <figure>
+    <svg viewBox="0 0 700 220" role="img" aria-label="主机与设备之间的数据搬运">
+      <defs>
+        <marker id="arw19" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"></path>
+        </marker>
+        <marker id="arw19g" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#5c636e"></path>
+        </marker>
+      </defs>
+
+      <path class="svg-line-accent" marker-end="url(#arw19)" d="M96,76 C96,26 604,26 604,76"></path>
+      <text class="svg-ann" x="350" y="30" font-size="13" text-anchor="middle">kernel 核函数在这段区间内连续跑</text>
+
+      <rect class="svg-box" x="30" y="88" width="130" height="58" rx="3"></rect>
+      <text class="svg-txt" x="95" y="112" font-size="13" font-weight="600" text-anchor="middle">CPU</text>
+      <text class="svg-lbl" x="95" y="131" font-size="12" text-anchor="middle">host 主机</text>
+
+      <path class="svg-line" marker-end="url(#arw19g)" d="M164,117 L214,117"></path>
+
+      <rect class="svg-box" x="220" y="88" width="140" height="58" rx="3"></rect>
+      <text class="svg-txt" x="290" y="112" font-size="13" font-weight="600" text-anchor="middle">host memory</text>
+      <text class="svg-lbl" x="290" y="131" font-size="12" text-anchor="middle">主机内存</text>
+
+      <path class="svg-line" stroke="#a8542a" stroke-width="1.8"
+            marker-start="url(#arw19)" marker-end="url(#arw19)" d="M364,117 L414,117"></path>
+      <text class="svg-warm" x="389" y="106" font-size="11.5" text-anchor="middle">搬运</text>
+
+      <rect class="svg-box" x="420" y="88" width="140" height="58" rx="3"></rect>
+      <text class="svg-txt" x="490" y="112" font-size="13" font-weight="600" text-anchor="middle">device memory</text>
+      <text class="svg-lbl" x="490" y="131" font-size="12" text-anchor="middle">设备内存</text>
+
+      <path class="svg-line" marker-end="url(#arw19g)" d="M564,117 L614,117"></path>
+
+      <rect class="svg-box-accent" x="620" y="88" width="60" height="58" rx="3"></rect>
+      <text class="svg-txt" x="650" y="112" font-size="13" font-weight="600" text-anchor="middle">GPU</text>
+      <text class="svg-lbl" x="650" y="131" font-size="11" text-anchor="middle">device</text>
+
+      <text class="svg-lbl" x="30" y="184" font-size="12">数据一旦上了显存，就在设备侧反复运算</text>
+      <text class="svg-warm" x="30" y="204" font-size="12">只有过这条橙色的搬运线，才产生换边的代价</text>
+    </svg>
+    <figcaption><b>图 9-2</b>　host 与 device 之间隔着一次显式的数据搬运。</figcaption>
+  </figure>
+
+  <p><b>数据搬运的开销大</b>，故通常在 GPU 中经过多次运算后，仅把最终结果传回 CPU。
+  也因此，<b>把操作从 GPU 转到 CPU 会因为搬运数据效率奇差。</b></p>
+
+  <h4>kernel 是什么</h4>
+  <p><span class="term">kernel</span>（核函数）：GPU 对许多元素执行的<b>同一个函数</b>，
+  用大量独立线程提供并行工作，让 GPU 始终保持忙碌。<b>由 index 挑选元素，元素间无通信。</b></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>写法</th><th>是否适合</th><th>原因</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>a[i] = update(a[i])</code></td><td>适合</td><td>每个元素独立取、独立算、独立写，元素之间没有关系</td></tr>
+        <tr><td><code>b[i] = b[i-1] + c[i]</code></td><td>不适合</td><td>元素之间存在 latency —— 下一个元素要用上一个的结果，只能串着走</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="ch9-3">框架抽象层</h3>
+  <p><b>能不设计 kernel 就不设计</b> —— 越往下设计越复杂，且回报率低。</p>
+
+  <figure>
+    <svg viewBox="0 0 660 230" role="img" aria-label="从应用到硬件的抽象层次">
+      <defs>
+        <marker id="arw20" viewBox="0 0 10 10" refX="9" refY="5"
+                markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#a8542a"></path>
+        </marker>
+      </defs>
+
+      <rect class="svg-box-accent" x="60" y="18" width="470" height="48" rx="3"></rect>
+      <text class="svg-txt" x="80" y="42" font-size="13.5" font-weight="600">你的程序 / 模型代码</text>
+      <text class="svg-lbl" x="80" y="60" font-size="12">最常见、最省事</text>
+
+      <rect class="svg-box" x="60" y="82" width="470" height="48" rx="3"></rect>
+      <text class="svg-txt" x="80" y="106" font-size="13.5" font-weight="600">Framework 框架　PyTorch / TensorFlow</text>
+      <text class="svg-lbl" x="80" y="124" font-size="12">替你管内存、搬数据、选 kernel</text>
+
+      <rect class="svg-box" x="60" y="146" width="470" height="48" rx="3"></rect>
+      <text class="svg-txt" x="80" y="170" font-size="13.5" font-weight="600">手写 GPU kernel</text>
+      <text class="svg-lbl" x="80" y="188" font-size="12">复杂，回报率低</text>
+
+      <path class="svg-line" stroke="#a8542a" marker-end="url(#arw20)" d="M556,40 L556,192"></path>
+      <text class="svg-warm" x="572" y="112" font-size="12">设计难度</text>
+      <text class="svg-warm" x="572" y="130" font-size="12">递增</text>
+    </svg>
+    <figcaption><b>图 9-3</b>　越往下越靠近硬件，也越难写、越不划算。</figcaption>
+  </figure>
+
+  <p><span class="term">Framework</span>（框架，如 PyTorch、TensorFlow 等）可以代替程序员做的三件事：</p>
+  <dl class="terms">
+    <div>
+      <dt>device-memory management</dt>
+      <dd>设备内存管理。</dd>
+    </div>
+    <div>
+      <dt>host-device data movement</dt>
+      <dd>主机—设备数据搬运。</dd>
+    </div>
+    <div>
+      <dt>selection and launch of GPU kernel</dt>
+      <dd>选择、调用核函数。</dd>
+    </div>
+  </dl>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <span>并行计算机 · 手写笔记整理版</span>
+  <span>9 章 · 全部图例 SVG 重绘</span>
+</footer>
+
+</body>
+</html>
