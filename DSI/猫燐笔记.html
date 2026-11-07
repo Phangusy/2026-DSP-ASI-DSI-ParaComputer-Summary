@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 7 · MOS 负载反相器 / NAND-NOR / 开关时间 —— 知识点整理</title>
+<style>
+:root{
+  --ink:#1b1f24; --ink2:#4a5560; --line:#d7dee6; --bg:#fbfcfe;
+  --blue:#2563a8; --blue-l:#eaf2fb; --green:#1d7a4d; --green-l:#e8f6ee;
+  --amber:#a86b00; --amber-l:#fdf3e0; --red:#b3261e; --red-l:#fdecea;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:Georgia,"Times New Roman","Songti SC","SimSun",serif;
+  font-size:15.5px; line-height:1.8;
+}
+.wrap{display:flex; max-width:1520px; margin:0 auto}
+nav{
+  position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto;
+  width:284px; flex:0 0 284px; padding:22px 14px 60px 22px;
+  border-right:1px solid var(--line); background:#fff; font-size:13.5px;
+  font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+}
+nav h4{margin:16px 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink2)}
+nav a{display:block; color:var(--ink2); text-decoration:none; padding:3px 8px; border-radius:5px; border-left:2px solid transparent}
+nav a:hover{background:var(--blue-l); color:var(--blue); border-left-color:var(--blue)}
+main{flex:1 1 auto; min-width:0; padding:34px 46px 120px; max-width:1060px}
+header.top{border-bottom:3px double var(--line); padding-bottom:18px; margin-bottom:26px}
+h1{font-size:26px; margin:0 0 8px; letter-spacing:-.01em; line-height:1.4;
+   font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+h2{font-size:20px; margin:48px 0 14px; padding-bottom:7px; border-bottom:2px solid var(--blue); color:var(--blue);
+   font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+h3{font-size:16.5px; margin:30px 0 10px; color:#12385f;
+   font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+h4{font-size:15px; margin:20px 0 8px; color:var(--ink);
+   font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+p{margin:9px 0}
+.sub{color:var(--ink2); font-size:13.5px; font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+code{background:#eef2f6; padding:1px 5px; border-radius:4px; font-size:.9em;
+     font-family:Consolas,"Cascadia Mono",monospace}
+
+/* ---- 公式 ---- */
+.f{
+  font-family:"Cambria Math","Times New Roman",Georgia,serif; font-size:16.5px;
+  background:#f6f9fc; border-left:3px solid var(--blue); border-radius:0 6px 6px 0;
+  padding:9px 16px 9px 46px; margin:11px 0; line-height:2.05; overflow-x:auto; position:relative;
+}
+.f.key{background:var(--blue-l); border-left-color:#12385f}
+.f .eq{position:absolute; right:10px; top:6px; font-size:12px; color:var(--ink2);
+       font-family:"Segoe UI",sans-serif}
+.line{display:block; white-space:pre}
+.line .cm{color:#8895a5; font-size:12.5px; font-family:"Segoe UI","Microsoft YaHei",sans-serif}
+.frac{display:inline-block; vertical-align:middle; text-align:center; margin:0 3px}
+.frac>.n{display:block; padding:0 5px; border-bottom:1.3px solid #2c3e50; line-height:1.3}
+.frac>.d{display:block; padding:0 5px; line-height:1.3}
+i,.v{font-family:"Cambria Math","Times New Roman",Georgia,serif; font-style:italic}
+.vc{font-family:"Cambria Math","Segoe UI Symbol",serif; font-style:italic}
+sub,sup{font-size:.72em}
+
+/* ---- 组件 ---- */
+table{border-collapse:collapse; width:100%; margin:12px 0; font-size:13.8px; background:#fff;
+      font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+th,td{border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top}
+th{background:#eef3f9; font-weight:600; color:#12385f}
+tbody tr:nth-child(even){background:#fafcfe}
+.box{border:1px solid var(--line); border-radius:8px; padding:12px 16px; margin:14px 0; background:#fff}
+.ok{background:var(--green-l); border-left:4px solid var(--green)}
+.warn{background:var(--amber-l); border-left:4px solid var(--amber)}
+.err{background:var(--red-l); border-left:4px solid var(--red)}
+.note{background:#f2f5f9; border-left:4px solid #8895a5}
+.box .t{font-weight:700; margin-bottom:4px; font-size:14.5px;
+        font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+.ok .t{color:var(--green)} .warn .t{color:var(--amber)} .err .t{color:var(--red)}
+.badge{display:inline-block; font-size:11.5px; font-weight:700; padding:1px 7px; border-radius:20px;
+       vertical-align:2px; margin-right:6px; letter-spacing:.02em;
+       font-family:"Segoe UI","Microsoft YaHei",sans-serif}
+.b-ok{background:var(--green); color:#fff}
+.b-warn{background:var(--amber); color:#fff}
+.b-err{background:var(--red); color:#fff}
+.b-info{background:#5a6b7d; color:#fff}
+ul,ol{margin:8px 0 8px 24px; padding:0}
+li{margin:4px 0}
+.vol{color:var(--blue)} .cur{color:var(--red)} .res{color:var(--green)} .wrn{color:var(--amber)}
+
+/* ---- 图 ---- */
+figure{margin:20px 0; background:#fff; border:1px solid var(--line); border-radius:9px;
+       padding:14px 12px 10px; text-align:center}
+figure canvas{display:block; margin:0 auto; width:100%; max-width:820px}
+figcaption{font-size:13px; color:var(--ink2); margin-top:10px; text-align:left; padding:8px 6px 0;
+           border-top:1px dashed var(--line); line-height:1.7;
+           font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+figcaption b{color:#12385f}
+.figrow{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; align-items:flex-start}
+.figrow figure{flex:1 1 320px; margin:0}
+hr{border:none; border-top:1px solid var(--line); margin:34px 0}
+a.up{font-size:12px; color:var(--blue); text-decoration:none;
+     font-family:"Segoe UI",sans-serif}
+@media(max-width:1000px){ nav{display:none} main{padding:24px 18px 80px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <h4>总览</h4>
+  <a href="#s0">0 · 符号表与全篇地图</a>
+  <h4>1 · MOS 作负载的框架</h4>
+  <a href="#s11">1.1 负载为什么不用电阻</a>
+  <a href="#s12">1.2 M<sub>S</sub> 与 M<sub>L</sub> 的分工</a>
+  <a href="#s13">1.3 开关判据（NMOS / PMOS）</a>
+  <a href="#s14">1.4 三个工作区与 R<sub>on</sub></a>
+  <h4>2 · 电阻负载反相器（基准）</h4>
+  <a href="#s21">2.1 两个状态与电平</a>
+  <a href="#s22">2.2 V<sub>IL</sub> = V<sub>TN</sub> 的来历</a>
+  <a href="#s23">2.3 设计示例（课件数值复算）</a>
+  <a href="#s24">2.4 面积账：L/W = 9500</a>
+  <h4>3 · 六种 MOS 负载接法</h4>
+  <a href="#s31">3.1 两种恒关断接法</a>
+  <a href="#s32">3.2 耗尽型负载</a>
+  <a href="#s33">3.3 饱和型负载</a>
+  <a href="#s34">3.4 线性型负载</a>
+  <a href="#s35">3.5 伪 NMOS（栅接地 PMOS）</a>
+  <a href="#s36">3.6 五种反相器对照</a>
+  <h4>4 · 三种恒导通负载的定量设计</h4>
+  <a href="#s41">4.1 设计流程与体效应</a>
+  <a href="#s42">4.2 饱和型负载设计</a>
+  <a href="#s43">4.3 耗尽型负载设计</a>
+  <a href="#s44">4.4 伪 NMOS 设计</a>
+  <h4>5 · 从反相器到 NAND / NOR</h4>
+  <a href="#s51">5.1 只动 M<sub>S</sub> 网络</a>
+  <a href="#s52">5.2 串联 NAND / 并联 NOR</a>
+  <a href="#s53">5.3 复合门与 SOP</a>
+  <h4>6 · 带 C<sub>L</sub> 的开关时间</h4>
+  <a href="#s61">6.1 RC 模型的通解</a>
+  <a href="#s62">6.2 t<sub>f</sub>/t<sub>r</sub> 与 t<sub>p</sub></a>
+  <a href="#s63">6.3 等效电阻与数值示例</a>
+  <h4>附录</h4>
+  <a href="#s7">7 · 公式速查卡</a>
+</nav>
+
+<main>
+<header class="top">
+  <h1>Week 7 · MOS 管作负载：反相器、NAND/NOR 与开关时间</h1>
+  <p class="sub">
+    内容来源：<code>Week 7.pdf</code>（6 页手写笔记，CamScanner 扫描）。技术数据与交叉核对另取
+    <code>课件/week8</code> 的 NMOS Logic Design 讲义与 <code>Tutorial/week8</code> 的 NMOS Inverter 习题。
+  </p>
+  <p class="sub">
+    全篇的组织顺序与笔记一致：负载为什么要换成 MOS 管 → 电阻负载作基准 → 六种接法逐一定性 → 三种恒导通负载的定量设计 →
+    只改下拉网络得到 NAND/NOR → 接上 C<sub>L</sub> 后的开关时间。所有数值均按题给参数重算，凡与课件/习题数字不一致处，
+    在对应位置给出重算过程与差异来源。
+  </p>
+  <div class="box note">
+    <div class="t">约定</div>
+    <ul>
+      <li>器件系数只用 <i>K</i>：<i>K</i> ≡ ½<i>K</i>′<sub>N</sub>(<i>W</i>/<i>L</i>)。题给 <i>K</i>′<sub>N</sub> 与 <i>W</i>/<i>L</i> 时，第一步先算 <i>K</i>，之后只写 <i>K</i>。</li>
+      <li>全篇电压、电流均为直流工作点量，用大写角标（<i>V</i><sub>GS</sub>、<i>I</i><sub>D</sub>）。唯一例外是 §6 的
+          <span class="vc">𝒱</span><sub>O</sub>(<i>t</i>)：它是开关过程中输出节点的<b>总瞬时</b>电压，故用花体。</li>
+      <li>公式编号为（章.序），正文一律按编号引用。</li>
+    </ul>
+  </div>
+</header>
+
+<h2 id="s0">0 · 符号表与全篇地图</h2>
+<p>这一节先把后面反复出现的量登记清楚：它是什么、怎么算、有多大。</p>
+
+<table>
+<thead><tr><th style="width:15%">符号</th><th style="width:33%">是什么</th><th style="width:27%">怎么算 / 定义式</th><th style="width:25%">典型值与手感</th></tr></thead>
+<tbody>
+<tr><td><i>M</i><sub>S</sub></td><td>开关管（driver）：栅极接输入，源极接地</td><td>—</td><td>笔记里的 <code>MS</code></td></tr>
+<tr><td><i>M</i><sub>L</sub></td><td>负载管（load）：跨在 <i>V</i><sub>DD</sub> 与输出之间，替代电阻 <i>R</i><sub>D</sub></td><td>—</td><td>笔记里的 <code>ML</code></td></tr>
+<tr><td><i>K</i>′<sub>N</sub></td><td>工艺跨导参数 <i>μ</i><sub>n</sub><i>C</i><sub>ox</sub>，只管工艺、与尺寸无关</td><td><i>K</i>′<sub>N</sub> ≡ <i>μ</i><sub>n</sub><i>C</i><sub>ox</sub></td><td>100 µA/V²（本讲所有例题）</td></tr>
+<tr><td><i>K</i></td><td>把尺寸折进去的"这一只管子"的能力</td><td><i>K</i> ≡ ½<i>K</i>′<sub>N</sub>(<i>W</i>/<i>L</i>)</td><td>单位 A/V²；数值上等于过驱动 1 V 时的饱和电流</td></tr>
+<tr><td><i>V</i><sub>OV</sub></td><td>过驱动电压</td><td><i>V</i><sub>OV</sub> ≡ <i>V</i><sub>GS</sub> − <i>V</i><sub>TN</sub></td><td>0.2–2 V；&lt;0 即截止</td></tr>
+<tr><td><i>V</i><sub>TN0</sub></td><td>零体偏（<i>V</i><sub>SB</sub> = 0）时的阈值电压</td><td>工艺常数</td><td>增强型 0.6 V；耗尽型 −1 V</td></tr>
+<tr><td><i>V</i><sub>TN</sub></td><td>含体偏的阈值电压</td><td>见（4.1）式</td><td>同一只管子，<i>V</i><sub>SB</sub> = 0.2 V 时从 0.60 V 升到 0.66 V</td></tr>
+<tr><td><i>γ</i></td><td>体效应系数</td><td>工艺常数</td><td>0.5 V<sup>½</sup>；单位带根号，正是为配平 <span style="white-space:nowrap">√(2<i>φ</i><sub>F</sub>+<i>V</i><sub>SB</sub>)</span> 而生</td></tr>
+<tr><td>2<i>φ</i><sub>F</sub></td><td>强反型表面势参数</td><td>工艺常数</td><td>0.6 V</td></tr>
+<tr><td><i>V</i><sub>H</sub>、<i>V</i><sub>L</sub></td><td>输出高、低电平（= <i>V</i><sub>OH</sub>、<i>V</i><sub>OL</sub>）</td><td>由电路状态算出</td><td>电阻负载 <i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub>；饱和型负载 <i>V</i><sub>H</sub> 比 <i>V</i><sub>DD</sub> 低一个阈值</td></tr>
+<tr><td><i>V</i><sub>IL</sub>、<i>V</i><sub>IH</sub></td><td>输入判低、判高的边界</td><td>传输特性斜率为 −1 的两点</td><td>理想电阻负载反相器 <i>V</i><sub>IL</sub> = <i>V</i><sub>TN</sub></td></tr>
+<tr><td>NM<sub>H</sub>、NM<sub>L</sub></td><td>高、低噪声容限</td><td>NM<sub>H</sub> ≡ <i>V</i><sub>OH</sub> − <i>V</i><sub>IH</sub>；NM<sub>L</sub> ≡ <i>V</i><sub>IL</sub> − <i>V</i><sub>OL</sub></td><td>0.1–1 V；越大越抗扰动</td></tr>
+<tr><td><i>R</i><sub>on</sub></td><td>管子工作在三极管区时的等效电阻；角标 S、L 分别指 <i>M</i><sub>S</sub>、<i>M</i><sub>L</sub></td><td>见（1.6）式</td><td>1–10 kΩ</td></tr>
+<tr><td><i>C</i><sub>L</sub></td><td>输出节点上的全部负载电容</td><td>—</td><td>0.05–0.2 pF（片内一级）</td></tr>
+<tr><td><i>τ</i></td><td>充放电时间常数</td><td><i>τ</i> ≡ <i>R</i><sub>on</sub><i>C</i><sub>L</sub></td><td>单位 s；数值等于充到 63.2% 所需时间</td></tr>
+<tr><td><i>t</i><sub>pHL</sub>、<i>t</i><sub>pLH</sub></td><td>输出由高到低、由低到高的传输延迟</td><td>输入跳变 50% 到输出跳变 50%</td><td>0.1–1 ns（片上单级）</td></tr>
+</tbody>
+</table>
+
+<div class="box ok">
+  <div class="t">全篇地图</div>
+  <p>笔记的六页可以压成一条链：</p>
+  <p><b>§1</b> 判据（<i>M</i><sub>S</sub> 变、<i>M</i><sub>L</sub> 恒导通）→ <b>§2</b> 电阻负载作基准（<i>V</i><sub>H</sub>、<i>V</i><sub>IL</sub>、<i>R</i><sub>on</sub> 都在这里定义）→
+     <b>§3</b> 六种接法：两种恒关断（不可用）、四种恒导通（耗尽型／饱和型／线性型／伪 NMOS）→
+     <b>§4</b> 把"恒导通"变成可设计的尺寸：先算 <i>M</i><sub>L</sub>，再算 <i>M</i><sub>S</sub>，体效应在中间插一脚 →
+     <b>§5</b> 只改 <i>M</i><sub>S</sub> 网络的串并联，反相器升级为 NAND/NOR →
+     <b>§6</b> 输出接 <i>C</i><sub>L</sub> 后的充放电，得到 <i>t</i><sub>f</sub>、<i>t</i><sub>pHL</sub>。</p>
+</div>
+
+<h2 id="s1">1 · MOS 作负载的框架</h2>
+<p>这一章定三件事：负载为什么必须换成 MOS 管、<i>M</i><sub>S</sub> 与 <i>M</i><sub>L</sub> 各管什么、以及后面每一节都要用到的开关判据与三区公式。</p>
+
+<h3 id="s11">1.1 负载为什么不用电阻</h3>
+<p>电阻负载反相器的下拉管 <i>M</i><sub>S</sub> 决定输出低电平，上拉电阻 <i>R</i><sub>D</sub> 决定输出高电平。片上做这样一个电阻，要用一条长条多晶硅（或扩散区）实现，电阻值由几何尺寸定：</p>
+
+<div class="f"><span class="eq">(1.1)</span>
+<span class="line"><i>R</i> = <i>ρ</i> · <span class="frac"><span class="n"><i>L</i></span><span class="d"><i>t</i> <i>W</i></span></span>                     <span class="cm">← 方块电阻的基本关系：长度在分子、厚度与宽度在分母</span></span>
+</div>
+<p>（1.1）里 <i>ρ</i> 是材料电阻率、<i>t</i> 是膜厚、<i>L</i>/<i>W</i> 是长宽比。要让 <i>R</i> 大，只能把 <i>L</i>/<i>W</i> 做长。把（1.1）两边同乘 <i>W</i>、同除 <i>R</i>，解出长度比：</p>
+
+<div class="f"><span class="eq">(1.2)</span>
+<span class="line"><span class="frac"><span class="n"><i>L</i></span><span class="d"><i>W</i></span></span> = <span class="frac"><span class="n"><i>R</i> <i>t</i></span><span class="d"><i>ρ</i></span></span>                    <span class="cm">← （1.1）两边乘 W/(R t)</span></span>
+<span class="line">   = <span class="frac"><span class="n">(95×10<sup>3</sup> Ω)(1×10<sup>−4</sup> cm)</span><span class="d">1×10<sup>−3</sup> Ω·cm</span></span>   <span class="cm">← 代入 R = 95 kΩ、t = 1 µm、ρ = 0.001 Ω·cm</span></span>
+<span class="line">   = <span class="frac"><span class="n">9.5</span><span class="d">1×10<sup>−3</sup></span></span>                <span class="cm">← 分子乘出（Ω·cm 与 Ω·cm 约掉，无量纲）</span></span>
+<span class="line">   = 9500                       <span class="cm">← 除法</span></span>
+</div>
+<p>9500 意味着这条电阻要 9500 个方块长。而同一条支路上的 <i>M</i><sub>S</sub>，<i>W</i>/<i>L</i> 只要 1 量级（§2.3 算出 1.03）。面积之比就是量级之比：电阻 <i>L</i>·<i>W</i> = <i>L</i>²/9500，MOS 管 <i>L</i>·<i>W</i> = 1.03 <i>L</i>²，两者差约 10<sup>4</sup> 倍。这就是负载必须换成 MOS 管的原因——不是电学上的需要，而是面积上的。</p>
+
+<div class="box warn">
+  <div class="t">注意块：换掉电阻之后，电路的性质变了</div>
+  <p>把 <i>R</i><sub>D</sub> 换成 <i>M</i><sub>L</sub> 之后，上拉支路不再是"电流随电压线性变化"，而是一条有阈值、有饱和段的 MOSFET 特性曲线。后果有两处：
+  ① 输出高电平不再一定是 <i>V</i><sub>DD</sub>（饱和型负载会掉一个阈值）；② 上拉能力随输出电压变化，充放电时间不再对称。后面 §3、§6 各处理一处。</p>
+</div>
+
+<h3 id="s12">1.2 <i>M</i><sub>S</sub> 与 <i>M</i><sub>L</sub> 的分工</h3>
+<p>笔记把"有效定义"写在一句话里：<b><i>M</i><sub>S</sub> 可以随 <i>V</i><sub>IN</sub> 切换模式，但 <i>M</i><sub>L</sub> 必须永远导通。</b> 这条要求不是风格问题，而是能不能工作的分界线。</p>
+
+<p><i>M</i><sub>L</sub> 若一旦关断，输出节点与 <i>V</i><sub>DD</sub> 之间就没有任何直流通路。此时输出电平由节点电容上残留的电荷决定，与输入无关：输入回到低电平时，输出无法被拉回高电平，高电平这个"逻辑值"就消失了。所以 <i>M</i><sub>L</sub> 必须是常通的——这是 §3 里筛选六种接法的唯一标准。</p>
+
+<h3 id="s13">1.3 开关判据（NMOS / PMOS）</h3>
+<p>判据只看栅源电压与阈值的关系，与漏源电压无关：</p>
+
+<table>
+<thead><tr><th style="width:16%">器件</th><th style="width:42%">导通（ON）</th><th style="width:42%">截止（OFF）</th></tr></thead>
+<tbody>
+<tr><td>NMOS</td><td><i>V</i><sub>GS</sub> &gt; <i>V</i><sub>TN</sub></td><td><i>V</i><sub>GS</sub> ≤ <i>V</i><sub>TN</sub></td></tr>
+<tr><td>PMOS</td><td><i>V</i><sub>SG</sub> &gt; |<i>V</i><sub>TP</sub>|</td><td><i>V</i><sub>SG</sub> ≤ |<i>V</i><sub>TP</sub>|</td></tr>
+</tbody>
+</table>
+
+<p>两条判据形状相同，差别只在"栅源"的定义方向：NMOS 要求栅高于源，PMOS 要求源高于栅。伪 NMOS 里的负载管是 PMOS，源极接 <i>V</i><sub>DD</sub>、栅极接地，于是 <i>V</i><sub>SG</sub> = <i>V</i><sub>DD</sub> − 0 = <i>V</i><sub>DD</sub>，恒大于 |<i>V</i><sub>TP</sub>|，天然常通——这正是它被选作负载的原因（§3.5）。</p>
+
+<div class="box err">
+  <div class="t">易错点：导通、饱和、线性是三个互相独立的问题</div>
+  <p><b>错误形态：</b>看到 "<i>V</i><sub>GS</sub> &gt; <i>V</i><sub>TN</sub>" 就套饱和区公式 <i>I</i><sub>D</sub> = <i>K</i>(<i>V</i><sub>GS</sub> − <i>V</i><sub>TN</sub>)²。</p>
+  <p><b>正确形态：</b>先用（1.3）判"通不通"，通不通确定之后，再用 <i>V</i><sub>DS</sub> 与 <i>V</i><sub>OV</sub> 的大小判"在哪个区"，最后才选公式。<i>V</i><sub>GS</sub> &gt; <i>V</i><sub>TN</sub> 只说明沟道出现了，不说明沟道是否被夹断。</p>
+</div>
+
+<h3 id="s14">1.4 三个工作区与 <i>R</i><sub>on</sub></h3>
+<p>三个区的电流式用 <i>K</i> 写出来只有两条（截止区电流为零）：</p>
+
+<div class="f key"><span class="eq">(1.3)</span>
+<span class="line">截止：   <i>I</i><sub>D</sub> = 0                          <span class="cm">条件 <i>V</i><sub>GS</sub> ≤ <i>V</i><sub>TN</sub></span></span>
+<span class="line">饱和：   <i>I</i><sub>D</sub> = <i>K</i> <i>V</i><sub>OV</sub>²                       <span class="cm">条件 0 &lt; <i>V</i><sub>OV</sub> ≤ <i>V</i><sub>DS</sub></span></span>
+<span class="line">三极管： <i>I</i><sub>D</sub> = <i>K</i> [ 2<i>V</i><sub>OV</sub><i>V</i><sub>DS</sub> − <i>V</i><sub>DS</sub>² ]     <span class="cm">条件 0 &lt; <i>V</i><sub>DS</sub> &lt; <i>V</i><sub>OV</sub></span></span>
+</div>
+
+<p>饱和式里没有 ½：它已经被折进 <i>K</i> 了。饱和式说明电流只由过驱动电压决定，与 <i>V</i><sub>DS</sub> 无关——这就是"恒流"的来源，也是负载管能当"电流源"用的原因。三极管式里两项的相对大小是 2<i>V</i><sub>OV</sub> 比 <i>V</i><sub>DS</sub>：当</p>
+
+<div class="f"><span class="eq">(1.4)</span>
+<span class="line"><i>V</i><sub>DS</sub> ≪ 2<i>V</i><sub>OV</sub>                    <span class="cm">← 三极管区深到"电阻"的那一段</span></span>
+</div>
+<p>时，<i>V</i><sub>DS</sub>² 项比 2<i>V</i><sub>OV</sub><i>V</i><sub>DS</sub> 小一个 <i>V</i><sub>DS</sub>/(2<i>V</i><sub>OV</sub>) 的因子，可以扔掉，三极管式退化成线性式：</p>
+
+<div class="f"><span class="eq">(1.5)</span>
+<span class="line"><i>I</i><sub>D</sub> = <i>K</i>[2<i>V</i><sub>OV</sub><i>V</i><sub>DS</sub> − <i>V</i><sub>DS</sub>²]</span>
+<span class="line">   ≈ <i>K</i> (2<i>V</i><sub>OV</sub>) <i>V</i><sub>DS</sub>          <span class="cm">← 扔掉 <i>V</i><sub>DS</sub>² 项（条件见 1.4 式）</span></span>
+</div>
+<p>此时 <i>I</i><sub>D</sub> 与 <i>V</i><sub>DS</sub> 成正比，比值就是电阻，取倒数即得开关管的导通电阻：</p>
+
+<div class="f key"><span class="eq">(1.6)</span>
+<span class="line"><i>R</i><sub>on</sub> ≡ <span class="frac"><span class="n"><i>V</i><sub>DS</sub></span><span class="d"><i>I</i><sub>D</sub></span></span></span>
+<span class="line">     = <span class="frac"><span class="n"><i>V</i><sub>DS</sub></span><span class="d"><i>K</i>(2<i>V</i><sub>OV</sub>)<i>V</i><sub>DS</sub></span></span>        <span class="cm">← 代入（1.5）式</span></span>
+<span class="line">     = <span class="frac"><span class="n">1</span><span class="d">2<i>K</i> <i>V</i><sub>OV</sub></span></span>           <span class="cm">← 上下约掉 <i>V</i><sub>DS</sub></span></span>
+</div>
+
+<p>（1.6）说的是：<i>R</i><sub>on</sub> 与过驱动电压成反比。输入越高、阈值越低、管子越宽（<i>K</i> 越大），导通电阻越小。量纲也可以校对：<i>K</i> 是 A/V²，乘上 V 得 A/V，取倒数得 V/A = Ω，成立。</p>
+
+<div class="box warn">
+  <div class="t">近似块：<i>R</i><sub>on</sub> 的适用范围与误差</div>
+  <p>（1.6）建立在扔掉 <i>V</i><sub>DS</sub>² 项之上。误差正是因子 <i>V</i><sub>DS</sub>/(2<i>V</i><sub>OV</sub>)：<i>V</i><sub>OV</sub> = 1.9 V、<i>V</i><sub>DS</sub> = 0.2 V 时，误差 0.2/3.8 = 5.3%，扔得掉；<i>V</i><sub>OV</sub> = 0.5 V、<i>V</i><sub>DS</sub> = 0.2 V 时，误差 20%，扔不得，必须回到（1.3）的三极管式解二次方程。</p>
+</div>
+
+<h2 id="s2">2 · 电阻负载反相器：全篇的基准</h2>
+<p>后面四种 MOS 负载的性能都要拿"电阻 + <i>M</i><sub>S</sub>"这个最原始的反相器作对照。这一章把这台基准机器的两个电平、一个边界和一条设计流程算清楚。</p>
+
+<h3 id="s21">2.1 两个状态与电平</h3>
+<figure>
+  <canvas id="fig1" height="330"></canvas>
+  <figcaption>
+    <b>图 1 ｜ 电阻负载反相器。</b> 电源轨为 <i>V</i><sub>DD</sub>，上拉支路是电阻 <i>R</i><sub>D</sub>，下拉支路是开关管 <i>M</i><sub>S</sub>（栅极接输入 <i>V</i><sub>IN</sub>、源极接地），两者之间的节点是输出 <i>V</i><sub>OUT</sub>。<br>
+    两种状态：<i>M</i><sub>S</sub> 关断时无电流、<i>R</i><sub>D</sub> 上无压降，<i>V</i><sub>OUT</sub> = <i>V</i><sub>DD</sub>；<i>M</i><sub>S</sub> 导通时 <i>R</i><sub>D</sub> 与 <i>R</i><sub>on</sub> 串联分压，<i>V</i><sub>OUT</sub> = <i>V</i><sub>L</sub>。
+  </figcaption>
+</figure>
+
+<p>导通时的输出低电平，由 <i>R</i><sub>D</sub> 与 <i>R</i><sub>on</sub> 的分压决定：</p>
+
+<div class="f"><span class="eq">(2.1)</span>
+<span class="line"><i>V</i><sub>L</sub> = <i>V</i><sub>DD</sub> · <span class="frac"><span class="n"><i>R</i><sub>on</sub></span><span class="d"><i>R</i><sub>on</sub> + <i>R</i><sub>D</sub></span></span>         <span class="cm">← 串联分压：同一电流，电压按电阻分配</span></span>
+</div>
+
+<p>（2.1）的物理含义在比值 <i>R</i><sub>on</sub>/<i>R</i><sub>D</sub> 上：这个比值占几成，输出低电平就占 <i>V</i><sub>DD</sub> 的几成。要 <i>V</i><sub>L</sub> 足够低（逻辑 0），必须 <i>R</i><sub>on</sub> ≪ <i>R</i><sub>D</sub>。而 <i>R</i><sub>D</sub> 又要足够大才能把导通时的功耗压下来——这两条合起来就是"低功耗 + 低电平"的固有矛盾，也是 §3 换负载拓扑的动机之一。</p>
+
+<p>关断态没有电流，<i>R</i><sub>D</sub> 上没有压降，于是</p>
+
+<div class="f"><span class="eq">(2.2)</span>
+<span class="line"><i>V</i><sub>H</sub> = <i>V</i><sub>OH</sub> = <i>V</i><sub>DD</sub> − <i>I</i><sub>D</sub><i>R</i><sub>D</sub>   <span class="cm">← 上拉支路的欧姆定律</span></span>
+<span class="line">     = <i>V</i><sub>DD</sub> − 0          <span class="cm">← <i>I</i><sub>D</sub> = 0</span></span>
+<span class="line">     = <i>V</i><sub>DD</sub></span>
+</div>
+
+<h3 id="s22">2.2 <i>V</i><sub>IL</sub> = <i>V</i><sub>TN</sub> 的来历</h3>
+<p>输入从 0 往上加，在 <i>V</i><sub>IN</sub> 还没到 <i>V</i><sub>TN</sub> 之前，<i>M</i><sub>S</sub> 一直是截止的：没有电流，输出一直停在 <i>V</i><sub>DD</sub>，无论输入怎么变。输入一旦超过 <i>V</i><sub>TN</sub>，沟道出现、电流开始流、输出开始下降。所以"输出开始偏离高电平"的那个输入值，就是阈值电压本身：</p>
+
+<div class="f key"><span class="eq">(2.3)</span>
+<span class="line"><i>V</i><sub>IL</sub> = <i>V</i><sub>TN</sub>                 <span class="cm">← 理想情形（<i>M</i><sub>S</sub> 一导通就把输出拉离 <i>V</i><sub>DD</sub>）</span></span>
+</div>
+
+<p>这是一条"理想情形"的结论，成立的前提有两个：一是电阻负载的电流不随输出变化（真电阻），二是判据用硬阈值（忽略亚阈值导电）。笔记在这里标了一句"实际由于 <i>M</i><sub>L</sub> 会导致部分变化"：一旦上拉支路换成 MOS 管，它的电流会随 <i>V</i><sub>OUT</sub> 变化，转折点就从 <i>V</i><sub>TN</sub> 上挪一点。</p>
+
+<h3 id="s23">2.3 设计示例（课件数值复算）</h3>
+<p>题目：<i>V</i><sub>DD</sub> = 3.3 V，输出低电平时功耗 <i>P</i> = 0.1 mW、此时 <i>V</i><sub>L</sub> = 0.2 V；<i>K</i>′<sub>N</sub> = 60 µA/V²，<i>V</i><sub>TN</sub> = 0.75 V、λ = 0。求 <i>R</i><sub>D</sub> 与 <i>M</i><sub>S</sub> 的 <i>W</i>/<i>L</i>。</p>
+
+<p>低电平状态的功耗全部落在电源到地的通路上，所以电流由功耗与电源电压定：</p>
+
+<div class="f"><span class="eq">(2.4)</span>
+<span class="line"><i>I</i><sub>DD</sub> = <span class="frac"><span class="n"><i>P</i></span><span class="d"><i>V</i><sub>DD</sub></span></span>              <span class="cm">← 功耗定义 <i>P</i> = <i>V</i><sub>DD</sub><i>I</i><sub>DD</sub> 两边除 <i>V</i><sub>DD</sub></span></span>
+<span class="line">     = <span class="frac"><span class="n">0.1×10<sup>−3</sup> W</span><span class="d">3.3 V</span></span>      <span class="cm">← 代入 <i>P</i>、<i>V</i><sub>DD</sub></span></span>
+<span class="line">     = 30.3 µA          <span class="cm">← 除法（1 W/V = 1 A）</span></span>
+</div>
+
+<p>低电平状态下 <i>R</i><sub>D</sub> 两端的电压是 <i>V</i><sub>DD</sub> − <i>V</i><sub>L</sub>，流过它的就是上面这个电流：</p>
+
+<div class="f"><span class="eq">(2.5)</span>
+<span class="line"><i>R</i><sub>D</sub> = <span class="frac"><span class="n"><i>V</i><sub>DD</sub> − <i>V</i><sub>L</sub></span><span class="d"><i>I</i><sub>DD</sub></span></span>         <span class="cm">← 欧姆定律</span></span>
+<span class="line">    = <span class="frac"><span class="n">3.3 − 0.2</span><span class="d">30.3×10<sup>−6</sup></span></span>    <span class="cm">← 代入（单位：V / A = Ω）</span></span>
+<span class="line">    = <span class="frac"><span class="n">3.1</span><span class="d">30.3×10<sup>−6</sup></span></span>        <span class="cm">← 分子相减</span></span>
+<span class="line">    = 102 kΩ            <span class="cm">← 除法</span></span>
+</div>
+
+<p>再定 <i>W</i>/<i>L</i>。此时 <i>V</i><sub>GS</sub> = 3.3 V、<i>V</i><sub>DS</sub> = 0.2 V，过驱动 <i>V</i><sub>OV</sub> = 3.3 − 0.75 = 2.55 V，而 <i>V</i><sub>DS</sub> = 0.2 V &lt; 2.55 V，所以 <i>M</i><sub>S</sub> 在三极管区。用（1.3）的三极管式，把 <i>K</i><sub>S</sub> 当未知量解出来：</p>
+
+<div class="f"><span class="eq">(2.6)</span>
+<span class="line"><i>I</i><sub>DD</sub> = <i>K</i><sub>S</sub>[ 2<i>V</i><sub>OV</sub><i>V</i><sub>DS</sub> − <i>V</i><sub>DS</sub>² ]        <span class="cm">← （1.3）三极管式</span></span>
+<span class="line">30.3×10<sup>−6</sup> = <i>K</i><sub>S</sub>[ 2(2.55)(0.2) − (0.2)² ]   <span class="cm">← 代入 <i>I</i><sub>DD</sub>、<i>V</i><sub>OV</sub>、<i>V</i><sub>DS</sub></span></span>
+<span class="line">30.3×10<sup>−6</sup> = <i>K</i><sub>S</sub>[ 1.02 − 0.04 ]        <span class="cm">← 括号内两项各自乘出</span></span>
+<span class="line">30.3×10<sup>−6</sup> = <i>K</i><sub>S</sub>(0.98)            <span class="cm">← 括号内相减</span></span>
+<span class="line"><i>K</i><sub>S</sub> = 30.9 µA/V²             <span class="cm">← 两边除 0.98（单位 A/V）</span></span>
+</div>
+
+<p>再由 <i>K</i> 的定义反解尺寸：</p>
+
+<div class="f"><span class="eq">(2.7)</span>
+<span class="line"><span class="frac"><span class="n"><i>W</i></span><span class="d"><i>L</i></span></span> = <span class="frac"><span class="n">2<i>K</i><sub>S</sub></span><span class="d"><i>K</i>′<sub>N</sub></span></span>             <span class="cm">← <i>K</i> ≡ ½<i>K</i>′<sub>N</sub>(<i>W</i>/<i>L</i>) 两边乘 2、除 <i>K</i>′<sub>N</sub></span></span>
+<span class="line">   = <span class="frac"><span class="n">2(30.9×10<sup>−6</sup>)</span><span class="d">60×10<sup>−6</sup></span></span>      <span class="cm">← 代入 <i>K</i><sub>S</sub>、<i>K</i>′<sub>N</sub>（A/V² 约掉，无量纲）</span></span>
+<span class="line">   = 1.03                <span class="cm">← 除法</span></span>
+</div>
+
+<p>与课件给出的 30.3 µA、102 kΩ、1.03 三处一致。注意最后这个 1.03 与 §1.1 的 9500 是同一个电路里两个支路的尺寸比——这就是电阻负载在 IC 里活不下去的量化证据。</p>
+
+<h3 id="s24">2.4 输出低电平的另一种算法：<i>R</i><sub>on</sub></h3>
+<p>如果只知道 <i>R</i><sub>on</sub> 而不想解二次方程，（1.6）给出一个捷径。用（2.7）的尺寸算回 <i>K</i><sub>S</sub> = ½(60)(1.03) = 30.9 µA/V²，则</p>
+
+<div class="f"><span class="eq">(2.8)</span>
+<span class="line"><i>R</i><sub>on</sub> = <span class="frac"><span class="n">1</span><span class="d">2<i>K</i><sub>S</sub><i>V</i><sub>OV</sub></span></span>            <span class="cm">← （1.6）式</span></span>
+<span class="line">     = <span class="frac"><span class="n">1</span><span class="d">2(30.9×10<sup>−6</sup>)(2.55)</span></span>   <span class="cm">← 代入</span></span>
+<span class="line">     = <span class="frac"><span class="n">1</span><span class="d">157.6×10<sup>−6</sup></span></span>          <span class="cm">← 分母乘出</span></span>
+<span class="line">     = 6.35 kΩ               <span class="cm">← 取倒数</span></span>
+</div>
+
+<p>代回（2.1）验算低电平：<i>V</i><sub>L</sub> = 3.3 × 6.35/(6.35 + 102) = 3.3 × 0.0586 = 0.193 V，与题给的 0.2 V 差 3.4%。这点差就是 §1.4 里扔掉的 <i>V</i><sub>DS</sub>² 项造成的（误差因子 0.2/(2×2.55) = 3.9%）。两处独立的算法互相对上，说明（1.6）在这里可用。</p>
+
+<h2 id="s3">3 · 六种 MOS 负载接法</h2>
+<p>把 <i>R</i><sub>D</sub> 换成一只 MOS 管之后，栅极接哪里决定了这只管子在整个工作范围内是什么状态。这一章按笔记的顺序把六种接法逐一过一遍：两种恒关断（不可用）、四种恒导通（可用）。</p>
+
+<figure>
+  <canvas id="fig2" height="1020"></canvas>
+  <figcaption>
+    <b>图 2 ｜ 负载管的六种栅极接法。</b> 六块子图结构完全相同：顶部电源轨 <i>V</i><sub>DD</sub>，下面是负载管 <i>M</i><sub>L</sub>，中间是输出节点（黑点），再下面是开关管 <i>M</i><sub>S</sub>（栅极接 <i>V</i><sub>IN</sub>、源极接地），右侧引出 <i>V</i><sub>OUT</sub>。六块只差一处——<b><i>M</i><sub>L</sub> 的栅极接到哪</b>，画在 <i>M</i><sub>L</sub> 左侧的那条引线上。<br>
+① 栅接源、② 栅接地：<i>M</i><sub>L</sub> 的 <i>V</i><sub>GS</sub> ≤ 0，恒关断，输出没有上拉通路，电路不工作。③ 耗尽型（栅仍接源，但 <i>V</i><sub>TN</sub> &lt; 0）：恒导通且恒饱和，<i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub>。④ 栅接 <i>V</i><sub>DD</sub>：<i>V</i><sub>GS</sub> = <i>V</i><sub>DS</sub>，恒饱和，<i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub> − <i>V</i><sub>TN,L</sub>。⑤ 栅接 <i>V</i><sub>GG</sub>（&gt; <i>V</i><sub>DD</sub> + <i>V</i><sub>TN,L</sub>）：恒在线性区，需第二路电源。⑥ 栅接地 PMOS：<i>V</i><sub>SG</sub> = <i>V</i><sub>DD</sub>，恒导通、无体效应。</figcaption>
+</figure>
+
+<h3 id="s31">3.1 两种恒关断接法（不可用）</h3>
+<p><b>接法 ①：栅极接源极。</b> 栅、源同电位，栅源电压恒为零：</p>
+
+<div class="f"><span class="eq">(3.1)</span>
+<span class="line"><i>V</i><sub>GS,L</sub> = <i>V</i><sub>G,L</sub> − <i>V</i><sub>S,L</sub>      <span class="cm">← 栅源电压的定义</span></span>
+<span class="line">      = <i>V</i><sub>OUT</sub> − <i>V</i><sub>OUT</sub>    <span class="cm">← 栅、源接在同一节点（输出节点）</span></span>
+<span class="line">      = 0                  <span class="cm">← 相减</span></span>
+</div>
+<p>对增强型管子 <i>V</i><sub>TN</sub> = 0.6 V &gt; 0，由（1.3）的截止条件 <i>V</i><sub>GS</sub> ≤ <i>V</i><sub>TN</sub> 得 <i>M</i><sub>L</sub> 恒截止。上拉支路断开，输出只剩节点电容，高电平无从建立。</p>
+
+<p><b>接法 ②：栅极接地。</b> 源极在输出节点上，电位 ≥ 0，于是：</p>
+
+<div class="f"><span class="eq">(3.2)</span>
+<span class="line"><i>V</i><sub>GS,L</sub> = <i>V</i><sub>G,L</sub> − <i>V</i><sub>S,L</sub>      <span class="cm">← 定义</span></span>
+<span class="line">      = 0 − <i>V</i><sub>OUT</sub>          <span class="cm">← 栅接地，源接输出</span></span>
+<span class="line">      = −<i>V</i><sub>OUT</sub>           <span class="cm">← 减法</span></span>
+</div>
+<p>输出电平非负，故 <i>V</i><sub>GS,L</sub> ≤ 0 &lt; <i>V</i><sub>TN</sub>，同样恒截止。两种接法的失败原因是同一个：栅源之间没有正电压差，沟道不出现。</p>
+
+<div class="box warn">
+  <div class="t">关键块：筛选六种接法的唯一硬指标</div>
+  <p>① ② 与 ③ ④ ⑤ ⑥ 的唯一区别，不是"接法好看不好看"，而是<b>负载管的 <i>V</i><sub>GS</sub> 在整个输出摆幅内是否始终大于 <i>V</i><sub>TN</sub></b>。① ② 的 <i>V</i><sub>GS</sub> ≤ 0，直接出局；③ 用负阈值、④ ⑤ 用栅压在 <i>V</i><sub>DD</sub> 以上、⑥ 用 PMOS 的源栅差，都是为了让 <i>M</i><sub>L</sub> 在整个摆幅内保持导通。</p>
+</div>
+
+<h3 id="s32">3.2 耗尽型负载（栅接源，但阈值是负的）</h3>
+<p>接法与 ① 完全相同——栅、源短接，<i>V</i><sub>GS,L</sub> = 0。区别在器件：耗尽型 NMOS 的阈值是负的（例题里 <i>V</i><sub>TN,L</sub> = −1 V），所以过驱动电压仍然是正的：</p>
+
+<div class="f key"><span class="eq">(3.3)</span>
+<span class="line"><i>V</i><sub>OV,L</sub> = <i>V</i><sub>GS,L</sub> − <i>V</i><sub>TN,L</sub>     <span class="cm">← 过驱动的定义</span></span>
+<span class="line">      = 0 − (−1 V)                 <span class="cm">← 代入 <i>V</i><sub>GS,L</sub> = 0、<i>V</i><sub>TN,L</sub> = −1 V</span></span>
+<span class="line">      = 1 V                        <span class="cm">← 减法</span></span>
+</div>
+
+<figure>
+  <canvas id="fig3" height="360"></canvas>
+  <figcaption>
+    <b>图 3 ｜ 转移特性：耗尽型与增强型的差别。</b> 横轴 <i>V</i><sub>GS</sub>、纵轴 <i>I</i><sub>D</sub>（饱和区）。实线是耗尽型（<i>V</i><sub>TN</sub> = −1 V），虚线是增强型（<i>V</i><sub>TN</sub> = +0.6 V）。<br>
+    两条曲线的形状相同、只是左移了一个阈值：实线在 <i>V</i><sub>GS</sub> = 0 处仍有电流（数值为 <i>K</i><sub>L</sub>·(1 V)²），虚线在 <i>V</i><sub>GS</sub> = 0 处已经截止。这就是"栅接源"这一接法在耗尽型上能存活的原因。
+  </figcaption>
+</figure>
+
+<p>因为 <i>V</i><sub>OV,L</sub> = 1 V 与输出无关（栅源短接，<i>V</i><sub>GS</sub> 恒为 0），所以只要 <i>M</i><sub>L</sub> 在饱和区，它的电流就是一个常数。判饱和用（1.3）的条件 <i>V</i><sub>DS</sub> ≥ <i>V</i><sub>OV</sub>：</p>
+
+<div class="f"><span class="eq">(3.4)</span>
+<span class="line"><i>V</i><sub>DS,L</sub> = <i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub>       <span class="cm">← 漏在 <i>V</i><sub>DD</sub>、源在输出</span></span>
+<span class="line"><i>V</i><sub>DS,L</sub> ≥ <i>V</i><sub>OV,L</sub> ⇔ <i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub> ≥ 1 V   <span class="cm">← 代入（3.3）的 1 V</span></span>
+</div>
+<p>输出一旦升到 <i>V</i><sub>DD</sub> − 1 V 以上，<i>M</i><sub>L</sub> 离开饱和区进入三极管区，电流随 <i>V</i><sub>DS,L</sub> 减小而减小，并在 <i>V</i><sub>OUT</sub> = <i>V</i><sub>DD</sub> 时正好为零。所以耗尽型负载的高电平可以顶到电源电压：</p>
+
+<div class="f"><span class="eq">(3.5)</span>
+<span class="line"><i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub>              <span class="cm">← <i>V</i><sub>OUT</sub> = <i>V</i><sub>DD</sub> 时 <i>I</i><sub>D</sub> = 0，负载不再有压降</span></span>
+</div>
+
+<p>饱和区内的电流是个与输出无关的常数：</p>
+
+<div class="f"><span class="eq">(3.6)</span>
+<span class="line"><i>I</i><sub>DL</sub> = <i>K</i><sub>L</sub> <i>V</i><sub>OV,L</sub>²        <span class="cm">← （1.3）饱和式</span></span>
+<span class="line">     = <i>K</i><sub>L</sub> (1 V)²           <span class="cm">← 代入（3.3）</span></span>
+<span class="line">     = <i>K</i><sub>L</sub>                 <span class="cm">← 乘方；单位 A/V² × V² = A</span></span>
+</div>
+<p>（3.6）右侧不含 <i>V</i><sub>OUT</sub>，这正是笔记写的"饱和电流恒定"。它带来的直接后果是：低电平状态下把输出拉低的电流由负载管单方面定死，开关管只需把这个电流吞下去并保持在三极管区。</p>
+
+<div class="box warn">
+  <div class="t">近似块：耗尽型负载的体效应可以忽略吗</div>
+  <p>耗尽型负载的源极在输出节点上，体端接地，<i>V</i><sub>SB</sub> = <i>V</i><sub>OUT</sub> ≠ 0，严格说阈值要按（4.1）修正：<i>V</i><sub>SB</sub> = 0.25 V 时 |<i>V</i><sub>TN,L</sub>| 从 1.00 V 降到 0.926 V，过驱动从 1.000 V 降到 0.926 V，电流降到原来的 85.8%。习题（Tutorial 4 第 4 题）按 λ = 0、不计体效应的约定给答案，得 (<i>W</i>/<i>L</i>)<sub>L</sub> = 1.60；计入体效应要 1.87，比它大 17%（见 §4.3）。</p>
+</div>
+
+<h3 id="s33">3.3 饱和型负载（栅接 <i>V</i><sub>DD</sub>）</h3>
+<p>把负载管的栅极和漏极一起接到 <i>V</i><sub>DD</sub>，源极接输出。此时栅源电压与漏源电压是同一个量：</p>
+
+<div class="f key"><span class="eq">(3.7)</span>
+<span class="line"><i>V</i><sub>GS,L</sub> = <i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub>       <span class="cm">← 栅在 <i>V</i><sub>DD</sub>、源在输出</span></span>
+<span class="line"><i>V</i><sub>DS,L</sub> = <i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub>       <span class="cm">← 漏在 <i>V</i><sub>DD</sub>、源在输出</span></span>
+<span class="line">⇒ <i>V</i><sub>DS,L</sub> = <i>V</i><sub>GS,L</sub>            <span class="cm">← 两式相等</span></span>
+</div>
+
+<p>饱和的条件是 <i>V</i><sub>DS</sub> ≥ <i>V</i><sub>GS</sub> − <i>V</i><sub>TN</sub>。把（3.7）代进去：</p>
+
+<div class="f"><span class="eq">(3.8)</span>
+<span class="line"><i>V</i><sub>DS,L</sub> ≥ <i>V</i><sub>GS,L</sub> − <i>V</i><sub>TN,L</sub>     <span class="cm">← （1.3）的饱和条件</span></span>
+<span class="line"><i>V</i><sub>GS,L</sub> ≥ <i>V</i><sub>GS,L</sub> − <i>V</i><sub>TN,L</sub>     <span class="cm">← 用（3.7）把左边的 <i>V</i><sub>DS,L</sub> 换掉</span></span>
+<span class="line">0 ≥ −<i>V</i><sub>TN,L</sub>               <span class="cm">← 两边同减 <i>V</i><sub>GS,L</sub></span></span>
+</div>
+<p>增强型 <i>V</i><sub>TN,L</sub> &gt; 0，所以末行恒成立——笔记写"只要导通，饱和恒成立"。这只管子在整个工作范围内都停在自己特性曲线的饱和段上，是一个两端器件意义上的电流源。</p>
+
+<p>高电平与电阻负载不同了。输出被上拉到多高，取决于负载管能把它顶到哪：当输出接近 <i>V</i><sub>DD</sub> 时 <i>V</i><sub>GS,L</sub> 趋近 0，沟道消失，电流消失，输出就停在这里。令 <i>M</i><sub>S</sub> 关断（<i>I</i><sub>DL</sub> = 0）并取（1.3）的饱和式左边为 0，解出的就是 <i>V</i><sub>H</sub>：</p>
+
+<div class="f key"><span class="eq">(3.9)</span>
+<span class="line">0 = <i>K</i><sub>L</sub> (<i>V</i><sub>DD</sub> − <i>V</i><sub>H</sub> − <i>V</i><sub>TN,L</sub>)²   <span class="cm">← （1.3）饱和式 + （3.7），令 <i>I</i><sub>DL</sub> = 0</span></span>
+<span class="line">0 = <i>V</i><sub>DD</sub> − <i>V</i><sub>H</sub> − <i>V</i><sub>TN,L</sub>            <span class="cm">← 两边开方（只取正根）</span></span>
+<span class="line"><i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub> − <i>V</i><sub>TN,L</sub>            <span class="cm">← 移项</span></span>
+</div>
+
+<p>（3.9）里的 <i>V</i><sub>TN,L</sub> 不是常数：此时源极在 <i>V</i><sub>H</sub>、体端接地，<i>V</i><sub>SB</sub> = <i>V</i><sub>H</sub>，阈值要被（4.1）抬高。把（4.1）与（3.9）联立，就得到 <i>V</i><sub>H</sub> 的自洽方程，只能迭代或图解法求解：</p>
+
+<div class="f"><span class="eq">(3.10)</span>
+<span class="line"><i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub> − [ <i>V</i><sub>TN0</sub> + <i>γ</i>( √(2<i>φ</i><sub>F</sub> + <i>V</i><sub>H</sub>) − √(2<i>φ</i><sub>F</sub>) ) ]   <span class="cm">← （4.1）代入（3.9）</span></span>
+</div>
+
+<figure>
+  <canvas id="fig4" height="400"></canvas>
+  <figcaption>
+    <b>图 4 ｜ <i>V</i><sub>H</sub> 的图解法。</b> 横轴 <i>V</i><sub>OUT</sub>、纵轴电压。灰直线是 <i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub>（栅源电压随输出变化的那条线），红曲线是 <i>V</i><sub>TN,L</sub> 随 <i>V</i><sub>SB</sub> = <i>V</i><sub>OUT</sub> 变化的曲线（（4.1）式），两者交点即（3.10）的解。<br>
+    参数取 <i>V</i><sub>DD</sub> = 2.5 V、<i>V</i><sub>TN0</sub> = 0.6 V、<i>γ</i> = 0.5 V<sup>½</sup>、2<i>φ</i><sub>F</sub> = 0.6 V，交点落在 <i>V</i><sub>H</sub> = 1.55 V：比不计体效应的 1.90 V 低了 0.35 V。
+  </figcaption>
+</figure>
+
+<p>把 <i>V</i><sub>DD</sub> = 2.5 V、<i>V</i><sub>TN0</sub> = 0.6 V 代进（3.10）做四次迭代，可以看到它很快收敛：</p>
+
+<div class="f"><span class="eq">(3.11)</span>
+<span class="line"><i>V</i><sub>H</sub><sup>(0)</sup> = <i>V</i><sub>DD</sub> − <i>V</i><sub>TN0</sub> = 1.900 V           <span class="cm">← 先按无体效应起步</span></span>
+<span class="line"><i>V</i><sub>H</sub><sup>(1)</sup> = 1.9 − 0.5(√2.500 − √0.600) = 1.497 V   <span class="cm">← 代入（3.10），用 <i>V</i><sub>H</sub><sup>(0)</sup> 算根号</span></span>
+<span class="line"><i>V</i><sub>H</sub><sup>(2)</sup> = 1.9 − 0.5(√2.097 − √0.600) = 1.563 V   <span class="cm">← 用 <i>V</i><sub>H</sub><sup>(1)</sup> 再算一次</span></span>
+<span class="line"><i>V</i><sub>H</sub><sup>(3)</sup> = 1.9 − 0.5(√2.163 − √0.600) = 1.552 V   <span class="cm">← 第三次</span></span>
+<span class="line"><i>V</i><sub>H</sub><sup>(4)</sup> = 1.9 − 0.5(√2.152 − √0.600) = 1.554 V   <span class="cm">← 第四次，已收敛</span></span>
+</div>
+<p>收敛到 <i>V</i><sub>H</sub> = 1.55 V，小数点后两位已经不动了（1.497 → 1.563 → 1.552 → 1.554 → 1.5535）。把这个值与课件"<i>V</i><sub>H</sub> = 1.55 V"对照，一致。</p>
+
+<p>差别有多大：把（3.9）里的 <i>V</i><sub>TN,L</sub> 当常数（0.60 V）代入，得 <i>V</i><sub>H</sub> = 1.90 V；按（3.10）自洽求解，得 1.55 V，两者差 0.35 V，比一个阈值还多。所以饱和型负载的 <i>V</i><sub>H</sub> 不能直接写 <i>V</i><sub>DD</sub> − <i>V</i><sub>TN0</sub>。</p>
+
+<h3 id="s34">3.4 线性型负载（栅接 <i>V</i><sub>GG</sub>）</h3>
+<p>把负载管的栅极单独接到一个高于 <i>V</i><sub>DD</sub> 的电源 <i>V</i><sub>GG</sub> 上，漏极接 <i>V</i><sub>DD</sub>、源极接输出。此时栅源电压与漏源电压不再相等：</p>
+
+<div class="f"><span class="eq">(3.12)</span>
+<span class="line"><i>V</i><sub>GS,L</sub> = <i>V</i><sub>GG</sub> − <i>V</i><sub>OUT</sub>       <span class="cm">← 栅在 <i>V</i><sub>GG</sub>、源在输出</span></span>
+<span class="line"><i>V</i><sub>DS,L</sub> = <i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub>       <span class="cm">← 漏在 <i>V</i><sub>DD</sub>、源在输出</span></span>
+</div>
+<p>线性区的条件是 <i>V</i><sub>DS</sub> &lt; <i>V</i><sub>GS</sub> − <i>V</i><sub>TN</sub>。把（3.12）两式代入，解出 <i>V</i><sub>GG</sub> 需要多高：</p>
+
+<div class="f key"><span class="eq">(3.13)</span>
+<span class="line"><i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub> &lt; (<i>V</i><sub>GG</sub> − <i>V</i><sub>OUT</sub>) − <i>V</i><sub>TN,L</sub>   <span class="cm">← （1.3）线性区条件 + （3.12）</span></span>
+<span class="line"><i>V</i><sub>DD</sub> &lt; <i>V</i><sub>GG</sub> − <i>V</i><sub>TN,L</sub>                <span class="cm">← 两边同加 <i>V</i><sub>OUT</sub></span></span>
+<span class="line"><i>V</i><sub>GG</sub> &gt; <i>V</i><sub>DD</sub> + <i>V</i><sub>TN,L</sub>                <span class="cm">← 移项</span></span>
+</div>
+<p>（3.13）说明为什么线性型负载一定要第二路电源：栅压至少要比 <i>V</i><sub>DD</sub> 高出一个阈值，负载管才肯工作在三极管区。管子在三极管区里像个电阻，上拉能力强、速度快，代价是多一路电源和更大的摆幅驱动。</p>
+
+<h3 id="s35">3.5 伪 NMOS（栅接地 PMOS）</h3>
+<p>把负载管换成 PMOS：源极接 <i>V</i><sub>DD</sub>、栅极接地、漏极接输出。判据要用源栅电压：</p>
+
+<div class="f"><span class="eq">(3.14)</span>
+<span class="line"><i>V</i><sub>SG,L</sub> = <i>V</i><sub>DD</sub> − 0 = <i>V</i><sub>DD</sub>     <span class="cm">← 源在 <i>V</i><sub>DD</sub>、栅接地</span></span>
+</div>
+<p>对 |<i>V</i><sub>TP</sub>| = 0.6 V、<i>V</i><sub>DD</sub> = 2.5 V，<i>V</i><sub>SG,L</sub> = 2.5 V &gt; 0.6 V，恒导通。饱和条件是 <i>V</i><sub>SD</sub> ≥ <i>V</i><sub>SG</sub> − |<i>V</i><sub>TP</sub>|，即</p>
+
+<div class="f"><span class="eq">(3.15)</span>
+<span class="line"><i>V</i><sub>DD</sub> − <i>V</i><sub>OUT</sub> ≥ <i>V</i><sub>DD</sub> − |<i>V</i><sub>TP</sub>|   <span class="cm">← 代入 <i>V</i><sub>SD,L</sub> 与 <i>V</i><sub>SG,L</sub></span></span>
+<span class="line">−<i>V</i><sub>OUT</sub> ≥ −|<i>V</i><sub>TP</sub>|               <span class="cm">← 两边同减 <i>V</i><sub>DD</sub></span></span>
+<span class="line"><i>V</i><sub>OUT</sub> ≤ |<i>V</i><sub>TP</sub>|                     <span class="cm">← 两边同乘 −1（不等号反向）</span></span>
+</div>
+<p>也就是说这只 PMOS 只在输出低于 |<i>V</i><sub>TP</sub>| 时饱和，输出一旦抬高它就进入三极管区、上拉能力变强——这正好补齐了 NMOS 负载"高电平上不去"的毛病，所以 <i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub>。</p>
+
+<p>第二个好处是没有体效应。PMOS 做在 n 阱里，体端接 <i>V</i><sub>DD</sub>；源极也接 <i>V</i><sub>DD</sub>，于是</p>
+
+<div class="f"><span class="eq">(3.16)</span>
+<span class="line"><i>V</i><sub>SB,L</sub> = <i>V</i><sub>S,L</sub> − <i>V</i><sub>B,L</sub> = 2.5 − 2.5 = 0   <span class="cm">← 源、体同接 <i>V</i><sub>DD</sub></span></span>
+</div>
+<p>体偏为零，阈值不需要修正，（4.1）式退化成 <i>V</i><sub>TN</sub> = <i>V</i><sub>TN0</sub>。伪 NMOS 的尺寸计算因此比饱和型负载干净：不迭代，一次算完（§4.4）。</p>
+
+<h3 id="s36">3.6 五种反相器对照</h3>
+<p>把五种可用拓扑放在同一组规格下比较（<i>V</i><sub>DD</sub> = 2.5 V、<i>V</i><sub>L</sub> = 0.20 V、<i>K</i>′<sub>N</sub> = 100 µA/V²、<i>V</i><sub>TN</sub> = |<i>V</i><sub>TP</sub>| = 0.6 V、<i>γ</i> = 0.5 V<sup>½</sup>、2<i>φ</i><sub>F</sub> = 0.6 V）：</p>
+
+<table>
+<thead><tr>
+  <th style="width:22%">拓扑</th><th><i>V</i><sub>H</sub> (V)</th><th><i>V</i><sub>L</sub> (V)</th>
+  <th>NM<sub>L</sub> (V)</th><th>NM<sub>H</sub> (V)</th><th>相对面积</th><th style="width:26%">代价</th>
+</tr></thead>
+<tbody>
+<tr><td>电阻负载</td><td>2.50</td><td>0.20</td><td>0.25</td><td>0.96</td><td>2880</td><td>面积 10<sup>4</sup> 量级（§1.1）</td></tr>
+<tr><td>饱和型负载</td><td>1.55</td><td>0.20</td><td>0.25</td><td>0.33</td><td>6.39</td><td><i>V</i><sub>H</sub> 掉一个阈值、速度慢</td></tr>
+<tr><td>线性型负载</td><td>2.50</td><td>0.20</td><td>0.12</td><td>0.96</td><td>7.94</td><td>需要第二路电源 <i>V</i><sub>GG</sub></td></tr>
+<tr><td>耗尽型负载</td><td>2.50</td><td>0.20</td><td>0.43</td><td>0.90</td><td>4.03</td><td>多一道离子注入工序</td></tr>
+<tr><td>伪 NMOS</td><td>2.50</td><td>0.20</td><td>0.46</td><td>0.75</td><td>3.33</td><td>低电平态恒有直流通路，静态功耗</td></tr>
+</tbody>
+</table>
+
+<p>表的读法：<i>V</i><sub>L</sub> 一列五种拓扑完全相同，因为低电平由下拉管 <i>M</i><sub>S</sub> 决定，与负载无关；差别全在 <i>V</i><sub>H</sub>、噪声容限和面积上。饱和型负载的 <i>V</i><sub>H</sub> = 1.55 V 是唯一够不到 <i>V</i><sub>DD</sub> 的，这也正是它的 NM<sub>H</sub> 只有 0.33 V 的原因（比别的拓扑低 0.6 V 左右）。</p>
+
+<p style="text-align:right"><a class="up" href="#s0">↑ 回到顶部</a></p>
+
+<h2 id="s4">4 · 三种恒导通负载的定量设计</h2>
+<p>第三章只判定了"能不能用"，这一章把"能用"的三条接法（耗尽型、饱和型、伪 NMOS）变成具体尺寸。核心是两步：先把负载管的电流定下来，再让开关管在低电平状态下吞下同一个电流。</p>
+
+<h3 id="s41">4.1 设计流程与体效应</h3>
+<p>课件的设计流程是五步，笔记把它压成"三板斧"。两者顺序不同，但都绕不开同一件事：低电平状态下的电流是两只管子共同的电流。</p>
+
+<table>
+<thead><tr><th style="width:8%">步</th><th style="width:46%">课件五步法</th><th style="width:46%">笔记三板斧</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>由 <i>P</i> 与 <i>V</i><sub>DD</sub> 求 <i>I</i><sub>DD</sub> = <i>P</i>/<i>V</i><sub>DD</sub></td><td>判断这一题要不要算体效应</td></tr>
+<tr><td>2</td><td>设 <i>M</i><sub>S</sub> 关断，求高电平 <i>V</i><sub>H</sub></td><td>先算 <i>M</i><sub>L</sub>：它的电流式里只有 <i>V</i><sub>L</sub> 和阈值，与 <i>M</i><sub>S</sub> 无关</td></tr>
+<tr><td>3</td><td>用 <i>V</i><sub>H</sub> 作 <i>M</i><sub>S</sub> 的栅压，按 <i>I</i><sub>DD</sub> 与 <i>V</i><sub>L</sub> 求 (<i>W</i>/<i>L</i>)<sub>S</sub></td><td>再解 <i>M</i><sub>S</sub>：它在低电平态处于三极管区</td></tr>
+<tr><td>4</td><td>按 <i>I</i><sub>DD</sub> 与 <i>V</i><sub>L</sub> 求 (<i>W</i>/<i>L</i>)<sub>L</sub></td><td>—</td></tr>
+<tr><td>5</td><td>校验两只管子的工作区假设（<i>V</i><sub>O</sub> = <i>V</i><sub>L</sub> 时）</td><td>—</td></tr>
+</tbody>
+</table>
+
+<p>第 1 步里的"判断要不要算体效应"，指的就是下面这条式子。源极电位一旦高于体端（NMOS 的体端接地），耗尽层变宽，要在同样的栅压下维持同样的沟道电荷，就得加更高的栅压——阈值被抬高：</p>
+
+<div class="f key"><span class="eq">(4.1)</span>
+<span class="line"><i>V</i><sub>TN</sub> = <i>V</i><sub>TN0</sub> + <i>γ</i> [ √(2<i>φ</i><sub>F</sub> + <i>V</i><sub>SB</sub>) − √(2<i>φ</i><sub>F</sub>) ]</span>
+</div>
+
+<p>（4.1）里 <i>V</i><sub>TN0</sub> 是源体同电位时的阈值，<i>γ</i> 是体效应系数（单位 V<sup>½</sup>，就是为配平两个根号而生的），2<i>φ</i><sub>F</sub> 是表面势参数。<i>V</i><sub>SB</sub> = 0 时两个根号相等，第二项为零，退化成 <i>V</i><sub>TN</sub> = <i>V</i><sub>TN0</sub>——这就是伪 NMOS 可以不算体效应的原因（§3.5）。</p>
+
+<p>代入本讲例题的参数（<i>V</i><sub>TN0</sub> = 0.6 V、<i>γ</i> = 0.5 V<sup>½</sup>、2<i>φ</i><sub>F</sub> = 0.6 V、<i>V</i><sub>SB</sub> = 0.2 V）：</p>
+
+<div class="f"><span class="eq">(4.2)</span>
+<span class="line"><i>V</i><sub>TN</sub> = 0.6 + 0.5(√(0.6 + 0.2) − √0.6)    <span class="cm">← 代入（4.1）各参数</span></span>
+<span class="line">     = 0.6 + 0.5(√0.8 − √0.6)              <span class="cm">← 根号内相加</span></span>
+<span class="line">     = 0.6 + 0.5(0.8944 − 0.7746)          <span class="cm">← 两个根号各自求值</span></span>
+<span class="line">     = 0.6 + 0.5(0.1198)                   <span class="cm">← 括号内相减</span></span>
+<span class="line">     = 0.6 + 0.0599                        <span class="cm">← 乘法</span></span>
+<span class="line">     = 0.66 V                             <span class="cm">← 加法（保留两位有效数字）</span></span>
+</div>
+
+<p>0.0599 V 看着小，但它落在 (<i>V</i><sub>GS</sub> − <i>V</i><sub>TN</sub>)² 里：本例题的过驱动是 1.64 V，阈值抬高 0.06 V 相当于过驱动缩小 3.7%，电流因此偏小 7.2%。所以饱和型负载的负载管尺寸必须用 0.66 V 而不是 0.60 V 去算；用错了，<i>W</i>/<i>L</i> 会偏小 7%。</p>
+
+<h3 id="s42">4.2 饱和型负载设计（笔记例题）</h3>
+<p>题目：<i>V</i><sub>DD</sub> = 2.5 V、<i>V</i><sub>L</sub> = 0.2 V、低电平态电流 <i>I</i><sub>DD</sub> = 80 µA、<i>K</i>′<sub>N</sub> = 100 µA/V²、<i>V</i><sub>TN0</sub> = 0.6 V、<i>γ</i> = 0.5 V<sup>½</sup>、2<i>φ</i><sub>F</sub> = 0.6 V、λ = 0。求两只管子的 <i>W</i>/<i>L</i>。（<i>I</i><sub>DD</sub> = 80 µA 对应 <i>P</i> = 0.2 mW：80 µA × 2.5 V = 0.2 mW。）</p>
+
+<p><b>第一步：高电平。</b> <i>M</i><sub>S</sub> 关断时负载管电流为零，用（3.11）的迭代结果：</p>
+
+<div class="f"><span class="eq">(4.3)</span>
+<span class="line"><i>V</i><sub>H</sub> = 1.55 V                   <span class="cm">← （3.11）的自洽解</span></span>
+</div>
+
+<p><b>第二步：负载管的阈值。</b> 低电平状态下负载管源极在 <i>V</i><sub>L</sub> = 0.2 V、体端接地，故 <i>V</i><sub>SB</sub> = 0.2 V，用（4.2）：</p>
+
+<div class="f"><span class="eq">(4.4)</span>
+<span class="line"><i>V</i><sub>TN,L</sub> = <i>V</i><sub>TN0</sub> + <i>γ</i>(√(2<i>φ</i><sub>F</sub> + <i>V</i><sub>L</sub>) − √(2<i>φ</i><sub>F</sub>))   <span class="cm">← （4.1），<i>V</i><sub>SB</sub> = <i>V</i><sub>L</sub></span></span>
+<span class="line">       = 0.66 V                          <span class="cm">← （4.2）的计算</span></span>
+</div>
+
+<p><b>第三步：负载管尺寸。</b> 负载管栅、漏都在 <i>V</i><sub>DD</sub>，源极在 <i>V</i><sub>L</sub>，故 <i>V</i><sub>GS,L</sub> = 2.5 − 0.2 = 2.3 V，由（3.8）它恒饱和。用（1.3）的饱和式：</p>
+
+<div class="f"><span class="eq">(4.5)</span>
+<span class="line"><i>I</i><sub>DL</sub> = <i>K</i><sub>L</sub>(<i>V</i><sub>GS,L</sub> − <i>V</i><sub>TN,L</sub>)²        <span class="cm">← （1.3）饱和式</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>L</sub>(2.3 − 0.66)²           <span class="cm">← 代入 <i>I</i><sub>DL</sub>、<i>V</i><sub>GS,L</sub>、<i>V</i><sub>TN,L</sub></span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>L</sub>(1.64)²               <span class="cm">← 括号内相减</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>L</sub>(2.690)              <span class="cm">← 平方</span></span>
+<span class="line"><i>K</i><sub>L</sub> = 29.7 µA/V²                    <span class="cm">← 两边除 2.690</span></span>
+</div>
+
+<div class="f"><span class="eq">(4.6)</span>
+<span class="line"><span class="frac"><span class="n"><i>W</i></span><span class="d"><i>L</i></span></span><sub>L</sub> = <span class="frac"><span class="n">2<i>K</i><sub>L</sub></span><span class="d"><i>K</i>′<sub>N</sub></span></span>              <span class="cm">← <i>K</i> ≡ ½<i>K</i>′<sub>N</sub>(<i>W</i>/<i>L</i>)</span></span>
+<span class="line">    = <span class="frac"><span class="n">2(29.7×10<sup>−6</sup>)</span><span class="d">100×10<sup>−6</sup></span></span>      <span class="cm">← 代入</span></span>
+<span class="line">    = 0.59                      <span class="cm">← 除法</span></span>
+</div>
+
+<p><b>第四步：开关管尺寸。</b> 低电平状态下 <i>M</i><sub>S</sub> 的 <i>V</i><sub>DS</sub> = <i>V</i><sub>L</sub> = 0.2 V。栅压取决于输入高电平是多少，这里有两种情况。</p>
+
+<p><i>情况 A：输入高电平 = V</i><sub>DD</sub>（输入由理想满摆幅信号驱动）：</p>
+
+<div class="f"><span class="eq">(4.7)</span>
+<span class="line"><i>I</i><sub>DS</sub> = <i>K</i><sub>S</sub>[2(<i>V</i><sub>GS,S</sub> − <i>V</i><sub>TN,S</sub>)<i>V</i><sub>DS</sub> − <i>V</i><sub>DS</sub>²]   <span class="cm">← （1.3）三极管式</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[2(2.5 − 0.6)(0.2) − (0.2)²]   <span class="cm">← 代入 <i>V</i><sub>GS,S</sub> = 2.5、<i>V</i><sub>TN,S</sub> = 0.6、<i>V</i><sub>DS</sub> = 0.2</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[2(1.9)(0.2) − 0.04]      <span class="cm">← 括号内两处各自算</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[0.76 − 0.04]           <span class="cm">← 乘出</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>(0.72)                <span class="cm">← 相减</span></span>
+<span class="line"><i>K</i><sub>S</sub> = 111 µA/V²                     <span class="cm">← 两边除 0.72</span></span>
+</div>
+
+<div class="f"><span class="eq">(4.8)</span>
+<span class="line"><span class="frac"><span class="n"><i>W</i></span><span class="d"><i>L</i></span></span><sub>S</sub> = <span class="frac"><span class="n">2(111×10<sup>−6</sup>)</span><span class="d">100×10<sup>−6</sup></span></span> = 2.22     <span class="cm">← （2.7）的同一套算法</span></span>
+</div>
+
+<p><i>情况 B：输入高电平 = V</i><sub>H</sub>（输入由同结构的上一级驱动）：</p>
+
+<div class="f"><span class="eq">(4.9)</span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[2(1.55 − 0.6)(0.2) − (0.2)²]   <span class="cm">← （4.7）第二行，<i>V</i><sub>GS,S</sub> 换成 1.55</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[2(0.95)(0.2) − 0.04]      <span class="cm">← 括号内相减</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[0.38 − 0.04]           <span class="cm">← 乘出</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>(0.34)                <span class="cm">← 相减</span></span>
+<span class="line"><i>K</i><sub>S</sub> = 235 µA/V²                     <span class="cm">← 两边除 0.34</span></span>
+</div>
+
+<p>于是 (<i>W</i>/<i>L</i>)<sub>S</sub> = 2(235×10<sup>−6</sup>)/(100×10<sup>−6</sup>) = 4.71。</p>
+
+<div class="box err">
+  <div class="t">易错点：<i>V</i><sub>GS,S</sub> 到底取 <i>V</i><sub>DD</sub> 还是 <i>V</i><sub>H</sub></div>
+  <p><b>错误形态：</b>算完 <i>V</i><sub>H</sub> = 1.55 V，转头写 <i>V</i><sub>GS,S</sub> = <i>V</i><sub>IN</sub> = <i>V</i><sub>DD</sub> = 2.5 V，得到 (<i>W</i>/<i>L</i>)<sub>S</sub> = 2.22。</p>
+  <p><b>正确形态：</b>先问"这个门的输入是谁给的"。若输入来自同结构的饱和型负载反相器，输入高电平就是上一级的 <i>V</i><sub>H</sub> = 1.55 V，(<i>W</i>/<i>L</i>)<sub>S</sub> = 4.71；若输入来自理想满摆幅源（外部信号、或上一级是耗尽型/伪 NMOS 负载），才取 2.5 V，得 2.22。</p>
+  <p>两个数差 2.1 倍，差别全部来自 <i>V</i><sub>GS,S</sub> − <i>V</i><sub>TN,S</sub> 从 1.90 V 掉到 0.95 V。饱和型负载的输入高电平被自己的 <i>V</i><sub>H</sub> 限制住，是这一族电路"逐级变慢"的根源。</p>
+</div>
+
+<p><b>第五步：校验假设。</b> 低电平态下两只管子都被假设了工作区，逐一核对：</p>
+
+<div class="f"><span class="eq">(4.10)</span>
+<span class="line">负载管：<i>V</i><sub>DS,L</sub> = 2.3 V，<i>V</i><sub>OV,L</sub> = 2.3 − 0.66 = 1.64 V ⇒ <i>V</i><sub>DS,L</sub> ≥ <i>V</i><sub>OV,L</sub>，饱和 ✓</span>
+<span class="line">开关管：<i>V</i><sub>DS,S</sub> = 0.2 V，<i>V</i><sub>OV,S</sub> = 1.9 V ⇒ <i>V</i><sub>DS,S</sub> &lt; <i>V</i><sub>OV,S</sub>，三极管区 ✓</span>
+</div>
+
+<h3 id="s43">4.3 耗尽型负载设计（Tutorial 4 第 4 题）</h3>
+<p>题目：<i>P</i> = 0.2 mW（<i>V</i><sub>L</sub> = 0.25 V 时）、<i>V</i><sub>DD</sub> = 2.5 V、<i>K</i>′<sub>N</sub> = 100 µA/V²、<i>V</i><sub>TN,S</sub> = 0.6 V、<i>V</i><sub>TN,L</sub> = −1 V。求两只管子的 <i>W</i>/<i>L</i>。</p>
+
+<div class="f"><span class="eq">(4.11)</span>
+<span class="line"><i>I</i><sub>DD</sub> = <span class="frac"><span class="n">0.2×10<sup>−3</sup> W</span><span class="d">2.5 V</span></span> = 80 µA        <span class="cm">← （2.4）式，代入 <i>P</i>、<i>V</i><sub>DD</sub></span></span>
+</div>
+
+<p>耗尽型负载的高电平就是 <i>V</i><sub>DD</sub>（（3.5）式）。低电平态下负载管栅源短接，<i>V</i><sub>GS,L</sub> = 0，过驱动为（3.3）的 1 V，饱和判据（3.4）：<i>V</i><sub>DS,L</sub> = 2.5 − 0.25 = 2.25 V ≥ 1 V ✓。于是</p>
+
+<div class="f"><span class="eq">(4.12)</span>
+<span class="line"><i>I</i><sub>DL</sub> = <i>K</i><sub>L</sub> <i>V</i><sub>OV,L</sub>²                <span class="cm">← （1.3）饱和式</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>L</sub>(1)²                   <span class="cm">← 代入（3.3）的 <i>V</i><sub>OV,L</sub> = 1 V</span></span>
+<span class="line"><i>K</i><sub>L</sub> = 80 µA/V²                       <span class="cm">← 乘方后移项</span></span>
+</div>
+
+<div class="f"><span class="eq">(4.13)</span>
+<span class="line"><span class="frac"><span class="n"><i>W</i></span><span class="d"><i>L</i></span></span><sub>L</sub> = <span class="frac"><span class="n">2(80×10<sup>−6</sup>)</span><span class="d">100×10<sup>−6</sup></span></span> = 1.60      <span class="cm">← （4.6）的同一套算法</span></span>
+</div>
+
+<p>开关管：栅压就是输入高电平，而耗尽型负载的 <i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub>，所以 <i>V</i><sub>GS,S</sub> = 2.5 V、<i>V</i><sub>OV,S</sub> = 1.9 V，<i>V</i><sub>DS,S</sub> = 0.25 V &lt; 1.9 V，三极管区：</p>
+
+<div class="f"><span class="eq">(4.14)</span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[2(1.9)(0.25) − (0.25)²]   <span class="cm">← （4.7）第二行，代入 0.25 V</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>[0.95 − 0.0625]         <span class="cm">← 乘出、平方</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>S</sub>(0.888)               <span class="cm">← 相减</span></span>
+<span class="line"><i>K</i><sub>S</sub> = 90.1 µA/V²                    <span class="cm">← 两边除 0.888</span></span>
+</div>
+
+<p>故 (<i>W</i>/<i>L</i>)<sub>S</sub> = 2(90.1)/100 = 1.80。校验：<i>V</i><sub>DS,L</sub> = 2.25 V ≥ <i>V</i><sub>OV,L</sub> = 1 V（饱和 ✓），<i>V</i><sub>DS,S</sub> = 0.25 V &lt; 1.9 V（三极管 ✓），两只管子的假设都成立。</p>
+
+<div class="box note">
+  <div class="t">若把体效应算进去</div>
+  <p>负载管源极在 <i>V</i><sub>L</sub> = 0.25 V、体端接地，<i>V</i><sub>SB</sub> = 0.25 V，由（4.1）：<i>V</i><sub>TN,L</sub> = −1 + 0.5(√0.85 − √0.6) = −1 + 0.5(0.9220 − 0.7746) = −0.926 V。过驱动从 1.000 V 降到 0.926 V，电流式改为 80×10<sup>−6</sup> = <i>K</i><sub>L</sub>(0.926)² = <i>K</i><sub>L</sub>(0.8575)，得 <i>K</i><sub>L</sub> = 93.3 µA/V²，(<i>W</i>/<i>L</i>)<sub>L</sub> = 1.87。1.87 比 1.60 大 17%。本题按 λ = 0、不计体效应取 1.60。</p>
+</div>
+
+<h3 id="s44">4.4 伪 NMOS 设计（课件例题）</h3>
+<p>题目：<i>V</i><sub>DD</sub> = 2.5 V、<i>I</i><sub>D</sub> = 80 µA、<i>K</i>′<sub>N</sub> = 100 µA/V²、<i>K</i>′<sub>P</sub> = 40 µA/V²、<i>V</i><sub>TN</sub> = |<i>V</i><sub>TP</sub>| = 0.6 V、<i>V</i><sub>L</sub> = 0.2 V。</p>
+
+<p>PMOS 负载的源极接 <i>V</i><sub>DD</sub>、栅极接地，<i>V</i><sub>SG,L</sub> = 2.5 V，由（3.15）在 <i>V</i><sub>OUT</sub> = 0.2 V ≤ 0.6 V 时饱和。饱和式的形式与 NMOS 相同，只是把 <i>V</i><sub>GS</sub> 换成 <i>V</i><sub>SG</sub>、阈值取绝对值：</p>
+
+<div class="f"><span class="eq">(4.15)</span>
+<span class="line"><i>I</i><sub>DL</sub> = <i>K</i><sub>P</sub>(<i>V</i><sub>SG,L</sub> − |<i>V</i><sub>TP</sub>|)²        <span class="cm">← （1.3）饱和式的 PMOS 形式</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>P</sub>(2.5 − 0.6)²             <span class="cm">← 代入 <i>V</i><sub>SG,L</sub>、|<i>V</i><sub>TP</sub>|</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>P</sub>(1.9)²                 <span class="cm">← 括号内相减</span></span>
+<span class="line">80×10<sup>−6</sup> = <i>K</i><sub>P</sub>(3.61)                <span class="cm">← 平方</span></span>
+<span class="line"><i>K</i><sub>P</sub> = 22.2 µA/V²                     <span class="cm">← 两边除 3.61</span></span>
+</div>
+
+<div class="f"><span class="eq">(4.16)</span>
+<span class="line"><span class="frac"><span class="n"><i>W</i></span><span class="d"><i>L</i></span></span><sub>P</sub> = <span class="frac"><span class="n">2<i>K</i><sub>P</sub></span><span class="d"><i>K</i>′<sub>P</sub></span></span> = <span class="frac"><span class="n">2(22.2×10<sup>−6</sup>)</span><span class="d">40×10<sup>−6</sup></span></span> = 1.11   <span class="cm">← 代入 <i>K</i> ≡ ½<i>K</i>′<sub>P</sub>(<i>W</i>/<i>L</i>)</span></span>
+</div>
+
+<p>开关管与 §4.2 情况 A 完全同形（<i>V</i><sub>GS,S</sub> = <i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub> = 2.5 V，<i>V</i><sub>DS,S</sub> = 0.2 V），直接套（4.7）：<i>K</i><sub>S</sub> = 111 µA/V²，(<i>W</i>/<i>L</i>)<sub>S</sub> = 2.22。与课件给出的 1.11 与 2.22 一致。</p>
+
+<table>
+<thead><tr><th style="width:20%">例题</th><th><i>I</i><sub>DD</sub></th><th><i>V</i><sub>H</sub></th><th>负载管 <i>W</i>/<i>L</i></th><th>开关管 <i>W</i>/<i>L</i></th><th style="width:20%">与课件/习题对照</th></tr></thead>
+<tbody>
+<tr><td>饱和型（§4.2）</td><td>80 µA</td><td>1.55 V</td><td>0.59（<i>V</i><sub>TN,L</sub> = 0.66 V）</td><td>2.22（输入 = <i>V</i><sub>DD</sub>）<br>4.71（输入 = <i>V</i><sub>H</sub>）</td><td>课件给 <i>V</i><sub>H</sub> = 1.55 V，一致</td></tr>
+<tr><td>耗尽型（§4.3）</td><td>80 µA</td><td>2.50 V</td><td>1.60（不计体效应）<br>1.87（计体效应）</td><td>1.80</td><td>习题按不计体效应给答案</td></tr>
+<tr><td>伪 NMOS（§4.4）</td><td>80 µA</td><td>2.50 V</td><td>1.11（PMOS）</td><td>2.22</td><td>课件给 1.11 与 2.22，一致</td></tr>
+</tbody>
+</table>
+
+<p style="text-align:right"><a class="up" href="#s0">↑ 回到顶部</a></p>
+
+<h2 id="s5">5 · 从反相器到 NAND / NOR</h2>
+<p>图 2 的六种接法是六个反相器：输入一个变量，输出取反。这一章只改一处——把下拉管 <i>M</i><sub>S</sub> 换成多个管子的串并联网络——反相器就升级成 NAND／NOR，负载管的接线一个都不动。</p>
+
+<h3 id="s51">5.1 只动 <i>M</i><sub>S</sub> 网络，其余不变</h3>
+<p>笔记本上的目标是"<i>V</i>、<i>I</i>、<i>P</i> 均不变，串并联的均为 MOS 管"。三件事具体指：</p>
+<ul>
+  <li><i>V</i> 不变：<i>V</i><sub>H</sub> 与 <i>V</i><sub>L</sub> 与基准反相器相同。这一点自动成立，因为 <i>V</i><sub>H</sub> 由负载管单独决定（§3.2–§3.5），<i>V</i><sub>L</sub> 由下拉网络与负载管的电流匹配决定。</li>
+  <li><i>I</i> 不变：低电平态电流仍是 <i>I</i><sub>DD</sub>（例 80 µA）。这一条要求下拉网络在最坏情况下的电阻等于基准反相器的 <i>R</i><sub>on</sub>。</li>
+  <li><i>P</i> 不变：<i>P</i> = <i>V</i><sub>DD</sub><i>I</i><sub>DD</sub>，<i>V</i><sub>DD</sub> 与 <i>I</i><sub>DD</sub> 没变，功耗自然不变。</li>
+</ul>
+<p>所以整章的约束可以压成一句：<b>下拉网络在最坏情况下的等效电阻必须等于基准 <i>R</i><sub>on</sub></b>。而 <i>R</i><sub>on</sub> 与尺寸的关系是纯几何的，由（1.6）给出：</p>
+
+<div class="f"><span class="eq">(5.1)</span>
+<span class="line"><i>R</i><sub>on</sub> = <span class="frac"><span class="n">1</span><span class="d">2<i>K</i> <i>V</i><sub>OV</sub></span></span>            <span class="cm">← （1.6）式</span></span>
+<span class="line">     = <span class="frac"><span class="n">1</span><span class="d"><i>K</i>′<sub>N</sub> (<i>W</i>/<i>L</i>) <i>V</i><sub>OV</sub></span></span>      <span class="cm">← 代入 <i>K</i> ≡ ½<i>K</i>′<sub>N</sub>(<i>W</i>/<i>L</i>)</span></span>
+</div>
+<p>（5.1）第二行说明 <i>R</i><sub>on</sub> 与 <i>W</i>/<i>L</i> 严格成反比（<i>K</i>′<sub>N</sub> 与 <i>V</i><sub>OV</sub> 都固定）。于是"电阻减半"与"宽度加倍"是同一件事：</p>
+
+<div class="f key"><span class="eq">(5.2)</span>
+<span class="line"><i>R</i><sub>on</sub> → <span class="frac"><span class="n"><i>R</i><sub>on</sub></span><span class="d">2</span></span>  ⇔  <span class="frac"><span class="n"><i>W</i></span><span class="d"><i>L</i></span></span> → 2<span class="frac"><span class="n"><i>W</i></span><span class="d"><i>L</i></span></span>      <span class="cm">← （5.1）中 <i>W</i>/<i>L</i> 加倍则 <i>R</i><sub>on</sub> 减半</span></span>
+</div>
+
+<h3 id="s52">5.2 串联得 NAND，并联得 NOR</h3>
+<p>两个输入 <i>A</i>、<i>B</i> 各控制一只下拉管。串与并的差别只在"什么时候整条支路导通"：</p>
+
+<div class="figrow">
+<figure>
+  <canvas id="fig5n" height="440"></canvas>
+  <figcaption>
+    <b>图 5a ｜ 两输入 NAND 的下拉网络。</b> 顶部 <i>M</i><sub>L</sub> 是耗尽型负载（栅极接自己的源极，<i>V</i><sub>GS</sub> = 0 恒饱和），接法与图 2 ③ 相同；下面是 <i>M</i><sub>A</sub>、<i>M</i><sub>B</sub> 两只管子串联，栅极分别引到端口 <i>A</i>、<i>B</i>。<br>
+    只有两管同时导通，输出才被拉低——所以下拉网络的函数是 <i>A</i>·<i>B</i>。三个实心点是节点：<i>M</i><sub>L</sub> 源极与输出端线的交点、负载栅极回接处、以及 <i>M</i><sub>A</sub> 源极与 <i>M</i><sub>B</sub> 漏极的接点。
+  </figcaption>
+</figure>
+<figure>
+  <canvas id="fig5p" height="440"></canvas>
+  <figcaption>
+    <b>图 5b ｜ 两输入 NOR 的下拉网络。</b> 顶部同样是一只耗尽型负载；下面 <i>M</i><sub>A</sub>、<i>M</i><sub>B</sub> 并联：上端由一条公共线接到输出，下端由一条公共线接到地。端口 <i>A</i> 从左边进、<i>B</i> 从右边进，各控制一条支路。<br>
+    任一个导通，输出就被拉低——下拉网络的函数是 <i>A</i>+<i>B</i>。上端线的三个实心点对应两条支路与输出的三个汇合处，下端线的三个实心点对应两条支路与地的汇合处。
+  </figcaption>
+</figure>
+</div>
+
+<p><b>NAND（串联）。</b> 输出为低的条件是两管都导通，此时两只管子的电阻串联相加，必须等于基准值：</p>
+
+<div class="f"><span class="eq">(5.3)</span>
+<span class="line"><i>R</i><sub>A</sub> + <i>R</i><sub>B</sub> = <i>R</i><sub>on</sub>          <span class="cm">← 串联支路电阻相加，等于基准值</span></span>
+<span class="line">2<i>R</i><sub>A</sub> = <i>R</i><sub>on</sub>              <span class="cm">← 取 <i>R</i><sub>A</sub> = <i>R</i><sub>B</sub>（两只管子对称）</span></span>
+<span class="line"><i>R</i><sub>A</sub> = <i>R</i><sub>B</sub> = <span class="frac"><span class="n"><i>R</i><sub>on</sub></span><span class="d">2</span></span>        <span class="cm">← 两边除 2</span></span>
+</div>
+
+<p>再由（5.2），每只管子取 2(<i>W</i>/<i>L</i>)<sub>S</sub>。</p>
+
+<p><b>NOR（并联）。</b> 输出为低的条件是任一只管子导通，此时只有那一只在电路里，电阻必须等于基准值：</p>
+
+<div class="f"><span class="eq">(5.4)</span>
+<span class="line"><i>R</i><sub>A</sub> = <i>R</i><sub>B</sub> = <i>R</i><sub>on</sub>        <span class="cm">← 单管导通时承担全部电流</span></span>
+</div>
+<p>尺寸不必改，每只管子保持 (<i>W</i>/<i>L</i>)<sub>S</sub>。两管同时导通时并联电阻是 <i>R</i><sub>on</sub>/2，下拉更强、输出更低，属于额外好处而不是设计要求。</p>
+
+<p>把两种结构放在同一尺寸下对照，差别来自串并联本身，与尺寸无关：</p>
+
+<div class="f"><span class="eq">(5.5)</span>
+<span class="line">串联两只同尺寸管子：<i>R</i> = <i>R</i><sub>on</sub> + <i>R</i><sub>on</sub> = 2<i>R</i><sub>on</sub>      <span class="cm">← （5.3）第一行取 <i>R</i><sub>A</sub> = <i>R</i><sub>B</sub> = <i>R</i><sub>on</sub></span></span>
+<span class="line">并联两只同尺寸管子：<i>R</i> = <span class="frac"><span class="n"><i>R</i><sub>on</sub> <i>R</i><sub>on</sub></span><span class="d"><i>R</i><sub>on</sub> + <i>R</i><sub>on</sub></span></span> = <span class="frac"><span class="n"><i>R</i><sub>on</sub></span><span class="d">2</span></span>   <span class="cm">← 并联公式 + 分母相加</span></span>
+<span class="line"><span class="frac"><span class="n">2<i>R</i><sub>on</sub></span><span class="d"><i>R</i><sub>on</sub>/2</span></span> = 4                    <span class="cm">← 两者相除，差 4 倍</span></span>
+</div>
+
+<p>（5.5）就是笔记里"NAND 与 NOR 可差 4 倍"的来源：<b>同样尺寸下，串联的下拉电阻是并联的 4 倍</b>。反过来说，要让两者都等于基准 <i>R</i><sub>on</sub>，NAND 的每只管子必须加宽一倍（面积 ×2），NOR 的尺寸不用动——这是 NAND 比 NOR 费面积的来源。</p>
+
+<h3 id="s53">5.3 复合门：<i>F</i> = <i>A</i> + <i>B</i>(<i>C</i> + <i>D</i>) 的两种摊法</h3>
+<p>串并联可以任意嵌套，于是任意"与或式"都能直接摊成一个下拉网络。摊法只有两条：</p>
+
+<table>
+<thead><tr><th style="width:22%">布尔运算</th><th style="width:26%">网络结构</th><th style="width:52%">理由</th></tr></thead>
+<tbody>
+<tr><td>与（AND）</td><td>串联</td><td>串联支路要求<b>全部</b>管子导通，正好是"全真才真"</td></tr>
+<tr><td>或（OR）</td><td>并联</td><td>并联支路<b>任一</b>管子导通即可，正好是"一真即真"</td></tr>
+<tr><td>取反（NOT）</td><td>由负载管完成</td><td>下拉网络导通时输出被拉低，故输出 = 网络函数的反</td></tr>
+</tbody>
+</table>
+
+<p>按这三条把 <i>F</i> = <i>A</i> + <i>B</i>(<i>C</i> + <i>D</i>) 摊开：最内层 <i>C</i>+<i>D</i> 是并联；外面乘 <i>B</i> 是串联；再外面加 <i>A</i> 是并联。于是网络是"<i>A</i> 一支"与"<i>B</i> 串 (<i>C</i>∥<i>D</i>) 一支"的并联，共四只管子。笔记在图上标的三层门类型（<i>C</i>,<i>D</i> 取 NOR、<i>B</i> 与 <i>CD</i> 取 NAND、<i>A</i> 与 <i>BCD</i> 取 NOR）说的就是这三层各自的取反。</p>
+
+<p>同一个函数还有另一个摊法。用一次分配律：</p>
+
+<div class="f"><span class="eq">(5.6)</span>
+<span class="line"><i>B</i>(<i>C</i> + <i>D</i>) = <i>BC</i> + <i>BD</i>          <span class="cm">← 分配律（一次展开）</span></span>
+<span class="line"><i>F</i> = <i>A</i> + <i>BC</i> + <i>BD</i>               <span class="cm">← 代回 <i>F</i> 的表达式</span></span>
+</div>
+
+<p>（5.6）的形式是三个并联支路：<i>A</i>、<i>BC</i>、<i>BD</i>，五只管子，每个支路内部只有串联。</p>
+
+<p>两个摊法的差别可以逐项列出来：</p>
+
+<table>
+<thead><tr><th style="width:26%">写法</th><th style="width:16%">管子数</th><th style="width:26%">支路结构</th><th style="width:32%">尺寸怎么定</th></tr></thead>
+<tbody>
+<tr><td><i>A</i> + <i>B</i>(<i>C</i>+<i>D</i>)</td><td>4</td><td><i>A</i> ｜ <i>B</i> 串 (<i>C</i>∥<i>D</i>)</td><td>含并联块的支路要单独解一次电阻方程：<i>R</i><sub>B</sub> + <i>R</i><sub>on</sub>/2 = <i>R</i><sub>on</sub> ⇒ <i>R</i><sub>B</sub> = <i>R</i><sub>on</sub>/2，故 <i>B</i> 取 2(<i>W</i>/<i>L</i>)<sub>S</sub>，<i>C</i>、<i>D</i> 各取 (<i>W</i>/<i>L</i>)<sub>S</sub></td></tr>
+<tr><td><i>A</i> + <i>BC</i> + <i>BD</i></td><td>5</td><td>三条纯串联支路</td><td>每条支路用（5.3）：<i>BC</i> 与 <i>BD</i> 两条支路里的每只管子都取 2(<i>W</i>/<i>L</i>)<sub>S</sub>（<i>B</i> 在两条支路里各占一只），<i>A</i> 取 (<i>W</i>/<i>L</i>)<sub>S</sub></td></tr>
+</tbody>
+</table>
+
+<p>笔记的结论是"实际中更可能为 <i>A</i> + <i>BC</i> + <i>BD</i>"。理由在表里最后一列：纯串联支路的尺寸可以直接套（5.3）的"每管加倍"规则，而成 <i>B</i>(<i>C</i>+<i>D</i>) 那样夹着并联块的支路，必须先解一次电阻方程才能定尺寸；多一只管子换一套统一的尺寸规则，是这类设计里常见的取舍。</p>
+
+<div class="box warn">
+  <div class="t">关键块：网络函数与输出函数差一个反</div>
+  <p>表里第三行容易被跳过，但它是复合门最容易错的地方：下拉网络实现的是 <i>F</i> 的<b>串联-并联结构</b>，而输出等于这个结构的<b>反</b>。所以按"串=与、并=或"摊出来的网络，直接量输出得到的是 <i>F̄</i>。要让输出真的等于 <i>F</i>，后面还要一级反相器（或者把输入的极性反过来取）。反相器的情形可以直接核对：网络只有一只管子，网络函数是 <i>A</i>，输出是 <i>Ā</i>——正是 NOT。</p>
+</div>
+
+<p style="text-align:right"><a class="up" href="#s0">↑ 回到顶部</a></p>
+
+<h2 id="s6">6 · 带 <i>C</i><sub>L</sub> 的开关时间</h2>
+<p>前面五章都假设输出瞬间建立。实际输出节点上挂着下一级的栅极电容、连线电容，输出电压只能靠有限的电流给电容充放电。这一章把充放电过程解出来，得到三个数：<i>t</i><sub>f</sub>、<i>t</i><sub>r</sub>、<i>t</i><sub>p</sub>。</p>
+
+<figure>
+  <canvas id="fig6" height="430"></canvas>
+  <figcaption>
+    <b>图 6 ｜ 输出节点的充放电波形。</b> 横轴时间、纵轴输出电压 <span class="vc">𝒱</span><sub>O</sub>。左半段 <i>M</i><sub>S</sub> 导通、<i>C</i><sub>L</sub> 经 <i>M</i><sub>S</sub> 放电，电平从 <i>V</i><sub>H</sub> 落到 <i>V</i><sub>L</sub>，时间常数 <i>τ</i> = <i>R</i><sub>on,S</sub><i>C</i><sub>L</sub>；右半段 <i>M</i><sub>S</sub> 关断、<i>C</i><sub>L</sub> 经 <i>M</i><sub>L</sub> 充电，电平从 <i>V</i><sub>L</sub> 升回 <i>V</i><sub>H</sub>（耗尽型与伪 NMOS 的 <i>V</i><sub>H</sub> 就是 <i>V</i><sub>DD</sub>）。<br>
+    两条水平虚线标出 10%、50%、90% 三个电平（以各自摆幅 Δ<i>V</i> 为基准）。<i>t</i><sub>f</sub> 是 90%→10% 的时间，<i>t</i><sub>r</sub> 是 10%→90% 的时间，<i>t</i><sub>pHL</sub>、<i>t</i><sub>pLH</sub> 是两个方向的 50% 时刻。
+  </figcaption>
+</figure>
+
+<h3 id="s61">6.1 RC 模型的通解</h3>
+<p>把输出节点看成一个电容 <i>C</i><sub>L</sub>，把"驱动管 + 负载管"合起来看成一个电阻 <i>R</i> 接在 <i>C</i><sub>L</sub> 与目标电平之间。放电时目标电平是 <i>V</i><sub>L</sub>，充电时是 <i>V</i><sub>H</sub>。以放电为例，令 <i>u</i> ≡ <span class="vc">𝒱</span><sub>O</sub> − <i>V</i><sub>L</sub>（离目标还差多少），流出电容的电流就是 <i>u</i>/<i>R</i>：</p>
+
+<div class="f"><span class="eq">(6.1)</span>
+<span class="line"><i>C</i><sub>L</sub> <span class="frac"><span class="n">d<span class="vc">𝒱</span><sub>O</sub></span><span class="d">d<i>t</i></span></span> = −<span class="frac"><span class="n"><span class="vc">𝒱</span><sub>O</sub> − <i>V</i><sub>L</sub></span><span class="d"><i>R</i></span></span>        <span class="cm">← 电容电流 = 流过 <i>R</i> 的电流（符号取流出）</span></span>
+<span class="line"><i>C</i><sub>L</sub> <span class="frac"><span class="n">d<i>u</i></span><span class="d">d<i>t</i></span></span> = −<span class="frac"><span class="n"><i>u</i></span><span class="d"><i>R</i></span></span>              <span class="cm">← 代入 <i>u</i> 的定义（<i>V</i><sub>L</sub> 为常数，d<span class="vc">𝒱</span><sub>O</sub>/d<i>t</i> = d<i>u</i>/d<i>t</i>）</span></span>
+<span class="line"><span class="frac"><span class="n">d<i>u</i></span><span class="d"><i>u</i></span></span> = −<span class="frac"><span class="n">d<i>t</i></span><span class="d"><i>R</i> <i>C</i><sub>L</sub></span></span>            <span class="cm">← 两边同乘 d<i>t</i>/(<i>C</i><sub>L</sub><i>u</i>)</span></span>
+<span class="line">ln <i>u</i> = −<span class="frac"><span class="n"><i>t</i></span><span class="d"><i>R</i> <i>C</i><sub>L</sub></span></span> + <i>A</i>        <span class="cm">← 两边积分（<i>A</i> 为积分常数）</span></span>
+<span class="line"><i>u</i> = <i>u</i>(0) <i>e</i><sup>−<i>t</i>/(<i>R</i><i>C</i><sub>L</sub>)</sup>          <span class="cm">← 两边取指数，并把 <i>e</i><sup><i>A</i></sup> 写成 <i>u</i>(0)</span></span>
+</div>
+
+<p>把 <i>u</i> 换回电压，并记摆幅 Δ<i>V</i> ≡ <i>V</i><sub>H</sub> − <i>V</i><sub>L</sub>、时间常数 <i>τ</i> ≡ <i>R</i> <i>C</i><sub>L</sub>：</p>
+
+<div class="f key"><span class="eq">(6.2)</span>
+<span class="line"><i>u</i>(0) = <i>V</i><sub>H</sub> − <i>V</i><sub>L</sub> = Δ<i>V</i>          <span class="cm">← <i>t</i> = 0 时输出在 <i>V</i><sub>H</sub></span></span>
+<span class="line"><span class="vc">𝒱</span><sub>O</sub>(<i>t</i>) = <i>V</i><sub>L</sub> + Δ<i>V</i> <i>e</i><sup>−<i>t</i>/<i>τ</i></sup>          <span class="cm">← （6.1）末行加回 <i>V</i><sub>L</sub>、代入 Δ<i>V</i></span></span>
+</div>
+
+<p>（6.2）的物理含义全在 <i>e</i><sup>−<i>t</i>/<i>τ</i></sup> 这一项里：它与初始差距 Δ<i>V</i> 成正比，所以电压不是匀速下降，而是越接近 <i>V</i><sub>L</sub> 越慢。每过一个 <i>τ</i>，剩下的差距缩到原来的 <i>e</i><sup>−1</sup> = 36.8%。反过来，<b>要把差距缩到某个比例，所需时间正比于 <i>τ</i>，比例只出现在对数的自变量里</b>——这就是下面三组时间都写成"系数 × <i>τ</i>"的原因。</p>
+
+<h3 id="s62">6.2 <i>t</i><sub>f</sub>、<i>t</i><sub>r</sub> 与 <i>t</i><sub>p</sub></h3>
+<p>三个时间点都由（6.2）反解。先求 90% 与 10% 两个时刻（从 <i>V</i><sub>H</sub> 起算，差距为 Δ<i>V</i>）：</p>
+
+<div class="f"><span class="eq">(6.3)</span>
+<span class="line">0.9 Δ<i>V</i> = Δ<i>V</i> <i>e</i><sup>−<i>t</i>/<i>τ</i></sup>          <span class="cm">← （6.2）取 <span class="vc">𝒱</span><sub>O</sub> = <i>V</i><sub>L</sub> + 0.9Δ<i>V</i></span></span>
+<span class="line">0.9 = <i>e</i><sup>−<i>t</i>/<i>τ</i></sup>              <span class="cm">← 两边除 Δ<i>V</i></span></span>
+<span class="line">ln 0.9 = −<i>t</i>/<i>τ</i>              <span class="cm">← 两边取自然对数</span></span>
+<span class="line"><i>t</i><sub>90%</sub> = −<i>τ</i> ln 0.9 = 0.105<i>τ</i>   <span class="cm">← 两边乘 −<i>τ</i>；ln 0.9 = −0.105</span></span>
+</div>
+
+<div class="f"><span class="eq">(6.4)</span>
+<span class="line">0.1 Δ<i>V</i> = Δ<i>V</i> <i>e</i><sup>−<i>t</i>/<i>τ</i></sup>          <span class="cm">← （6.2）取 <span class="vc">𝒱</span><sub>O</sub> = <i>V</i><sub>L</sub> + 0.1Δ<i>V</i></span></span>
+<span class="line">0.1 = <i>e</i><sup>−<i>t</i>/<i>τ</i></sup>              <span class="cm">← 两边除 Δ<i>V</i></span></span>
+<span class="line"><i>t</i><sub>10%</sub> = −<i>τ</i> ln 0.1 = 2.303<i>τ</i>   <span class="cm">← 取对数、乘 −<i>τ</i>；ln 0.1 = −2.303</span></span>
+</div>
+
+<p>下降时间定义为这两个时刻之差：</p>
+
+<div class="f key"><span class="eq">(6.5)</span>
+<span class="line"><i>t</i><sub>f</sub> = <i>t</i><sub>10%</sub> − <i>t</i><sub>90%</sub>        <span class="cm">← 10%–90% 的定义</span></span>
+<span class="line">    = 2.303<i>τ</i> − 0.105<i>τ</i>        <span class="cm">← 代入（6.4）、（6.3）</span></span>
+<span class="line">    = 2.198<i>τ</i>                <span class="cm">← 合并同类项</span></span>
+<span class="line">    ≈ 2.2 <i>R</i><sub>on,S</sub> <i>C</i><sub>L</sub>        <span class="cm">← 四舍五入；放电经 <i>M</i><sub>S</sub>，故 <i>τ</i> = <i>R</i><sub>on,S</sub><i>C</i><sub>L</sub></span></span>
+</div>
+
+<p>传输延迟取 50% 时刻（从输入跳变的中点起算）：</p>
+
+<div class="f key"><span class="eq">(6.6)</span>
+<span class="line">0.5 Δ<i>V</i> = Δ<i>V</i> <i>e</i><sup>−<i>t</i>/<i>τ</i></sup>          <span class="cm">← （6.2）取 <span class="vc">𝒱</span><sub>O</sub> = <i>V</i><sub>L</sub> + 0.5Δ<i>V</i></span></span>
+<span class="line">ln 0.5 = −<i>t</i>/<i>τ</i>              <span class="cm">← 两边除 Δ<i>V</i>、取对数</span></span>
+<span class="line"><i>t</i><sub>pHL</sub> = −<i>τ</i> ln 0.5 = 0.693 <i>R</i><sub>on,S</sub> <i>C</i><sub>L</sub>   <span class="cm">← 乘 −<i>τ</i>；ln 0.5 = −0.693</span></span>
+</div>
+
+<p>充电方向完全同形：把 <i>V</i><sub>L</sub> 换成 <i>V</i><sub>H</sub>、把 <i>R</i><sub>on,S</sub> 换成 <i>R</i><sub>on,L</sub>，起始差距同样是 Δ<i>V</i>：</p>
+
+<div class="f"><span class="eq">(6.7)</span>
+<span class="line"><span class="vc">𝒱</span><sub>O</sub>(<i>t</i>) = <i>V</i><sub>H</sub> − Δ<i>V</i> <i>e</i><sup>−<i>t</i>/<i>τ</i><sub>L</sub></sup>       <span class="cm">← （6.2）把 <i>V</i><sub>L</sub> ↔ <i>V</i><sub>H</sub> 对调</span></span>
+<span class="line"><i>t</i><sub>r</sub> = 2.2 <i>R</i><sub>on,L</sub> <i>C</i><sub>L</sub>            <span class="cm">← 同（6.5）的推导</span></span>
+<span class="line"><i>t</i><sub>pLH</sub> = 0.693 <i>R</i><sub>on,L</sub> <i>C</i><sub>L</sub>        <span class="cm">← 同（6.6）的推导</span></span>
+</div>
+
+<p>（6.5）与（6.7）合起来说明一件事：<b>上升与下降的时间之比，就是两只管子导通电阻之比</b>。伪 NMOS 里 <i>K</i>′<sub>P</sub> 大约是 <i>K</i>′<sub>N</sub> 的 0.4 倍，上拉管的 <i>R</i><sub>on</sub> 因此是下拉管的 2.5 倍上下，<i>t</i><sub>pLH</sub> 就是 <i>t</i><sub>pHL</sub> 的 2.5 倍左右——这是伪 NMOS 最明显的短板。</p>
+
+<h3 id="s63">6.3 等效电阻与数值示例</h3>
+<p>（6.5）（6.6）用的 <i>R</i><sub>on</sub> 是常数，而实际的 <i>R</i><sub>on</sub> 在整个过渡区间里会变（<i>V</i><sub>DS</sub> 从 Δ<i>V</i> 一路降到 0，驱动管先饱和、后进三极管区）。课件把这个变化平均成一个等效电阻：</p>
+
+<div class="f"><span class="eq">(6.8)</span>
+<span class="line"><i>R</i><sub>eq</sub> = 1.7 <i>R</i><sub>on</sub>              <span class="cm">← 课件拟合系数（对 10%–90% 区间取平均）</span></span>
+</div>
+
+<p>把（6.8）代进（6.5）（6.6）：</p>
+
+<div class="f"><span class="eq">(6.9)</span>
+<span class="line"><i>t</i><sub>p</sub> = 2.2 <i>R</i><sub>eq</sub> <i>C</i><sub>L</sub>            <span class="cm">← （6.5）把 <i>R</i><sub>on</sub> 换成 <i>R</i><sub>eq</sub></span></span>
+<span class="line">    = 2.2 (1.7 <i>R</i><sub>on</sub>) <i>C</i><sub>L</sub>         <span class="cm">← 代入（6.8）</span></span>
+<span class="line">    = 3.74 <i>R</i><sub>on</sub> <i>C</i><sub>L</sub>            <span class="cm">← 乘法；笔记取 3.7</span></span>
+<span class="line"><i>t</i><sub>pHL</sub> = 0.693 (1.7 <i>R</i><sub>on,S</sub>) <i>C</i><sub>L</sub>    <span class="cm">← （6.6）同样代入</span></span>
+<span class="line">     = 1.18 <i>R</i><sub>on,S</sub> <i>C</i><sub>L</sub>        <span class="cm">← 乘法；笔记取 1.2</span></span>
+</div>
+
+<p>（6.8）的系数 1.7 不带闭式来源，它是把实际波形平均出来的：用常数 <i>R</i><sub>on</sub> 与用等效 <i>R</i><sub>eq</sub>，同一个电路的两个延迟差 1.7 倍。</p>
+
+<p><b>数值示例。</b> 取 §4.3 的耗尽型负载反相器（(<i>W</i>/<i>L</i>)<sub>S</sub> = 1.80、(<i>W</i>/<i>L</i>)<sub>L</sub> = 1.60、<i>K</i>′<sub>N</sub> = 100 µA/V²、<i>V</i><sub>TN,S</sub> = 0.6 V、<i>V</i><sub>TN,L</sub> = −1 V），设 <i>C</i><sub>L</sub> = 0.1 pF。先算两个 <i>K</i> 与两个 <i>R</i><sub>on</sub>：</p>
+
+<div class="f"><span class="eq">(6.10)</span>
+<span class="line"><i>K</i><sub>S</sub> = ½<i>K</i>′<sub>N</sub>(<i>W</i>/<i>L</i>)<sub>S</sub> = ½(100×10<sup>−6</sup>)(1.80) = 90.0 µA/V²   <span class="cm">← <i>K</i> 的定义</span></span>
+<span class="line"><i>K</i><sub>L</sub> = ½<i>K</i>′<sub>N</sub>(<i>W</i>/<i>L</i>)<sub>L</sub> = ½(100×10<sup>−6</sup>)(1.60) = 80.0 µA/V²   <span class="cm">← <i>K</i> 的定义</span></span>
+<span class="line"><i>R</i><sub>on,S</sub> = <span class="frac"><span class="n">1</span><span class="d">2(90.0×10<sup>−6</sup>)(2.5 − 0.6)</span></span> = 2.92 kΩ       <span class="cm">← （1.6）式，<i>V</i><sub>OV</sub> = 1.9 V</span></span>
+<span class="line"><i>R</i><sub>on,L</sub> = <span class="frac"><span class="n">1</span><span class="d">2(80.0×10<sup>−6</sup>)(0 − (−1))</span></span> = 6.25 kΩ     <span class="cm">← （1.6）式，<i>V</i><sub>OV,L</sub> = 1 V</span></span>
+</div>
+
+<p>再算时间：</p>
+
+<div class="f"><span class="eq">(6.11)</span>
+<span class="line"><i>t</i><sub>pHL</sub> = 0.693 <i>R</i><sub>on,S</sub> <i>C</i><sub>L</sub>            <span class="cm">← （6.6）式</span></span>
+<span class="line">     = 0.693 (2.92×10<sup>3</sup>)(0.1×10<sup>−12</sup>)     <span class="cm">← 代入数值（C<sub>L</sub> = 0.1 pF = 0.1×10<sup>−12</sup> F）</span></span>
+<span class="line">     = 0.693 (2.92×10<sup>−10</sup>)             <span class="cm">← Ω 与 F 相乘得 s</span></span>
+<span class="line">     = 2.02×10<sup>−10</sup> s = 0.20 ns          <span class="cm">← 乘法</span></span>
+</div>
+
+<div class="f"><span class="eq">(6.12)</span>
+<span class="line"><i>t</i><sub>pLH</sub> = 0.693 <i>R</i><sub>on,L</sub> <i>C</i><sub>L</sub>            <span class="cm">← （6.7）式</span></span>
+<span class="line">     = 0.693 (6.25×10<sup>3</sup>)(0.1×10<sup>−12</sup>)     <span class="cm">← 代入数值</span></span>
+<span class="line">     = 0.693 (6.25×10<sup>−10</sup>)             <span class="cm">← 乘法</span></span>
+<span class="line">     = 4.33×10<sup>−10</sup> s = 0.43 ns          <span class="cm">← 乘法</span></span>
+</div>
+
+<p>两个方向的延迟差 2.1 倍，原因就在（6.10）最后两行：<i>R</i><sub>on,L</sub>/<i>R</i><sub>on,S</sub> = 6.25/2.92 = 2.14。若改用等效电阻（6.9）的 1.18 与 1.7 两个系数，同样的电路给出 <i>t</i><sub>pHL</sub> = 1.18(2.92×10<sup>−10</sup>) = 0.34 ns，比 0.20 ns 大 1.7 倍。</p>
+
+<h2 id="s7">7 · 公式速查卡</h2>
+<p>全篇用到的式子集中在一处，编号可回查推导。</p>
+
+<table>
+<thead><tr><th style="width:9%">编号</th><th style="width:41%">式子</th><th style="width:50%">用在哪 / 条件</th></tr></thead>
+<tbody>
+<tr><td>（1.3）</td><td><i>I</i><sub>D</sub> = 0 ｜ <i>K</i><i>V</i><sub>OV</sub>² ｜ <i>K</i>[2<i>V</i><sub>OV</sub><i>V</i><sub>DS</sub> − <i>V</i><sub>DS</sub>²]</td><td>三个区的电流；判区用 <i>V</i><sub>GS</sub> 对 <i>V</i><sub>TN</sub>、<i>V</i><sub>DS</sub> 对 <i>V</i><sub>OV</sub></td></tr>
+<tr><td>（1.6）</td><td><i>R</i><sub>on</sub> = 1/(2<i>K</i><i>V</i><sub>OV</sub>)</td><td>三极管区深到电阻段；条件 <i>V</i><sub>DS</sub> ≪ 2<i>V</i><sub>OV</sub></td></tr>
+<tr><td>（2.1）</td><td><i>V</i><sub>L</sub> = <i>V</i><sub>DD</sub><i>R</i><sub>on</sub>/(<i>R</i><sub>on</sub>+<i>R</i><sub>D</sub>)</td><td>电阻负载反相器的低电平（分压）</td></tr>
+<tr><td>（2.3）</td><td><i>V</i><sub>IL</sub> = <i>V</i><sub>TN</sub></td><td>理想电阻负载；换成 MOS 负载后要修正</td></tr>
+<tr><td>（3.3）</td><td><i>V</i><sub>OV,L</sub> = 0 − <i>V</i><sub>TN,L</sub> = |<i>V</i><sub>TN,L</sub>|</td><td>耗尽型负载（栅源短接），恒导通</td></tr>
+<tr><td>（3.8）</td><td>0 ≥ −<i>V</i><sub>TN,L</sub></td><td>饱和型负载恒饱和的证明</td></tr>
+<tr><td>（3.10）</td><td><i>V</i><sub>H</sub> = <i>V</i><sub>DD</sub> − [<i>V</i><sub>TN0</sub> + <i>γ</i>(√(2<i>φ</i><sub>F</sub>+<i>V</i><sub>H</sub>) − √(2<i>φ</i><sub>F</sub>))]</td><td>饱和型负载的高电平，需迭代</td></tr>
+<tr><td>（3.13）</td><td><i>V</i><sub>GG</sub> &gt; <i>V</i><sub>DD</sub> + <i>V</i><sub>TN,L</sub></td><td>线性型负载对第二路电源的要求</td></tr>
+<tr><td>（3.15）</td><td><i>V</i><sub>OUT</sub> ≤ |<i>V</i><sub>TP</sub>|</td><td>伪 NMOS 中 PMOS 负载工作在饱和区的范围</td></tr>
+<tr><td>（4.1）</td><td><i>V</i><sub>TN</sub> = <i>V</i><sub>TN0</sub> + <i>γ</i>[√(2<i>φ</i><sub>F</sub>+<i>V</i><sub>SB</sub>) − √(2<i>φ</i><sub>F</sub>)]</td><td>体效应；<i>V</i><sub>SB</sub> = 0 时退化为零偏阈值</td></tr>
+<tr><td>（5.3）（5.4）</td><td>串联 <i>R</i><sub>A</sub> = <i>R</i><sub>B</sub> = <i>R</i><sub>on</sub>/2；并联 <i>R</i><sub>A</sub> = <i>R</i><sub>B</sub> = <i>R</i><sub>on</sub></td><td>NAND／NOR 保持基准 <i>R</i><sub>on</sub> 的尺寸规则</td></tr>
+<tr><td>（5.5）</td><td>2<i>R</i><sub>on</sub> ÷ (<i>R</i><sub>on</sub>/2) = 4</td><td>同尺寸下串联与并联的电阻比</td></tr>
+<tr><td>（6.2）</td><td><span class="vc">𝒱</span><sub>O</sub>(<i>t</i>) = <i>V</i><sub>L</sub> + Δ<i>V</i><i>e</i><sup>−<i>t</i>/<i>τ</i></sup>，<i>τ</i> = <i>R</i><i>C</i><sub>L</sub></td><td>放电通解；充电时 <i>V</i><sub>L</sub> ↔ <i>V</i><sub>H</sub></td></tr>
+<tr><td>（6.5）（6.7）</td><td><i>t</i><sub>f</sub> = 2.2<i>R</i><sub>on,S</sub><i>C</i><sub>L</sub>；<i>t</i><sub>r</sub> = 2.2<i>R</i><sub>on,L</sub><i>C</i><sub>L</sub></td><td>10%–90% 边沿时间</td></tr>
+<tr><td>（6.6）</td><td><i>t</i><sub>pHL</sub> = 0.69<i>R</i><sub>on,S</sub><i>C</i><sub>L</sub>；<i>t</i><sub>pLH</sub> = 0.69<i>R</i><sub>on,L</sub><i>C</i><sub>L</sub></td><td>50% 传输延迟（常数 <i>R</i><sub>on</sub>）</td></tr>
+<tr><td>（6.9）</td><td><i>t</i><sub>p</sub> = 3.7<i>R</i><sub>on</sub><i>C</i><sub>L</sub>；<i>t</i><sub>pHL</sub> = 1.2<i>R</i><sub>on,S</sub><i>C</i><sub>L</sub></td><td>用等效电阻 <i>R</i><sub>eq</sub> = 1.7<i>R</i><sub>on</sub> 修正后</td></tr>
+</tbody>
+</table>
+
+<p style="text-align:right"><a class="up" href="#s0">↑ 回到顶部</a></p>
+</main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var C = {
+    ink: "#1b1f24", wire: "#2b3138", comp: "#2b3138",
+    blue: "#2563a8", red: "#b3261e", green: "#1d7a4d", amber: "#a86b00",
+    grey: "#8895a5", grid: "#e3e9f0"
+  };
+
+  /* 几何登记表：供交付前自动核对连线（不影响显示） */
+  var LOG = { seg: [], pin: [], dot: [], term: [], rail: [], rect: [], lbl: [] };
+  window.__FIG = LOG;
+
+  /* ---------- 画布框架：逻辑坐标 W×H，按 CSS 宽度等比缩放 ---------- */
+  function Scene(id, W, H, draw) {
+    var c = document.getElementById(id);
+    if (!c) return;
+    function render() {
+      var dpr = window.devicePixelRatio || 1;
+      var cssW = c.clientWidth || W;
+      var cssH = cssW * H / W;
+      c.style.height = cssH + "px";
+      c.width = Math.round(cssW * dpr);
+      c.height = Math.round(cssH * dpr);
+      var g = c.getContext("2d");
+      var k = dpr * cssW / W;
+      g.setTransform(k, 0, 0, k, 0, 0);
+      g.clearRect(0, 0, W, H);
+      g.lineCap = "round";
+      g.lineJoin = "round";
+      window.__CUR = id;
+      LOG.size = LOG.size || {}; LOG.size[id] = [W, H];
+      draw(new Pen(g), W, H);
+      window.__CUR = null;
+    }
+    render();
+    var t = null;
+    window.addEventListener("resize", function () {
+      clearTimeout(t);
+      t = setTimeout(render, 120);
+    });
+  }
+
+  /* ---------- 画笔与原子元件（返回几何端点；连线一律用返回值） ---------- */
+  function Pen(g) { this.g = g; this.noLog = false; this.cid = null; }
+
+  Pen.prototype.wire = function (x1, y1, x2, y2, w) {
+    var g = this.g;
+    g.strokeStyle = C.wire; g.lineWidth = w || 1.8;
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+    if (!this.noLog) LOG.seg.push({ c: window.__CUR, x1: x1, y1: y1, x2: x2, y2: y2 });
+    return { a: { x: x1, y: y1 }, b: { x: x2, y: y2 } };
+  };
+
+  Pen.prototype.dash = function (pts, color, w, pattern) {
+    var g = this.g;
+    g.strokeStyle = color; g.lineWidth = w || 1.2;
+    g.setLineDash(pattern || [5, 4]);
+    g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+    g.stroke();
+    g.setLineDash([]);
+  };
+
+  Pen.prototype.dot = function (x, y) {
+    var g = this.g;
+    g.fillStyle = C.wire; g.beginPath(); g.arc(x, y, 2.8, 0, Math.PI * 2); g.fill();
+    LOG.dot.push({ c: window.__CUR, x: x, y: y });
+  };
+
+  Pen.prototype.term = function (x, y, label, side) {
+    var g = this.g;
+    g.strokeStyle = C.wire; g.lineWidth = 1.6; g.fillStyle = "#fff";
+    g.beginPath(); g.arc(x, y, 3.6, 0, Math.PI * 2); g.fill(); g.stroke();
+    if (label) this.txt(label, x + (side === "left" ? -10 : 10), y + 4, {
+      align: side === "left" ? "right" : "left", italic: true, color: C.ink
+    });
+    LOG.term.push({ c: window.__CUR, x: x, y: y, s: label || "" });
+    return { x: x, y: y };
+  };
+
+  Pen.prototype.rail = function (x1, x2, y, label) {
+    this.wire(x1, y, x2, y, 2.4);
+    LOG.rail.push({ c: window.__CUR, x1: x1, x2: x2, y: y });
+    if (label) this.txt(label, x1 - 6, y + 4, { align: "right", italic: true, color: C.blue });
+    return { left: { x: x1, y: y }, right: { x: x2, y: y } };
+  };
+
+  Pen.prototype.gnd = function (x, y) {
+    var g = this.g;
+    this.noLog = true;
+    this.wire(x, y, x, y + 9);
+    this.wire(x - 11, y + 9, x + 11, y + 9, 2.2);
+    this.wire(x - 7, y + 14, x + 7, y + 14, 1.8);
+    this.wire(x - 3, y + 19, x + 3, y + 19, 1.4);
+    this.noLog = false;
+    LOG.pin.push({ c: window.__CUR, x: x, y: y, k: "gnd" });
+    return { top: { x: x, y: y }, bottom: { x: x, y: y + 19 } };
+  };
+
+  /* 竖直电阻：(x,yTop) → (x,yBot) */
+  Pen.prototype.res = function (x, yTop, yBot, label) {
+    var g = this.g, bh = 26, gap = (yBot - yTop - bh) / 2;
+    this.noLog = true;
+    this.wire(x, yTop, x, yTop + gap);
+    this.wire(x, yBot - gap, x, yBot);
+    this.noLog = false;
+    g.strokeStyle = C.comp; g.lineWidth = 1.8; g.fillStyle = "#fff";
+    g.beginPath(); g.rect(x - 7, yTop + gap, 14, bh); g.fill(); g.stroke();
+    LOG.rect.push({ c: window.__CUR, k: "R", x0: x - 7, x1: x + 7, y0: yTop + gap, y1: yTop + gap + bh });
+    LOG.pin.push({ c: window.__CUR, x: x, y: yTop, k: "rt" });
+    LOG.pin.push({ c: window.__CUR, x: x, y: yBot, k: "rb" });
+    if (label) this.txt(label, x + 14, yTop + gap + 19, { italic: true, align: "left" });
+    return { top: { x: x, y: yTop }, bottom: { x: x, y: yBot } };
+  };
+
+  /* 竖直 MOSFET：上端 (x,yTop)、下端 (x,yBot)；栅极引线默认在左，flip 在右 */
+  Pen.prototype.mos = function (x, yTop, yBot, o) {
+    o = o || {};
+    var g = this.g, isP = !!o.p, dep = !!o.dep, flip = !!o.flip;
+    var yD = yTop + 10, yS = yBot - 10, yMid = (yTop + yBot) / 2;
+    var gx = flip ? x + 9 : x - 9;
+    var lead = flip ? x + 24 : x - 24;
+    this.noLog = true;
+    this.wire(x, yTop, x, yD);
+    this.wire(x, yS, x, yBot);
+    this.noLog = false;
+    g.strokeStyle = C.comp; g.lineWidth = dep ? 3.6 : 2.6;
+    if (dep) {
+      g.beginPath(); g.moveTo(x, yD); g.lineTo(x, yS); g.stroke();
+    } else {
+      var seg = (yS - yD) / 5;
+      [0, 2, 4].forEach(function (i) {
+        g.beginPath(); g.moveTo(x, yD + i * seg); g.lineTo(x, yD + (i + 1) * seg); g.stroke();
+      });
+    }
+    g.lineWidth = 2;
+    g.beginPath(); g.moveTo(gx, yD + 2); g.lineTo(gx, yS - 2); g.stroke();
+    this.noLog = true;
+    this.wire(gx, yMid, lead, yMid);
+    this.noLog = false;
+    g.fillStyle = C.comp;
+    var ay = isP ? yTop + 18 : yBot - 18, dir = isP ? 1 : -1, s = 4.2;
+    g.beginPath();
+    g.moveTo(x, ay + dir * s * 1.5);
+    g.lineTo(x - s, ay);
+    g.lineTo(x + s, ay);
+    g.closePath(); g.fill();
+    LOG.rect.push({ c: window.__CUR, k: "ch", x0: x - 2, x1: x + 2, y0: yD, y1: yS });
+    LOG.pin.push({ c: window.__CUR, x: x, y: yTop, k: "d" });
+    LOG.pin.push({ c: window.__CUR, x: x, y: yBot, k: "s" });
+    LOG.pin.push({ c: window.__CUR, x: lead, y: yMid, k: "g" });
+    if (o.label) this.txt(o.label, flip ? x - 16 : x + 16, yMid + 4, {
+      italic: true, align: flip ? "right" : "left"
+    });
+    if (o.note) this.txt(o.note, flip ? x - 16 : x + 16, yMid + 20, {
+      align: flip ? "right" : "left", size: 10.5, color: C.grey
+    });
+    return {
+      top: { x: x, y: yTop }, bottom: { x: x, y: yBot },
+      src: isP ? { x: x, y: yTop } : { x: x, y: yBot },
+      drn: isP ? { x: x, y: yBot } : { x: x, y: yTop },
+      gate: { x: lead, y: yMid }, mid: { x: x, y: yMid }
+    };
+  };
+
+  Pen.prototype.txt = function (s, x, y, o) {
+    o = o || {};
+    var g = this.g;
+    g.fillStyle = o.color || C.ink;
+    g.font = (o.italic ? "italic " : "") + (o.size || 12.5) + "px " +
+      (o.italic ? "'Cambria Math','Times New Roman',serif" : "'Segoe UI','Microsoft YaHei',sans-serif");
+    g.textAlign = o.align || "left";
+    g.textBaseline = "alphabetic";
+    g.fillText(s, x, y);
+    var tw = g.measureText(s).width, al = o.align || "left";
+    var bx = al === "center" ? x - tw / 2 : (al === "right" ? x - tw : x);
+    LOG.lbl.push({ c: window.__CUR, s: String(s), x0: bx, x1: bx + tw,
+      y0: y - (o.size || 12.5), y1: y + 4 });
+  };
+
+  Pen.prototype.arrow = function (x1, y1, x2, y2, color) {
+    var g = this.g;
+    g.strokeStyle = color || C.amber; g.lineWidth = 1.3;
+    g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+    var a = Math.atan2(y2 - y1, x2 - x1), L = 6;
+    g.fillStyle = color || C.amber;
+    g.beginPath();
+    g.moveTo(x2, y2);
+    g.lineTo(x2 - L * Math.cos(a - 0.4), y2 - L * Math.sin(a - 0.4));
+    g.lineTo(x2 - L * Math.cos(a + 0.4), y2 - L * Math.sin(a + 0.4));
+    g.closePath(); g.fill();
+  };
+
+  /* ================= 图 1：电阻负载反相器 ================= */
+  Scene("fig1", 800, 330, function (p) {
+    var xC = 300, yRail = 48, yOut = 152, yGnd = 292;
+    p.rail(196, 404, yRail, "V_DD");
+    p.dot(xC, yRail);
+    p.res(xC, yRail, yOut, "R_D");
+    p.dot(xC, yOut);
+    var m = p.mos(xC, yOut, yGnd, { label: "M_S" });
+    p.gnd(xC, yGnd);
+    p.wire(m.gate.x, m.gate.y, 208, m.gate.y);
+    p.term(208, m.gate.y, "V_IN", "left");
+    p.wire(xC, yOut, 388, yOut);
+    p.term(388, yOut, "V_OUT", "right");
+
+    p.txt("M_S 关断：I_D = 0，R_D 无压降 ⇒ V_OUT = V_DD", 448, 92, { size: 12, color: C.green });
+    p.txt("M_S 导通：R_D 与 R_on 分压 ⇒ V_OUT = V_L", 448, 118, { size: 12, color: C.green });
+    p.txt("V_L = V_DD·R_on/(R_on + R_D)", 448, 146, { size: 12, italic: true, color: C.blue });
+    p.txt("（2.1）式", 448, 168, { size: 11, color: C.grey });
+    p.txt("V_IN 未到 V_TN 之前，输出一直是 V_DD", 448, 214, { size: 12, color: C.amber });
+    p.txt("⇒ V_IL = V_TN（2.3 式）", 448, 236, { size: 12, italic: true, color: C.amber });
+  });
+
+  /* ================= 图 2：六种负载接法（2 列 × 3 行） ================= */
+  Scene("fig2", 800, 1020, function (p) {
+    var CX = [200, 600], ROWY = [26, 356, 686];
+
+    /* 每个子图外面一个浅色圆角框，用来把六块分开 */
+    function panelBox(cx, rowY) {
+      var g = p.g, x0 = cx - 152, y0 = rowY + 4, x1 = cx + 152, y1 = rowY + 320, r = 9;
+      g.strokeStyle = "#dfe6ee"; g.lineWidth = 1.4;
+      g.beginPath();
+      g.moveTo(x0 + r, y0);
+      g.lineTo(x1 - r, y0); g.quadraticCurveTo(x1, y0, x1, y0 + r);
+      g.lineTo(x1, y1 - r); g.quadraticCurveTo(x1, y1, x1 - r, y1);
+      g.lineTo(x0 + r, y1); g.quadraticCurveTo(x0, y1, x0, y1 - r);
+      g.lineTo(x0, y0 + r); g.quadraticCurveTo(x0, y0, x0 + r, y0);
+      g.closePath(); g.stroke();
+    }
+
+    function cell(col, row, opt) {
+      var cx = CX[col], y0 = ROWY[row] + 18;
+      panelBox(cx, ROWY[row]);
+      var railY = y0;
+      p.rail(cx - 96, cx + 56, railY, "V_DD");
+      var mL = p.mos(cx, railY, railY + 90, opt);
+      p.wire(cx, railY + 90, cx, railY + 120);
+      p.dot(cx, railY + 120);
+      p.wire(cx, railY + 120, cx + 96, railY + 120);
+      p.term(cx + 96, railY + 120, "V_OUT", "right");
+      var mS = p.mos(cx, railY + 120, railY + 230, { label: "M_S" });
+      p.gnd(cx, railY + 230);
+      p.wire(mS.gate.x, mS.gate.y, cx - 96, mS.gate.y);
+      p.term(cx - 96, mS.gate.y, "V_IN", "left");
+      return { cx: cx, railY: railY, mL: mL };
+    }
+    /* 栅接源：栅极向下引到"M_L 源极 — 输出节点"这段竖线上 */
+    function tieToSource(b) {
+      p.wire(b.mL.gate.x, b.mL.gate.y, b.cx - 62, b.mL.gate.y);
+      p.wire(b.cx - 62, b.mL.gate.y, b.cx - 62, b.railY + 100);
+      p.wire(b.cx - 62, b.railY + 100, b.cx, b.railY + 100);
+      p.dot(b.cx, b.railY + 100);
+    }
+
+    /* ① 栅接源 → 恒关断 */
+    var b = cell(0, 0, { label: "M_L" });
+    tieToSource(b);
+    p.txt("① 栅接源", CX[0] - 96, b.railY + 272, { size: 13.5, color: C.blue });
+    p.txt("V_GS,L = 0 ≤ V_TN ⇒ 恒关断，输出无上拉", CX[0] - 96, b.railY + 292, { size: 12, color: C.red });
+
+    /* ② 栅接地 → 恒关断 */
+    b = cell(1, 0, { label: "M_L" });
+    p.wire(b.mL.gate.x, b.mL.gate.y, b.cx - 62, b.mL.gate.y);
+    p.gnd(b.cx - 62, b.mL.gate.y);
+    p.txt("② 栅接地", CX[1] - 96, b.railY + 272, { size: 13.5, color: C.blue });
+    p.txt("V_GS,L = −V_OUT < 0 ⇒ 恒关断，输出无上拉", CX[1] - 96, b.railY + 292, { size: 12, color: C.red });
+
+    /* ③ 耗尽型负载 */
+    b = cell(0, 1, { label: "M_L", dep: true, note: "V_TN = −1 V" });
+    tieToSource(b);
+    p.txt("③ 耗尽型（栅接源）", CX[0] - 96, b.railY + 272, { size: 13.5, color: C.blue });
+    p.txt("V_GS,L = 0，V_OV = 1 V ⇒ 恒饱和，V_H = V_DD", CX[0] - 96, b.railY + 292, { size: 12, color: C.green });
+
+    /* ④ 栅接 V_DD → 饱和型 */
+    b = cell(1, 1, { label: "M_L" });
+    p.wire(b.mL.gate.x, b.mL.gate.y, b.cx - 62, b.mL.gate.y);
+    p.wire(b.cx - 62, b.mL.gate.y, b.cx - 62, b.railY);
+    p.dot(b.cx - 62, b.railY);
+    p.txt("④ 栅接 V_DD（饱和型）", CX[1] - 96, b.railY + 272, { size: 13.5, color: C.blue });
+    p.txt("V_GS,L = V_DS,L ⇒ 恒饱和，V_H = V_DD − V_TN,L", CX[1] - 96, b.railY + 292, { size: 12, color: C.green });
+
+    /* ⑤ 栅接 V_GG → 线性型 */
+    b = cell(0, 2, { label: "M_L" });
+    p.wire(b.mL.gate.x, b.mL.gate.y, b.cx - 78, b.mL.gate.y);
+    p.term(b.cx - 78, b.mL.gate.y, "V_GG", "left");
+    p.txt("⑤ 栅接 V_GG（线性型）", CX[0] - 96, b.railY + 272, { size: 13.5, color: C.blue });
+    p.txt("V_GG > V_DD + V_TN,L ⇒ 恒在线性区，需第二路电源", CX[0] - 96, b.railY + 292, { size: 12, color: C.green });
+
+    /* ⑥ 栅接地 PMOS → 伪 NMOS */
+    b = cell(1, 2, { label: "M_L", p: true, note: "PMOS" });
+    p.wire(b.mL.gate.x, b.mL.gate.y, b.cx - 62, b.mL.gate.y);
+    p.gnd(b.cx - 62, b.mL.gate.y);
+    p.txt("⑥ 栅接地 PMOS（伪 NMOS）", CX[1] - 96, b.railY + 272, { size: 13.5, color: C.blue });
+    p.txt("V_SG,L = V_DD > |V_TP| ⇒ 恒导通，无体效应", CX[1] - 96, b.railY + 292, { size: 12, color: C.green });
+  });
+
+  /* ================= 图 3：转移特性（耗尽 / 增强） ================= */
+  Scene("fig3", 800, 360, function (p) {
+    var ox = 100, oy = 40, ex = 660, ey = 296;
+    var vMin = -1.6, vMax = 2.0, iMax = 3.6;
+    function X(v) { return ox + (v - vMin) / (vMax - vMin) * (ex - ox); }
+    function Y(i) { return ey - Math.min(i, iMax) / iMax * (ey - oy); }
+    var g = p.g, v;
+    for (v = -1.5; v <= 2.01; v += 0.5) {
+      g.strokeStyle = C.grid; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(X(v), oy); g.lineTo(X(v), ey); g.stroke();
+      p.txt(v.toFixed(1), X(v), ey + 15, { size: 10.5, align: "center", color: C.grey });
+    }
+    g.strokeStyle = C.grey; g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(ox, ey); g.lineTo(ex, ey); g.stroke();
+    g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox, ey); g.stroke();
+    p.arrow(ex - 16, ey, ex, ey, C.grey);
+    p.arrow(ox, oy + 16, ox, oy, C.grey);
+    p.txt("I_D", ox - 6, oy - 8, { italic: true, color: C.grey });
+    p.txt("V_GS (V)", ox - 4, ey + 44, { italic: true, size: 12, color: C.grey });
+    function curve(vt, color, dash) {
+      g.strokeStyle = color; g.lineWidth = 2.4;
+      g.setLineDash(dash || []);
+      g.beginPath();
+      var first = true;
+      for (var vv = vMin; vv <= vMax; vv += 0.01) {
+        var ov = vv - vt;
+        if (ov <= 0) continue;
+        var py = Y(ov * ov);
+        if (first) { g.moveTo(X(vv), py); first = false; } else g.lineTo(X(vv), py);
+      }
+      g.stroke();
+      g.setLineDash([]);
+    }
+    curve(-1.0, C.red, []);
+    curve(0.6, C.blue, [6, 5]);
+    p.dash([[X(0), oy], [X(0), ey]], C.grey, 1.2, [5, 4]);
+    p.dash([[X(0), Y(1)], [X(-1.0), Y(1)]], C.red, 1.2, [4, 3]);
+    p.dot(X(0), Y(1));
+    p.dot(X(-1.0), ey);
+    p.dot(X(0.6), ey);
+    p.txt("I_D = K_L·(1 V)²", X(0) + 8, Y(1) - 8, { size: 11.5, color: C.red });
+    p.txt("V_TN = −1 V", X(-1.0), ey + 30, { size: 11.5, align: "center", color: C.red });
+    p.txt("V_TN = 0.6 V", X(0.6), ey + 30, { size: 11.5, align: "center", color: C.blue });
+    p.txt("耗尽型（实线）", X(1.02) + 8, Y(0.62), { size: 12, color: C.red });
+    p.txt("增强型（虚线）", X(1.02) + 8, Y(0.62) + 18, { size: 12, color: C.blue });
+    p.txt("V_GS = 0 处", X(0) + 6, oy + 14, { size: 10.5, color: C.grey });
+  });
+
+  /* ================= 图 4：V_H 的图解法 ================= */
+  Scene("fig4", 800, 400, function (p) {
+    var ox = 100, oy = 40, ex = 660, ey = 320;
+    var vdd = 2.5, vt0 = 0.6, gam = 0.5, phi = 0.6, yMax = 2.6;
+    function X(v) { return ox + v / vdd * (ex - ox); }
+    function Y(u) { return ey - u / yMax * (ey - oy); }
+    var g = p.g, u;
+    for (u = 0.5; u <= 2.51; u += 0.5) {
+      g.strokeStyle = C.grid; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(ox, Y(u)); g.lineTo(ex, Y(u)); g.stroke();
+      p.txt(u.toFixed(1), ox - 8, Y(u) + 4, { size: 10.5, align: "right", color: C.grey });
+    }
+    g.strokeStyle = C.grey; g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(ox, ey); g.lineTo(ex, ey); g.stroke();
+    g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox, ey); g.stroke();
+    p.arrow(ex - 16, ey, ex, ey, C.grey);
+    p.arrow(ox, oy + 16, ox, oy, C.grey);
+    p.txt("电压 (V)", ox - 6, oy - 8, { italic: true, color: C.grey });
+    p.txt("V_OUT (V)", ex - 4, ey + 18, { italic: true, size: 12, align: "right", color: C.grey });
+    g.strokeStyle = C.ink; g.lineWidth = 2; g.beginPath();
+    g.moveTo(X(0), Y(vdd)); g.lineTo(X(vdd), Y(0)); g.stroke();
+    p.txt("V_DD − V_OUT", X(0.12), Y(vdd - 0.12) - 10, { size: 11.5 });
+    g.strokeStyle = C.red; g.lineWidth = 2.4; g.beginPath();
+    for (var i = 0; i <= 200; i++) {
+      var vv = i / 200 * vdd;
+      var vt = vt0 + gam * (Math.sqrt(phi + vv) - Math.sqrt(phi));
+      if (i === 0) g.moveTo(X(vv), Y(vt)); else g.lineTo(X(vv), Y(vt));
+    }
+    g.stroke();
+    p.txt("V_TN,L(V_SB = V_OUT)", X(0.60), Y(0.93) + 6, { size: 11.5, color: C.red });
+    var vh = vdd - vt0, k;
+    for (k = 0; k < 60; k++) vh = vdd - (vt0 + gam * (Math.sqrt(phi + vh) - Math.sqrt(phi)));
+    var yh = vdd - vh;
+    p.dash([[X(vh), Y(yh)], [X(vh), ey]], C.green, 1.3, [5, 4]);
+    p.dash([[ox, Y(yh)], [X(vh), Y(yh)]], C.green, 1.3, [5, 4]);
+    p.dot(X(vh), Y(yh));
+    p.txt("V_H = " + vh.toFixed(2) + " V", X(vh) + 9, Y(yh) - 9, { size: 12.5, color: C.green });
+    p.txt("V_TN,L = " + yh.toFixed(2) + " V", X(vh) + 9, Y(yh) + 12, { size: 11.5, color: C.green });
+    p.dash([[ox, Y(vt0)], [X(1.9), Y(vt0)]], C.grey, 1.2, [3, 4]);
+    p.dash([[X(1.9), Y(vt0)], [X(1.9), ey]], C.grey, 1.2, [3, 4]);
+    p.dot(X(1.9), Y(vt0));
+    p.txt("不计体效应 1.90 V", X(1.9) - 9, Y(vt0) - 8, { size: 11, align: "right", color: C.grey });
+    p.txt("交点即（3.10）的解", X(0.12), Y(0.60), { size: 11.5, color: C.green });
+  });
+
+  /* ================= 图 5a：NAND ================= */
+  Scene("fig5n", 420, 440, function (p) {
+    var cx = 190, yR = 44;
+    p.rail(cx - 96, cx + 56, yR, "V_DD");
+    var mL = p.mos(cx, yR, yR + 100, { label: "M_L", dep: true });
+    p.wire(mL.gate.x, mL.gate.y, cx - 40, mL.gate.y);
+    p.wire(cx - 40, mL.gate.y, cx - 40, yR + 100);
+    p.wire(cx - 40, yR + 100, cx, yR + 100);
+    p.dot(cx, yR + 100);
+    p.wire(cx, yR + 100, cx, yR + 130);
+    p.dot(cx, yR + 130);
+    p.wire(cx, yR + 130, cx + 118, yR + 130);
+    p.term(cx + 118, yR + 130, "V_OUT", "right");
+    var mA = p.mos(cx, yR + 130, yR + 235, { label: "M_A" });
+    p.dot(cx, yR + 235);
+    var mB = p.mos(cx, yR + 235, yR + 340, { label: "M_B" });
+    p.gnd(cx, yR + 340);
+    p.wire(mA.gate.x, mA.gate.y, cx - 96, mA.gate.y);
+    p.term(cx - 96, mA.gate.y, "A", "left");
+    p.wire(mB.gate.x, mB.gate.y, cx - 96, mB.gate.y);
+    p.term(cx - 96, mB.gate.y, "B", "left");
+    p.txt("A、B 串联：两管都导通才下拉", cx - 120, 412, { size: 12.5, color: C.green });
+  });
+
+  /* ================= 图 5b：NOR ================= */
+  Scene("fig5p", 420, 440, function (p) {
+    var cx = 190, yR = 44, xL = cx - 46, xR = cx + 46;
+    p.rail(cx - 96, cx + 96, yR, "V_DD");
+    var mL = p.mos(cx, yR, yR + 100, { label: "M_L", dep: true });
+    p.wire(mL.gate.x, mL.gate.y, cx - 40, mL.gate.y);
+    p.wire(cx - 40, mL.gate.y, cx - 40, yR + 100);
+    p.wire(cx - 40, yR + 100, cx, yR + 100);
+    p.dot(cx, yR + 100);
+    p.wire(cx, yR + 100, cx, yR + 130);
+    p.dot(cx, yR + 130);
+    /* 输出节点与两条支路的顶端共用一条导线 */
+    p.wire(xL, yR + 130, cx + 118, yR + 130);
+    p.dot(xL, yR + 130);
+    p.dot(xR, yR + 130);
+    p.term(cx + 118, yR + 130, "V_OUT", "right");
+    var mA = p.mos(xL, yR + 130, yR + 300, { label: "M_A" });
+    var mB = p.mos(xR, yR + 130, yR + 300, { label: "M_B", flip: true });
+    p.wire(xL, yR + 300, xR, yR + 300);
+    p.dot(xL, yR + 300);
+    p.dot(xR, yR + 300);
+    p.dot(cx, yR + 300);
+    p.gnd(cx, yR + 300);
+    p.wire(mA.gate.x, mA.gate.y, cx - 118, mA.gate.y);
+    p.term(cx - 118, mA.gate.y, "A", "left");
+    p.wire(mB.gate.x, mB.gate.y, cx + 118, mB.gate.y);
+    p.term(cx + 118, mB.gate.y, "B", "right");
+    p.txt("A、B 并联：任一管导通即下拉", cx - 120, 412, { size: 12.5, color: C.green });
+  });
+
+  /* ================= 图 6：充放电波形 ================= */
+  Scene("fig6", 800, 430, function (p) {
+    var ox = 96, oy = 46, ex = 700, ey = 330;
+    var vdd = 2.5, vl = 0.2, dv = vdd - vl, yMax = 2.8;
+    var tauL = 2.14, t0 = 3.0;
+    var v0 = vl + dv * Math.exp(-t0);
+    function X(t) { return ox + t / 6.6 * (ex - ox); }
+    function Y(u) { return ey - u / yMax * (ey - oy); }
+    var g = p.g, u, i, j;
+    for (u = 0.5; u <= 2.51; u += 0.5) {
+      g.strokeStyle = C.grid; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(ox, Y(u)); g.lineTo(ex, Y(u)); g.stroke();
+      p.txt(u.toFixed(1), ox - 8, Y(u) + 4, { size: 10.5, align: "right", color: C.grey });
+    }
+    g.strokeStyle = C.grey; g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(ox, ey); g.lineTo(ex, ey); g.stroke();
+    g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox, ey); g.stroke();
+    p.arrow(ex - 16, ey, ex, ey, C.grey);
+    p.arrow(ox, oy + 16, ox, oy, C.grey);
+    p.txt("V_O (V)", ox - 6, oy - 8, { italic: true, color: C.grey });
+    p.txt("t（以 τ_S 为单位）", ex - 4, ey + 18, { italic: true, size: 12, align: "right", color: C.grey });
+    [[vdd, "V_H"], [vl, "V_L"]].forEach(function (it) {
+      p.dash([[ox, Y(it[0])], [ex, Y(it[0])]], C.blue, 1.1, [5, 4]);
+      p.txt(it[1], ex - 4, Y(it[0]) - 6, { size: 11, align: "right", color: C.blue });
+    });
+    g.strokeStyle = C.red; g.lineWidth = 2.4; g.beginPath();
+    for (i = 0; i <= 120; i++) {
+      var t = i / 120 * t0, vv = vl + dv * Math.exp(-t);
+      if (i === 0) g.moveTo(X(t), Y(vv)); else g.lineTo(X(t), Y(vv));
+    }
+    g.stroke();
+    g.strokeStyle = C.green; g.lineWidth = 2.4; g.beginPath();
+    g.moveTo(X(t0), Y(v0));
+    for (j = 1; j <= 160; j++) {
+      var tt = j / 160 * 3.4, v2 = vdd - (vdd - v0) * Math.exp(-tt / tauL);
+      g.lineTo(X(t0 + tt), Y(v2));
+    }
+    g.stroke();
+    [[-Math.log(0.9), 0.9 * dv + vl, "90%"], [-Math.log(0.5), 0.5 * dv + vl, "50%"], [-Math.log(0.1), 0.1 * dv + vl, "10%"]]
+      .forEach(function (m) {
+        p.dot(X(m[0]), Y(m[1]));
+        p.dash([[X(m[0]), Y(m[1])], [X(m[0]), ey]], C.grey, 1, [3, 3]);
+        p.txt(m[2], X(m[0]), ey + 15, { size: 10.5, align: "center", color: C.grey });
+      });
+    var t50L = -Math.log((vdd - (vl + 0.5 * dv)) / (vdd - v0)) * tauL;
+    var t50 = -Math.log(0.5);
+    var yA = Y(0.5 * dv + vl) - 18;
+    p.arrow(X(-Math.log(0.9)), ey + 30, X(-Math.log(0.1)), ey + 30, C.amber);
+    p.txt("t_f = 2.2 τ_S", (X(-Math.log(0.9)) + X(-Math.log(0.1))) / 2, ey + 45,
+      { size: 11.5, align: "center", color: C.amber });
+    p.arrow(X(0), yA, X(t50), yA, C.amber);
+    p.txt("t_pHL = 0.69 τ_S", X(t50) + 8, yA - 5, { size: 11.5, color: C.amber });
+    p.arrow(X(t0), yA, X(t0 + t50L), yA, C.amber);
+    p.txt("t_pLH = 0.69 τ_L", X(t0 + t50L) + 8, yA - 5, { size: 11.5, color: C.amber });
+    p.dot(X(t0 + t50L), Y(0.5 * dv + vl));
+    p.txt("放电经 M_S：τ_S = R_on,S·C_L", X(0.15), Y(vdd - 0.28), { size: 11.5, color: C.red });
+    p.txt("充电经 M_L：τ_L = R_on,L·C_L", X(t0 + 1.1), Y(vdd - 0.72), { size: 11.5, color: C.green });
+  });
+})();
+</script>
+
+
+</body>
+</html>
