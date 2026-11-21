@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>并行计算机 · 猫燐笔记 EX 总结</title>
+<style>
+  :root{
+    --paper:#fdfcf9; --paper-2:#f7f4ed; --ink:#22272e; --ink-soft:#5c636e;
+    --ink-faint:#8b929c; --line:#e4dfd3; --line-soft:#eeeae0;
+    --accent:#1f4e79; --accent-2:#2f6d9e; --accent-bg:#edf2f8;
+    --warm:#a8542a; --warm-bg:#fbf0e9; --green:#2f7a4f; --green-bg:#eaf5ee;
+    --code-bg:#f6f4ee; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Segoe UI","Noto Sans SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-size:16px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  }
+  /* ---------- 页头 ---------- */
+  .cover{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff 0%,var(--paper) 100%);padding:56px 32px 40px;}
+  .cover-inner{max-width:1120px;margin:0 auto;}
+  .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 14px;}
+  .cover h1{margin:0;font-size:38px;line-height:1.25;font-weight:700;letter-spacing:-.01em;}
+  .cover h1 .sub{display:block;font-size:16px;font-weight:400;color:var(--ink-soft);letter-spacing:.02em;margin-top:12px;}
+  .cover-meta{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px 26px;font-size:13px;color:var(--ink-soft);}
+  .cover-meta span b{color:var(--ink);font-weight:600;}
+  .stat{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;}
+  .stat div{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 16px;font-size:13px;color:var(--ink-soft);}
+  .stat div b{display:block;font-size:20px;color:var(--ink);line-height:1.3;font-variant-numeric:tabular-nums;}
+  .stat div.n b{color:var(--accent);}
+  /* ---------- 布局 ---------- */
+  .layout{max-width:1120px;margin:0 auto;padding:0 32px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:44px;align-items:start;}
+  nav.toc{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:40px 0 60px;font-size:13.5px;border-right:1px solid var(--line-soft);}
+  nav.toc h2{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 16px;font-weight:600;}
+  nav.toc ol{list-style:none;margin:0;padding:0 20px 0 0;}
+  nav.toc ol li{margin:0 0 6px;}
+  nav.toc ol li a{display:block;color:var(--ink-soft);text-decoration:none;padding:3px 0 3px 11px;border-left:2px solid transparent;line-height:1.5;transition:color .15s,border-color .15s;}
+  nav.toc ol li a:hover{color:var(--accent);border-left-color:var(--accent-2);}
+  nav.toc ol li .num{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-size:11.5px;margin-right:7px;}
+  nav.toc .sub-list{list-style:none;margin:2px 0 12px;padding:0 0 0 4px;}
+  nav.toc .sub-list a{font-size:12.4px;color:var(--ink-faint);padding:2px 0 2px 20px;border-left:1px solid var(--line-soft);}
+  nav.toc .sub-list a:hover{color:var(--accent-2);border-left-color:var(--accent-2);}
+  main{padding:40px 0 100px;min-width:0;}
+  /* ---------- 章节 ---------- */
+  section.chapter{margin:0 0 64px;scroll-margin-top:24px;}
+  section.chapter > h2{font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em;padding-bottom:14px;border-bottom:2px solid var(--ink);display:flex;align-items:baseline;gap:14px;}
+  section.chapter > h2 .cn{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;flex:none;}
+  section.chapter > h2 .tag{font-size:11px;font-weight:500;color:var(--ink-faint);letter-spacing:.06em;margin-left:auto;flex:none;}
+  h3{font-size:18px;font-weight:650;margin:38px 0 12px;scroll-margin-top:24px;color:var(--ink);}
+  h3::before{content:"";display:inline-block;width:8px;height:8px;background:var(--accent-2);margin-right:10px;vertical-align:2px;border-radius:2px;}
+  h4{font-size:15px;font-weight:650;margin:24px 0 8px;color:var(--accent);letter-spacing:.01em;}
+  p{margin:0 0 12px;}
+  .lead{font-size:16.5px;color:var(--ink-soft);}
+  /* ---------- 术语 ---------- */
+  dl.terms{margin:16px 0 20px;border-top:1px solid var(--line);}
+  dl.terms div{display:grid;grid-template-columns:176px minmax(0,1fr);gap:18px;padding:11px 2px;border-bottom:1px solid var(--line-soft);align-items:baseline;}
+  dl.terms dt{font-weight:650;color:var(--accent);font-size:14.5px;display:flex;flex-direction:column;gap:1px;}
+  dl.terms dt .cn{font-weight:500;color:var(--ink-soft);font-size:13px;}
+  dl.terms dd{margin:0;font-size:14.8px;}
+  /* ---------- 列表 ---------- */
+  ul,ol{padding-left:22px;margin:0 0 14px;}
+  li{margin:0 0 6px;}
+  ul.plain{list-style:none;padding-left:0;}
+  ul.plain li{padding-left:18px;position:relative;}
+  ul.plain li::before{content:"";position:absolute;left:3px;top:11px;width:5px;height:5px;background:var(--accent-2);border-radius:50%;}
+  /* ---------- 强调 ---------- */
+  b,strong{font-weight:650;}
+  em{font-style:italic;color:var(--ink-soft);}
+  .term{color:var(--accent);font-weight:600;}
+  .hl{background:linear-gradient(180deg,transparent 58%,#fce9b8 58%);padding:0 2px;}
+  code{font-family:"Cascadia Code","Consolas","SFMono-Regular",monospace;font-size:.9em;background:var(--code-bg);padding:1.5px 5px;border-radius:4px;border:1px solid var(--line-soft);color:#2b3a49;}
+  /* ---------- 新增标记 ---------- */
+  .ex{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:1px 7px;border-radius:20px;background:var(--warm-bg);color:var(--warm);border:1px solid #eed6c6;vertical-align:2px;margin-left:8px;}
+  .note{margin:18px 0;padding:13px 18px;background:var(--accent-bg);border-left:3px solid var(--accent-2);border-radius:0 6px 6px 0;font-size:14.4px;color:#2c3e50;}
+  .note .lbl{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);margin-right:9px;}
+  .note.warm{background:var(--warm-bg);border-left-color:var(--warm);color:#5b3a26;}
+  .note.warm .lbl{color:var(--warm);}
+  .note.ok{background:var(--green-bg);border-left-color:var(--green);color:#2c4033;}
+  .note.ok .lbl{color:var(--green);}
+  .note p:last-child{margin-bottom:0;}
+  /* ---------- 代码 ---------- */
+  pre{margin:16px 0;padding:16px 18px;background:var(--code-bg);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;font-size:13.2px;line-height:1.72;}
+  pre code{background:none;border:none;padding:0;font-size:inherit;color:#26313c;}
+  /* ---------- 表格 ---------- */
+  .table-wrap{overflow-x:auto;margin:18px 0;}
+  table{border-collapse:collapse;width:100%;font-size:14.2px;font-variant-numeric:tabular-nums;}
+  caption{caption-side:top;text-align:left;font-size:12.5px;letter-spacing:.03em;color:var(--ink-faint);padding-bottom:8px;}
+  th,td{padding:8px 14px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top;}
+  thead th{border-bottom:1.5px solid var(--ink);font-weight:650;font-size:13.2px;color:var(--ink);white-space:nowrap;}
+  tbody tr:hover{background:var(--paper-2);}
+  /* ---------- 公式 ---------- */
+  .formula{margin:18px 0;padding:16px 20px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);text-align:center;font-size:16px;}
+  .formula .where{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--ink-soft);text-align:left;}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:-0.55em;text-align:center;font-size:.94em;margin:0 .2em;line-height:1.28;}
+  .frac > span:first-child{border-bottom:1px solid var(--ink-soft);padding:0 .3em;}
+  .frac > span:last-child{padding:0 .3em;}
+  /* ---------- 页脚 ---------- */
+  .foot{border-top:1px solid var(--line);padding:26px 32px;text-align:center;font-size:12.5px;color:var(--ink-faint);}
+  @media (max-width:960px){
+    .layout{grid-template-columns:1fr;gap:0;}
+    nav.toc{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line-soft);padding:24px 0;}
+    nav.toc .sub-list{display:none;}
+    .cover{padding:38px 20px 30px;} .cover h1{font-size:28px;} .layout{padding:0 20px;}
+    dl.terms div{grid-template-columns:1fr;gap:2px;}
+  }
+  @media print{
+    nav.toc{display:none;} .layout{grid-template-columns:1fr;} body{font-size:12pt;}
+    section.chapter{page-break-inside:avoid;} pre,table{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <div class="cover-inner">
+    <p class="kicker">Parallel Computing · 课堂手写笔记 EX 版整理</p>
+    <h1>并行计算机 · 猫燐笔记 EX 总结
+      <span class="sub">依据扫描件「猫燐笔记 EX.pdf」（18 页手写原稿）重新整理；与旧整理版对照，凡新版补充的内容一律标 <span class="ex">＋EX</span></span>
+    </h1>
+    <div class="cover-meta">
+      <span>来源 <b>猫燐笔记 EX.pdf</b>（18 页扫描，无文字层，逐页重读）</span>
+      <span>结构 <b>9 章 + 2 附录</b></span>
+      <span>新增内容 <b>约 24 处</b>，其中 6 处直接命中考试答案</span>
+    </div>
+    <div class="stat">
+      <div class="n"><b>18</b>页手写原稿</div>
+      <div class="n"><b>9</b>章正文</div>
+      <div class="n"><b>24</b>处 ＋EX 新增</div>
+      <div class="n"><b>6</b>处直接补全考卷答案</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#c1"><span class="num">01</span>云计算与交付模型</a>
+      <ul class="sub-list">
+        <li><a href="#c1-1">四种部署形态 ＋EX</a></li>
+        <li><a href="#c1-2">服务模型 Service Model</a></li>
+        <li><a href="#c1-3">五大特征</a></li>
+        <li><a href="#c1-4">CapEx 与 OpEx</a></li>
+        <li><a href="#c1-5">cloud 就高效吗 ＋EX</a></li>
+      </ul>
+    </li>
+    <li><a href="#c2"><span class="num">02</span>并行计算的基本量</a>
+      <ul class="sub-list">
+        <li><a href="#c2-1">Work / Task / Worker</a></li>
+        <li><a href="#c2-2">依赖图与关键路径</a></li>
+        <li><a href="#c2-3">数据并行与任务并行</a></li>
+        <li><a href="#c2-4">Amdahl 定律</a></li>
+      </ul>
+    </li>
+    <li><a href="#c3"><span class="num">03</span>集群架构与作业调度</a>
+      <ul class="sub-list">
+        <li><a href="#c3-1">进程、线程与并行接口</a></li>
+        <li><a href="#c3-2">算力 ≠ 内存 ＋EX</a></li>
+        <li><a href="#c3-3">集群层级与五类组件</a></li>
+        <li><a href="#c3-4">三种负载 HPC / HTC / HA</a></li>
+        <li><a href="#c3-5">作业能否放下</a></li>
+        <li><a href="#c3-6">调度器与「否则」三后果 ＋EX</a></li>
+        <li><a href="#c3-7">核心指标</a></li>
+        <li><a href="#c3-8">调度策略</a></li>
+        <li><a href="#c3-9">能耗</a></li>
+      </ul>
+    </li>
+    <li><a href="#c4"><span class="num">04</span>MPI 编程</a>
+      <ul class="sub-list">
+        <li><a href="#c4-1">SPMD 与 Hello World</a></li>
+        <li><a href="#c4-2">阻塞、死锁与 Sendrecv ＋EX</a></li>
+        <li><a href="#c4-3">halo 交换</a></li>
+        <li><a href="#c4-4">集合通信 ＋EX</a></li>
+        <li><a href="#c4-5">通信时间模型</a></li>
+      </ul>
+    </li>
+    <li><a href="#c5"><span class="num">05</span>OpenMP 编程</a>
+      <ul class="sub-list">
+        <li><a href="#c5-1">Fork-Join</a></li>
+        <li><a href="#c5-2">竞态与四种同步手段</a></li>
+        <li><a href="#c5-3">数据作用域与 default(none) ＋EX</a></li>
+        <li><a href="#c5-4">task 与 depend</a></li>
+      </ul>
+    </li>
+    <li><a href="#c6"><span class="num">06</span>并行性能度量</a>
+      <ul class="sub-list">
+        <li><a href="#c6-1">T / S / E / C</a></li>
+        <li><a href="#c6-2">强缩放与弱缩放</a></li>
+        <li><a href="#c6-3">四条总结 ＋EX</a></li>
+        <li><a href="#c6-4">Work Law 与并行度</a></li>
+        <li><a href="#c6-5">例题与勘误</a></li>
+      </ul>
+    </li>
+    <li><a href="#c7"><span class="num">07</span>分布式计算与 Grid</a>
+      <ul class="sub-list">
+        <li><a href="#c7-1">Cluster / Grid / Cloud / Edge</a></li>
+        <li><a href="#c7-2">VO 虚拟组织</a></li>
+        <li><a href="#c7-3">本地优先 ＋EX</a></li>
+        <li><a href="#c7-4">Grid 四层与两条边界</a></li>
+        <li><a href="#c7-5">两次辨析</a></li>
+      </ul>
+    </li>
+    <li><a href="#c8"><span class="num">08</span>Grid 安全</a>
+      <ul class="sub-list">
+        <li><a href="#c8-1">访问请求四问</a></li>
+        <li><a href="#c8-2">密钥对 ＋EX</a></li>
+        <li><a href="#c8-3">PKI 与 X.509</a></li>
+        <li><a href="#c8-4">Proxy 与 SSH 证书 ＋EX</a></li>
+        <li><a href="#c8-5">零信任</a></li>
+      </ul>
+    </li>
+    <li><a href="#c9"><span class="num">09</span>GPU 与异构计算</a>
+      <ul class="sub-list">
+        <li><a href="#c9-1">CPU 与 GPU 的分工 ＋EX</a></li>
+        <li><a href="#c9-2">kernel 与数据搬运</a></li>
+        <li><a href="#c9-3">框架抽象层</a></li>
+      </ul>
+    </li>
+    <li><a href="#apA"><span class="num">A</span>附录 A · EX 新增清单</a></li>
+    <li><a href="#apB"><span class="num">B</span>附录 B · 勘误与易错点</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section class="chapter" id="c1">
+  <h2><span class="cn">01</span>云计算与交付模型<span class="tag">原稿 p.1</span></h2>
+  <p class="lead"><span class="term">cloud</span>：云技术，按需提供资源。判断"是不是云"不看机器多少，而看部署形态、服务模型与那五条特征。</p>
+
+  <h3 id="c1-1">四种部署形态<span class="ex">＋EX</span></h3>
+  <p>旧整理版只写了"Cloud 按需租用"，EX 版补上了完整的部署形态划分——这条直接对应考卷 Q1(a) 的 private / public / hybrid 分类：</p>
+  <dl class="terms">
+    <div>
+      <dt>Public Cloud<span class="cn">公有云</span></dt>
+      <dd>服务商提供的环境，多租户共享、由服务商运维。</dd>
+    </div>
+    <div>
+      <dt>Private Cloud<span class="cn">私有云</span></dt>
+      <dd>为<b>单个组织</b>专用的云环境，<b>不公开</b>。数据敏感、合规要求高的场景留在这里。</dd>
+    </div>
+    <div>
+      <dt>Community Cloud<span class="cn">社区云</span></dt>
+      <dd><b>多个组织共用</b>的环境——若干机构因共同目标（合规、行业标准、共同课题）而共享一套云。</dd>
+    </div>
+    <div>
+      <dt>Hybrid Cloud<span class="cn">混合云</span></dt>
+      <dd>含有多于一种云环境（如 private + public），跨越所有权边界协同提供同一项服务。</dd>
+    </div>
+  </dl>
+  <div class="note ok"><span class="lbl">答题</span>考卷问"Design B 属于哪种云"，判据落到<b>所有权与运维边界</b>：机密数据在自有 private 侧、峰值临时租 public 侧 → <b>hybrid</b>。若再补一句 community 的定义，说明你掌握了完整四分法。</div>
+
+  <h3 id="c1-2">服务模型 Service Model</h3>
+  <p>按"供应商替用户管到哪一层"划分，四层自底向上：</p>
+  <dl class="terms">
+    <div><dt>IaaS<span class="cn">Infrastructure · 基础设施</span></dt><dd>最基础的一层。例：创建／管理一台虚拟机——OS 以上都归用户自己管。</dd></div>
+    <div><dt>FaaS<span class="cn">Function · 函数</span></dt><dd>函数级交付。例：生命周期很短的函数功能，事件触发、免运维、按调用计费。</dd></div>
+    <div><dt>PaaS<span class="cn">Platform · 平台</span></dt><dd>例：上传资源至平台，由平台提供运行环境。</dd></div>
+    <div><dt>SaaS<span class="cn">Software · 软件</span></dt><dd>例：在线应用（以帐号使用），用户只管用。</dd></div>
+  </dl>
+
+  <h3 id="c1-3">五大特征</h3>
+  <dl class="terms">
+    <div><dt>On-demand self-service<span class="cn">按需自助</span></dt><dd>自助，重点在"<b>自</b>"：首先你的平台自己得有资源池，其次要体现资源绑定——用户自己就能开出资源，不必与供应商人工交互。</dd></div>
+    <div><dt>Broad network access<span class="cn">广泛网络访问</span></dt><dd>通过网络随处可用。</dd></div>
+    <div><dt>Resource pooling<span class="cn">资源池化</span></dt><dd>资源集中至一个池里，用户<b>无需拥有、也无需考虑</b>具体落在哪台机器。</dd></div>
+    <div><dt>Rapid elasticity<span class="cn">快速弹性</span></dt><dd>快速弹性收缩：能迅速扩张，也能迅速收回。</dd></div>
+    <div><dt>Measured service<span class="cn">可计量服务</span></dt><dd>用量可计量（按核时／调用计费的基础）。</dd></div>
+  </dl>
+  <div class="note warm"><span class="lbl">旁注</span>上面几条连起来划了括号，旁边写：<b>故全天候运行不算 cloud</b>。一条服务 7×24 跑着，并不自动等于它就是云——判据是"按需自助 + 池化 + 弹性 + 可计量"这一整套。</div>
+
+  <h3 id="c1-4">CapEx 与 OpEx</h3>
+  <dl class="terms">
+    <div><dt>CapEx<span class="cn">Capital expenditure · 资本性支出</span></dt><dd>一次性买下来的投入：自购服务器、建机房、供电制冷。</dd></div>
+    <div><dt>OpEx<span class="cn">Operational expenditure · 运营性支出</span></dt><dd>按使用量持续付出的开销：按小时／按核时租云主机。</dd></div>
+  </dl>
+  <p><b>云把 CapEx 转成了 OpEx</b>——这是"按需提供资源"在财务侧的表述。峰值只持续几周时，自建的容量会被峰值锁死、全年折旧；租用则只为用到的时段付费。</p>
+
+  <h3 id="c1-5">在 cloud 里工作就一定高效吗<span class="ex">＋EX</span></h3>
+  <p>EX 版新增了一段完整问答，正好是考卷 Q1(d) 的标准答案：</p>
+  <div class="formula" style="text-align:left;font-size:15px;">
+    <b>结论：否定。</b>三条理由——
+    <ol style="margin:12px 0 0;">
+      <li>cloud <b>只改变部分工作方式，与效率无关</b>：资源在谁手里、怎么付费，不等于它被用满了。</li>
+      <li>cloud 的<b>价值在于灵活性</b>：若本地够用，还要把负载迁进 cloud 大可不必——因为云<b>池化</b>会有部分<b>耗损与延迟</b>。</li>
+      <li>cloud 仅确保 <b>capacity（容量／能拿到资源）</b>，而非 <b>utilisation（利用率／有没有用满）</b>。</li>
+    </ol>
+  </div>
+  <div class="note ok"><span class="lbl">答题</span>"capacity ≠ utilisation"这一句可以直接写进答卷，比空泛地说"云不一定高效"值钱得多。</div>
+</section>
+
+<section class="chapter" id="c2">
+  <h2><span class="cn">02</span>并行计算的基本量<span class="tag">原稿 p.2</span></h2>
+
+  <h3 id="c2-1">Work / Task / Worker</h3>
+  <dl class="terms">
+    <div><dt>Work<span class="cn">工作</span></dt><dd>工作目标，全部运算操作的总量。使用的衡量方式：<b>仅用 1 个 worker 时所用的时间 T₁</b>。</dd></div>
+    <div><dt>Task<span class="cn">任务</span></dt><dd>计算分片，把总工作切分得更小的片段；Task 之间可以存在依赖关系。</dd></div>
+    <div><dt>Worker<span class="cn">执行单元</span></dt><dd>实际执行运算的算力载体，拾取 tasks 并执行。</dd></div>
+  </dl>
+
+  <h3 id="c2-2">依赖图与关键路径</h3>
+  <p><span class="term">dependency graph</span>（依赖图）描述 Task 之间的先后约束，由它可以算出 <span class="term">minimum completion time</span>（最小完成时间）。</p>
+  <div class="table-wrap">
+    <table>
+      <caption>原稿 p.2 的六任务图（A 分叉出 B、C，在 D 处汇合，D 之后再分叉到 E、F）</caption>
+      <thead><tr><th>Task</th><th>Start</th><th>Finish</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>A · 2 ms</td><td>0</td><td>2</td><td>起点</td></tr>
+        <tr><td>B · 4 ms</td><td>2</td><td>6</td><td>依赖 A</td></tr>
+        <tr><td>C · 3 ms</td><td>2</td><td>5</td><td>依赖 A</td></tr>
+        <tr><td>D · 2 ms</td><td>6</td><td>8</td><td><b>等 B(6) 与 C(5) 都完成</b>，故从 6 起算</td></tr>
+        <tr><td>E · 3 ms</td><td>8</td><td>11</td><td>依赖 D</td></tr>
+        <tr><td>F · 1 ms</td><td>8</td><td>9</td><td>依赖 D</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="formula">
+    critical path: A → B → D → E = 2 + 4 + 2 + 3 = <b>11 ms</b>
+    <div class="where">最小完成时间由<b>最慢的一条链</b>决定，即 11 ms；这就是 span（关键路径长度 T∞）。</div>
+  </div>
+
+  <h3 id="c2-3">数据并行与任务并行</h3>
+  <p>分界线：是"<b>同一段代码作用在不同数据上</b>"，还是"<b>不同的代码段前后接力</b>"。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>数据并行 Data Parallelism</th><th>任务并行 Task Parallelism</th></tr></thead>
+      <tbody>
+        <tr><td>执行的内容</td><td>同样操作</td><td>不同操作</td></tr>
+        <tr><td>执行的方式</td><td>多次执行</td><td>依次执行</td></tr>
+        <tr><td>典型形态</td><td>x₀…xₙ 各自算出 y₀…yₙ（同一函数，不同数据）</td><td>A → B → D → E 一条依赖链</td></tr>
+        <tr><td>常见载体</td><td>GPU / SIMD / OpenMP for</td><td>MPI 分阶段、OpenMP task</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="c2-4">Amdahl 定律</h3>
+  <div class="formula">
+    S(P) = <span class="frac"><span>1</span><span>f + (1 − f)/P</span></span>
+    <div class="where">
+      f：<b>串行</b>部分所占的比例　｜　P：并行节点的数量<br>
+      注：f 是性能瓶颈，所以 P 越大，增益越小。
+    </div>
+  </div>
+  <p>当 workers 数 P → ∞ 时：</p>
+  <div class="formula">
+    S ≤ <span class="frac"><span>1</span><span>f</span></span>
+    <div class="where"><b>absolute speedup limit</b> 绝对加速比上限——无论加多少核，都超不过 1/f。</div>
+  </div>
+</section>
+
+<section class="chapter" id="c3">
+  <h2><span class="cn">03</span>集群架构与作业调度<span class="tag">原稿 p.3 – p.5</span></h2>
+
+  <h3 id="c3-1">进程、线程与并行接口</h3>
+  <dl class="terms">
+    <div><dt>Process<span class="cn">进程</span></dt><dd>正在运行的程序。</dd></div>
+    <div><dt>Thread<span class="cn">线程</span></dt><dd>进程内部的执行单元；线程属于进程，一个进程里可以有很多线程。</dd></div>
+    <div><dt>MPI<span class="cn">跨节点</span></dt><dd>在不同节点间搬运数据，将数据拆分为多个节点上的各个进程（rank 1 / rank 2 / rank 3 之间靠 message 通信）。</dd></div>
+    <div><dt>OpenMP<span class="cn">单节点内</span></dt><dd>在单节点内利用全部 CPU，线程之间通过<b>共享变量与内存</b>交换数据——同一块内存大家都能读写，这也是后面竞态条件的根源。</dd></div>
+    <div><dt>SSI<span class="cn">单系统映像</span></dt><dd>Single System Image：在 cluster workload 中利用多台电脑，物理上连接、再以软件把集群统一为完整系统。<b>然而</b>它仍然会受硬件故障、传输损耗等硬件方面的故障影响——软件层面的"像一台机器"，挡不住底层硬件出问题。</dd></div>
+  </dl>
+
+  <h3 id="c3-2">算力 ≠ 内存<span class="ex">＋EX</span></h3>
+  <p>EX 版在 MPI/OpenMP 之后直接写了两句判据，对应考卷 Q3(a)：</p>
+  <ul class="plain">
+    <li><b>OpenMP 是单节点共享内存模型：只解决算力，不解决内存不足的问题。</b>加线程只是加"读同一块内存的手"，不会让 128 GB 变成 600 GB。</li>
+    <li><b>MPI：每个 rank 各持一份数据，靠消息跨节点通信。</b>因此跨节点的唯一自然选择就是 MPI——OpenMP 的共享内存语义跨机器不成立。</li>
+  </ul>
+  <div class="note warm"><span class="lbl">＋EX</span><b>MPI 的所有节点相互不断通信，缺少任一节点都会导致集体等待</b>——这也导致<b>地理距离远对 MPI 的影响巨大</b>，因为要互相等待，时延非常高。这句同时是考卷 Q4(d)（协同分配）与 Q9(f)（跨站点紧耦合）的答案。</div>
+
+  <h3 id="c3-3">集群层级与五类组件</h3>
+  <p>自顶向下拆解：<b>cluster</b>（集群）→ <b>node</b>（一台计算机）→ <b>socket</b>（CPU 插槽）→ <b>core</b>（核心 · 基础单元）。</p>
+  <p>集群里按角色分工，共有五类组件：</p>
+  <dl class="terms">
+    <div><dt>Head node<span class="cn">头节点</span></dt><dd>用户接入，提交 tasks；本身不做重计算。</dd></div>
+    <div><dt>Compute nodes<span class="cn">计算节点</span></dt><dd>执行 tasks。</dd></div>
+    <div><dt>Interconnect<span class="cn">互联网络</span></dt><dd>传输控制消息与程序数据。</dd></div>
+    <div><dt>Storage<span class="cn">存储系统</span></dt><dd>提供统一的文件与数据访问。</dd></div>
+    <div><dt>I/O nodes<span class="cn">I/O 节点</span></dt><dd>在节点之间搬运资源。</dd></div>
+  </dl>
+
+  <h3 id="c3-4">三种负载 HPC / HTC / HA</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>负载</th><th>含义</th><th>主指标</th></tr></thead>
+      <tbody>
+        <tr><td><b>HPC</b> 高性能</td><td>倾尽集群算力解决复杂问题；一个 tightly coupled 的大任务</td><td>time-to-solution（完工时间）</td></tr>
+        <tr><td><b>HTC</b> 高通量</td><td>完成大量<b>独立</b> tasks（作业间不通信）</td><td><b>throughput</b>（单位时间完成的作业数）</td></tr>
+        <tr><td><b>HA</b> 高可用</td><td>发生硬件故障后，仍可持续监视平台</td><td>availability（可用性）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="c3-5">作业能否放下</h3>
+  <div class="formula" style="text-align:left;">
+    <b>When does a job fit</b>——两个条件必须<b>同时</b>满足：
+    <ul style="margin:10px 0 0;">
+      <li>申请 CPU ≤ 节点空闲 CPU</li>
+      <li>申请内存 ≤ 节点空闲内存</li>
+    </ul>
+  </div>
+
+  <h3 id="c3-6">调度器与「否则」三后果<span class="ex">＋EX</span></h3>
+  <p><b>job scheduler</b>（工作负载管理器，如 <span class="term">Slurm</span>）做三件事：</p>
+  <ol>
+    <li>为用户分配一段计算时间内的计算资源；</li>
+    <li>在已分配的资源上启动、监控任务；</li>
+    <li>根据申请量严格控制资源，解决多作业竞争。</li>
+  </ol>
+  <div class="note warm"><span class="lbl">＋EX 反例</span>没有这种"严格按申请量控制"会怎样？EX 版把后果补全成三条：<br>
+    ① <b>资源调配失衡</b>，相互拖慢（unfair）；<br>
+    ② <b>无法审计、失去监视</b>；<br>
+    ③ <b>计算资源被个别用户占用</b>。</div>
+
+  <h3 id="c3-7">核心指标</h3>
+  <div class="formula" style="text-align:left;font-size:15px;">
+    <div><b>分配 CPU 总数</b>：<code>CPU allocated = tasks × CPUs_per_task</code>（任务数 × 每个任务的 CPU 数）</div>
+    <div style="margin-top:8px;"><b>核时</b>：<code>core-hours = CPU allocated × hours</code></div>
+    <div style="margin-top:8px;"><b>效率</b>：<code>efficiency = core-hours actually used / core-hours allocated</code>——分配了却没干活的核，会把这个数字拉低。</div>
+    <div style="margin-top:8px;"><b>吞吐率</b>：<code>throughput</code>——单位时间内能处理多少 tasks。</div>
+    <div style="margin-top:8px;"><b>利用率</b>：<code>Utilisation = node-minutes used by jobs / (nodes × total minutes)</code>——集群整体被用满了多少。</div>
+  </div>
+  <p><b>Waiting time</b> 是从到达到真正开始跑的排队空耗；<b>Turn-around time</b> 从到达一直算到完成。</p>
+
+  <h3 id="c3-8">调度策略</h3>
+  <h4>Pareto 最优</h4>
+  <p><span class="term">Pareto optimality</span>：有两个任务 X、Y，若 X 在<b>平均等待时间、平均周转时间、资源利用率</b>上均不逊于 Y，且至少有一点优于 Y，则称 <b>X dominates Y</b>。</p>
+  <div class="table-wrap">
+    <table>
+      <caption>原稿的核心例子：三个作业，两种调度顺序</caption>
+      <thead><tr><th>Job</th><th>Nodes</th><th>Runtime</th><th>策略</th><th>Wait / avg.W</th><th>Turnaround / avg.T</th><th>Utilisation</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>4</td><td>30</td><td>Policy 1</td><td>0, 30, 30 → 20</td><td>30, 40, 40 → 36.7</td><td>100%</td></tr>
+        <tr><td>B</td><td>2</td><td>10</td><td>Policy 2</td><td>0, 0, 10 → 3.3</td><td>10, 10, 40 → 20</td><td>100%</td></tr>
+        <tr><td>C</td><td>2</td><td>10</td><td colspan="4">Policy 2 是"第一任务即刻执行"的策略——利用率一样都是 100%，但平均等待与平均周转都明显更好，所以 <b>Policy 2 dominates Policy 1</b>。</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>但如果节点数有限（4 核驱动），要再比一次：A 先、BC 后 —— A 一个人吃满 4 个节点，B、C 只能等它跑完；BC 先、A 后 —— B、C 各占 2 个节点先把 4 个节点凑满，A 等它们跑完再独占。</p>
+
+  <h4>Backfilling 回填调度</h4>
+  <p><span class="term">Backfilling</span>：在不影响排队作业的前提下利用资源，两个条件——</p>
+  <ul class="plain">
+    <li>所需 <b>nodes ≤ 空闲 nodes</b></li>
+    <li><b>当前时刻 + 运行时刻 ≤ 排队时刻</b>（不会把大作业的开工时间往后推）</li>
+  </ul>
+
+  <h4>Priority 优先级</h4>
+  <div class="formula">Priority = Wage × Age + W<sub>fs</sub> × FairShare + W<sub>size</sub> × Size
+    <div class="where">三项分别对应：<b>等待时长</b>、<b>公平份额</b>、<b>作业规模</b>。按权重分配，得分越高越优先。</div>
+  </div>
+
+  <h4>Fairshare 公平份额</h4>
+  <div class="formula">Fairshare = 2<sup>−usage/share</sup>
+    <div class="where">usage：用户已消耗的份额　｜　share：分配给该用户的份额。<b>用得越多、超过自己的份额越多，这个值越小，优先级越低。</b></div>
+  </div>
+
+  <h4>DRF 主导资源公平性</h4>
+  <p><span class="term">Dominant Resource Fairness</span>：在多资源下，取用户<b>占比最高的那一类资源</b>比例来对比。比如一人用了 80% CPU、10% 内存，另一人用了 40% CPU、40% 内存——不能只看 CPU，要拿各自最"占便宜"的那一项来比，才不会让某种资源被悄悄吃空。</p>
+
+  <h3 id="c3-9">能耗</h3>
+  <div class="formula">E = P × t
+    <div class="where">所以运行速度并非越快越好——提高功率缩短时间，总能耗未必下降。</div>
+  </div>
+</section>
+
+<section class="chapter" id="c4">
+  <h2><span class="cn">04</span>MPI 编程<span class="tag">原稿 p.6 – p.8</span></h2>
+  <p class="lead"><span class="term">MPI</span>（Message Passing Interface，消息传递接口）：通过消息交换数据，遵循 <span class="term">SPMD</span>（单程序、多数据）模型——每个进程跑的是同一份代码，只是各自的数据和 rank 不同。</p>
+
+  <h3 id="c4-1">SPMD 与 Hello World</h3>
+<pre><code>#include &lt;mpi.h&gt;   /* MPI 库头文件 */
+#include &lt;stdio.h&gt;
+int main(int argc, char **argv)
+{
+    MPI_Init(&amp;argc, &amp;argv);                 /* MPI 初始化、启动环境 */
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &amp;rank);   /* 取当前进程的 rank */
+    MPI_Comm_size(MPI_COMM_WORLD, &amp;size);   /* 取总进程数量 */
+    printf("Hello from rank %d of %d\n", rank, size);  /* 每个 MPI 进程都会打印一次 */
+    MPI_Finalize();
+    return 0;
+}</code></pre>
+  <div class="note"><span class="lbl">＋EX 原文</span><b>MPI_COMM_WORLD is a global communicator — it contains every process started</b>；笔记旁注：<b>消息仅在同一 communicator 内匹配</b>。这也解释了为什么 `tag` 之外还需要 communicator：它界定"在哪个组里配对"。</div>
+  <ul class="plain">
+    <li><b>编译 / 运行</b>：<code>mpicc main.c -o main</code>；<code>mpirun -n 4 ./main</code>（<code>-n</code> 后面是<b>目标进程数</b>，它<b>决定 size 的大小</b>）。</li>
+    <li><b>rank 取值</b>：<code>{0, size−1}</code>，即 4 个进程就是 0～3，连续且互不相同。</li>
+    <li><b>输出顺序</b>：<code>Hello from rank 2 of 4</code> / <code>rank 0</code> / <code>rank 3</code> / <code>rank 1</code> —— 由于并行计算，<b>输出顺序完全随机</b>，谁先拿到终端说不准。</li>
+  </ul>
+  <h4>补的三个常用函数</h4>
+  <dl class="terms">
+    <div><dt>MPI_Barrier<span class="cn">屏障</span></dt><dd>计时前同步所有进程——保证起跑线一致。<b>＋EX</b>：它把进程强制对齐至同一时刻，但<b>不改变操作顺序</b>。</dd></div>
+    <div><dt>MPI_Wtime<span class="cn">墙钟</span></dt><dd>返回墙钟（wall-clock）时间。</dd></div>
+    <div><dt>MPI_MAX<span class="cn">取最慢</span></dt><dd>获取最慢进程的运行时间——并行程序的总耗时由最慢的那个决定。</dd></div>
+  </dl>
+
+  <h3 id="c4-2">阻塞、死锁与 Sendrecv<span class="ex">＋EX</span></h3>
+  <h4>Blocking 阻塞</h4>
+  <p><code>MPI_Send</code> / <code>MPI_Recv</code> 均需等本地操作完成后才返回。<b>危险</b>：若收发双方都在等待对方，就触发了<span class="term">死锁（deadlock）</span>。所以可用非阻塞函数：函数将立即返回，先把请求挂上，之后再用 <code>MPI_Waitall</code> 统一等。</p>
+  <h4>非阻塞收发的参数</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>参数</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td><code>&amp;value</code></td><td>接收／发送缓冲区，数据存入这个变量</td></tr>
+        <tr><td><code>1</code></td><td>元素个数</td></tr>
+        <tr><td><code>MPI_INT</code></td><td>数据类型</td></tr>
+        <tr><td><code>0</code></td><td>信息源（source）／目标进程（destination）——<b>第 4 位</b></td></tr>
+        <tr><td><code>10</code></td><td>标签 tag，<b>收发双方必须一致</b>——第 5 位</td></tr>
+        <tr><td><code>MPI_COMM</code></td><td>通信子（communicator）——第 6 位</td></tr>
+        <tr><td><code>&amp;request</code></td><td>取回请求句柄，供之后 Wait 使用</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h4>MPI_Sendrecv：把"发"与"收"绑进同一次调用</h4>
+  <p>EX 版把这条单独写了一块，正是考卷 Q5(c) 的解法：</p>
+<pre><code>int other   = 1 - rank;                 /* 对话的另一方 */
+int sendval = (rank == 0) ? 10 : 20;    /* 各自要发出去的值 */
+int recvval = 0;                        /* 收件箱：不可与 sendval 重叠 */
+
+MPI_Sendrecv(&amp;sendval, 1, MPI_INT, other, 0,
+             &amp;recvval, 1, MPI_INT, other, 0,
+             MPI_COMM_WORLD, MPI_STATUS_IGNORE);</code></pre>
+  <div class="note ok"><span class="lbl">＋EX 要点</span>死锁的成因是<b>先 MPI_Recv 再 MPI_Send</b>，形成 <b>circular wait</b>；<code>MPI_Sendrecv</code> 把"发"与"收"<b>绑进同一次调用</b>，由通信子系统内部推进，于是"循环等待"无从产生。两条硬性要求：① <code>recvval</code> <b>不可与 sendval 重叠</b>（标准禁止 sendbuf/recvbuf 重叠）；② 两侧 tag 必须一致。</div>
+  <div class="note warm"><span class="lbl">＋EX 关于 Barrier</span><b>MPI_Barrier 将两个 processes 强制对齐至同一时刻，但不改变操作顺序；打破死锁必须改变 communication pattern。</b>——这一句直接就是考卷 Q5(e) 的答案：屏障不改变顺序，所以收/发次序照旧，死锁照旧。</div>
+
+  <h3 id="c4-3">halo 交换的完整例子</h3>
+  <p>非阻塞通信最典型的用法：每个进程把自己的边界数据发给右邻居，同时从左邻居收边界。</p>
+<pre><code>int right = (rank + 1) % size;
+int left  = (rank + size - 1) % size;
+MPI_Request req[2];
+MPI_Isend(halo_out, n, MPI_DOUBLE, right, 0, MPI_COMM_WORLD, &amp;req[0]);
+MPI_Irecv(halo_in,  n, MPI_DOUBLE, left,  0, MPI_COMM_WORLD, &amp;req[1]);
+update_interior();                          /* 网格内部单元计算，与通信重叠 */
+MPI_Waitall(2, req, MPI_STATUSES_IGNORE);   /* 等待，直至所有 req 完成 */
+update_boundary(halo_in);                   /* 用上一个 thread 的边界更新下一个 */</code></pre>
+  <p><b>作用</b>：用相邻 thread 的边界来更新下一个 thread 的边界。关键在于 <code>update_interior()</code> 被夹在发收与等待之间——<b>通信和计算重叠</b>，这才是非阻塞的收益所在。</p>
+
+  <h3 id="c4-4">集合通信<span class="ex">＋EX</span></h3>
+  <p><span class="term">Collective communication</span>（集合通信）：一个函数调用，多个进程参与。</p>
+
+  <h4>MPI_Bcast 广播</h4>
+<pre><code>MPI_Bcast(&amp;step, 1, MPI_INT, 0, MPI_COMM_WORLD);   /* 将同一个变量广播至所有进程 */</code></pre>
+  <p>Rank 0 的 <code>step = 100</code> 会被复制到 Rank 1 / 2 / 3，大家的 step 都变成 100。</p>
+
+  <h4>MPI_Scatter / MPI_Gather 分发与汇总</h4>
+  <p>适用于<b>广播多个不同的数据</b>——Bcast 发的是同一份，Scatter 会把数组切开一人一块。</p>
+<pre><code>int sendbuf[4] = {10, 20, 30, 40};
+int recvbuf;
+int result[4];
+MPI_Scatter(sendbuf, 1, MPI_INT, &amp;recvbuf, 1, MPI_INT, 0, MPI_COMM_WORLD);
+MPI_Gather(&amp;recvbuf, 1, MPI_INT, result,   1, MPI_INT, 0, MPI_COMM_WORLD);</code></pre>
+  <p>第 1 组（sendbuf 那侧）= 发送方的元素；第 2 组（result 那侧）= 接收方的元素；<code>0</code> = 源进程（根进程）；<code>MPI_COMM_WORLD</code> = 通信子。Scatter 把 {10,20,30,40} 切成一人一个，Gather 再把各位的结果收回根进程。</p>
+
+  <h4>MPI_Reduce 归约</h4>
+  <p>归约运算：将多个进程的结果处理，并保存在 <b>root</b>（根进程）。</p>
+<pre><code>double local = 0.0;
+for (long i = rank; i &lt; n; i += size) { /* 每个进程分到的部分 */ }
+double total = 0.0;
+MPI_Reduce(&amp;local, &amp;total, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);</code></pre>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>参数</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td><code>&amp;local, &amp;total</code></td><td>发送／接收缓冲区</td></tr>
+        <tr><td><code>1</code></td><td>每个进程的元素数（count）</td></tr>
+        <tr><td><code>MPI_DOUBLE</code></td><td>type（数据类型）</td></tr>
+        <tr><td><code>MPI_SUM</code></td><td>reduction operation（对元素进行什么操作）</td></tr>
+        <tr><td><code>0</code></td><td>结果保留在哪个进程（root）</td></tr>
+        <tr><td><code>MPI_COMM_WORLD</code></td><td>通信子</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note ok"><span class="lbl">＋EX 两条新注释</span>
+    ① <b>MPI_Reduce 从设计上就仅把结果保留至 root，从而减少通信开销；其它进程的 recvbuf 里都是 garbage，标准不保证里面有什么。</b><br>
+    ② <b>MPI_Allreduce：归约后把结果写回所有进程，相当于 Reduce + Bcast。</b>
+  </div>
+  <div class="note"><span class="lbl">＋EX 集合通信为什么优于手写</span><b>集合通信写法简洁、统一格式、可读性高、多进程下延迟低，故通常优于手写 Send/Recv 等。</b></div>
+
+  <h3 id="c4-5">通信时间模型</h3>
+  <div class="formula">T ≈ α + nβ
+    <div class="where">
+      α：<b>Latency</b> 延迟——与数据量无关的固定启动开销<br>
+      β：<b>bandwidth</b> 带宽——每字节的传输代价；n 是数据量<br>
+      这条式子说明：小消息几乎全被 α 支配，所以"多发几次小包"往往比"一次发大包"更亏。
+    </div>
+  </div>
+</section>
+
+<section class="chapter" id="c5">
+  <h2><span class="cn">05</span>OpenMP 编程<span class="tag">原稿 p.9 – p.10</span></h2>
+  <p class="lead">MPI 管的是节点之间，OpenMP 管的是节点内部。OpenMP 是 <span class="term">fork-join</span> 模型的一种实现。</p>
+
+  <h3 id="c5-1">Fork-Join</h3>
+  <p><span class="term">Fork-Join Parallelism</span>（分叉-合并）：复用 threads，降低开销。主线程在 fork 处分出若干线程并行跑，到 join 屏障处全部收回来，主线程继续往下。</p>
+<pre><code>#include &lt;omp.h&gt;
+#pragma omp parallel                      /* 创建 fork-join */
+{
+    do_work(omp_get_thread_num());        /* 每个 fork 独立跑，时间可能不同，与 MPI 类似 */
+}                                         /* join 屏障：每个 fork 全结束后才可继续 */</code></pre>
+  <div class="note warm"><span class="lbl">注意</span>普通的 Fork-Join <b>仅对 threads 做合并，对数据无处理</b>。数据怎么分、怎么汇总，是你自己的事——这正是下面一堆同步手段要解决的问题。</div>
+
+  <h3 id="c5-2">竞态与四种同步手段</h3>
+  <p><span class="term">Race condition</span>（竞态条件）：在 fork 出来的线程进行写入时，可能会<b>相互覆盖</b>。EX 版旁注把机制写得更清楚：<b>若在写回（write back）之前直接作废，那么就会被覆盖</b>——即"读—改—写"三步被打断。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>手段</th><th>保护范围</th><th>开销</th><th>适用</th><th>写法</th></tr></thead>
+      <tbody>
+        <tr><td><b>reduction</b> 归约</td><td>整个变量</td><td><b>最低</b></td><td>合并变量</td><td><code>#pragma omp parallel for reduction(+:total)</code></td></tr>
+        <tr><td><b>atomic</b> 原子</td><td>一条语句</td><td>低</td><td>单变量或嵌套</td><td><code>#pragma omp atomic</code> 仅保护这一行</td></tr>
+        <tr><td><b>critical</b> 临界区</td><td>一个代码块</td><td>较高，易退化为串行</td><td>互斥语句</td><td><code>#pragma omp critical</code></td></tr>
+        <tr><td><b>Omp_lock_t</b> 手动锁</td><td>你指定的任意区间</td><td>看你写得多细</td><td>跨语句保护</td><td><code>omp_init_lock</code> / <code>omp_destroy_lock</code> / <code>omp_set_lock</code> / <code>omp_unset_lock</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>reduction</b>：每个线程各自攒一份局部结果，退出时自动合并，不需要手动加锁。<b>critical</b>：同一时间只允许一个 thread 进入，只适用于互斥语句，<b>代码容易退化为串行</b>。<b>手动锁</b>：未加锁／未解锁就会锁死——给你最大的自由度，也把正确性的责任全交给了你。</p>
+
+  <h3 id="c5-3">数据作用域与 default(none)<span class="ex">＋EX</span></h3>
+  <p>每个变量在线程之间到底是"共用一份"还是"各有一份"，由作用域决定。</p>
+  <dl class="terms">
+    <div><dt>shared<span class="cn">共享</span></dt><dd>所有 threads 共享的变量，例：<code>a[n][n]</code>。</dd></div>
+    <div><dt>private<span class="cn">私有</span></dt><dd>每个 thread 拥有独立副本值，例：循环部分的 <code>i</code>。（不初始化）</dd></div>
+    <div><dt>firstprivate<span class="cn">首值私有</span></dt><dd>最开始的初始化副本值，例：代码开头 <code>int a = 1;</code> 的值会被带进每个副本。</dd></div>
+    <div><dt>lastprivate<span class="cn">末值私有</span></dt><dd>并行结束时最后一次循环的副本变量值，会被带回外面的变量里。</dd></div>
+    <div><dt>reduction<span class="cn">归约</span></dt><dd>每个 thread 独立执行，最后归约，例：<code>total</code>。</dd></div>
+  </dl>
+  <div class="note ok"><span class="lbl">＋EX 新增</span><b>default(none)：forces data-scoping decisions —— 任何没在 DataScope 里声明的变量都会报错，从而消除隐性隐患。</b>这是考卷 Q7(e) 的标准答案：把"忘记声明导致意外共享"这类隐蔽竞态从运行期挪到<b>编译期</b>暴露。</div>
+
+  <h3 id="c5-4">task 与 depend</h3>
+  <p>OpenMP 也能做细粒度的任务并行：用 <code>task</code> 把活拆开，用 <code>depend</code> 声明谁依赖谁。</p>
+<pre><code>#pragma omp parallel
+#pragma omp single                    /* 仅一个主 thread 创建任务 */
+{
+    #pragma omp task depend(out:a)
+    load_level(a);
+
+    #pragma omp task depend(in:a) depend(out:b)     /* in：输入项  out：输出项 */
+    build_navigation(a, b);
+
+    #pragma omp task depend(in:a) depend(out:c)
+    build_visibility(a, c);
+
+    #pragma omp task depend(in:b, c)
+    publish_level(b, c);
+}</code></pre>
+  <p>依赖链：① <code>load_level</code> → out: a；② 两个 build 都 <code>in: a</code>，可以<b>并行</b>；③ <code>publish</code> 要等 b、c 都完成。<b>depend 只声明数据依赖，实际执行顺序由运行时自己排。</b></p>
+</section>
+
+<section class="chapter" id="c6">
+  <h2><span class="cn">06</span>并行性能度量<span class="tag">原稿 p.11 – p.12</span></h2>
+  <p class="lead">Measuring Parallel Performance 建立在两个自变量上：<b>P</b>（核心数量）与 <b>N</b>（问题规模）。</p>
+
+  <h3 id="c6-1">T / S / E / C</h3>
+  <div class="formula" style="text-align:left;font-size:15px;">
+    <div><b>T(P, N)</b>：Runtime，运行时间。</div>
+    <div style="margin-top:8px;"><b>S(P, N) = T(1, N) / T(P, N)</b>　—— Speedup 加速比，判断变快了多少倍（分子单核串行耗时、分母 P 核并行耗时）。</div>
+    <div style="margin-top:8px;"><b>E(P, N) = S(P, N) / P</b>　—— 并行效率 Efficiency，加进来的每个核到底贡献了几成。</div>
+    <div style="margin-top:8px;"><b>C(P, N) = P · T(P, N)</b>　—— Parallel cost 并行开销，代表整个程序消耗的算力总量；理想情况应等于 T(1, N)。</div>
+  </div>
+
+  <h3 id="c6-2">强缩放与弱缩放</h3>
+  <p>同样是加核，问题规模不变还是跟着变大，结论完全相反。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>Amdahl's Law（N 不变）</th><th>Gustafson's Law（P 不变、负载随核数放大）</th></tr></thead>
+      <tbody>
+        <tr><td>公式</td><td><code>S<sub>A</sub>(P) = 1 / (S + (1 − S)/P)</code></td><td><code>S<sub>G</sub>(P) = S + P(1 − S)</code></td></tr>
+        <tr><td>缩放类型</td><td><b>strong scaling</b> 强缩放</td><td><b>weak scaling</b> 弱缩放</td></tr>
+        <tr><td>含义</td><td>固定负载下的 speedup</td><td>缩放负载下的 speedup</td></tr>
+        <tr><td>趋势</td><td>效率持续下降——P 越多，增益反而越来越少</td><td>串行部分的比例被摊薄，效率可保持较高</td></tr>
+        <tr><td>效率式</td><td><code>E = S/P</code></td><td><code>N(P) = P · N₁</code>；<code>E = T(N₁) / T(P, N)</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><b>为什么两条曲线差这么多</b>：Amdahl 假设活就那么多，核多了必然有人闲着；Gustafson 假设活可以跟着变多，核多了每人干原来那份。现实里选哪条，取决于你的问题能不能扩大规模。</p>
+
+  <h3 id="c6-3">四条总结<span class="ex">＋EX</span></h3>
+  <p>EX 版在性能度量末尾加了一段"无论 Amdahl 还是上面各类加核问题都这样看"的四步检查法——这是做题的万能骨架：</p>
+  <ol>
+    <li><b>看效率</b>：例如 1 → 20 核效率下降了 a%，1 → 25 核下降了 b%，若 b% &gt; a% 就说明加核的边际收益在恶化。</li>
+    <li><b>加核会增加通信开销／延迟</b>，所以"加 N 核就提 N 倍"纯属幻想。</li>
+    <li><b>T = T<sub>parallel</sub> + T<sub>serial</sub> + T<sub>communication</sub> + T<sub>imbalance</sub></b>——先<b>降低串行度</b>再来谈加核。</li>
+    <li><b>C = P · T(1, N)</b>：成本会爆炸，堆核的成本很高。</li>
+  </ol>
+  <div class="note ok"><span class="lbl">＋EX 用途</span>这段可以直接回答考卷 Q8(f)"改用 64 核是否划算"：第 1 条给趋势、第 2 条给物理原因、第 3 条给分解式、第 4 条给成本结论。</div>
+
+  <h3 id="c6-4">Work Law 与并行度</h3>
+  <div class="formula">T<sub>P</sub> ≥ max( <span class="frac"><span>T₁</span><span>P</span></span> , T∞ )
+    <div class="where">
+      <b>Work and span</b>：工作量下界，用来标记执行时间的边界，<b>取最大值</b>。<br>
+      T₁：total work，所有任务依次串行的时间　｜　T∞：critical / span path length，有 ∞ 个 P 时的执行时间（必要时间）<br>
+      由此可以得出系统的 parallelism（并行度）：<b>关键不在 processors 数，而在路径</b>。
+    </div>
+  </div>
+  <div class="formula" style="text-align:left;font-size:15px;">
+    <div><b>并行平均度</b>　A = T₁ / T∞ —— 理论上最大同时运行的任务数，也是"无限核下的理论 speedup 上限"。</div>
+    <div style="margin-top:8px;"><b>并行松弛度</b>　σ = A / P ——　σ &gt; 1：任务足够多；<b>σ &lt; 1：核心闲置</b>。</div>
+  </div>
+
+  <h3 id="c6-5">例题与勘误</h3>
+  <p>原稿 p.12 的例题：A 2ms、B 6ms、C 4ms、D 3ms、E 5ms、F 2ms，两条分支 A→B→D→F 与 A→C→E→F，P = 4 个核心。</p>
+  <div class="formula" style="text-align:left;font-size:15px;">
+    <div>T₁ = 2 + 6 + 4 + 3 + 5 + 2 = <b>22 ms</b></div>
+    <div style="margin-top:6px;">T∞ = max(2+6+3+2, 2+4+5+2) = <b>13 ms</b>（两条分支等长）</div>
+    <div style="margin-top:6px;">A = T₁ / T∞ = 22 / 13 ≈ 1.69</div>
+    <div style="margin-top:6px;">T₁/P = 22/4 = 5.5 ms</div>
+    <div style="margin-top:6px;">T<sub>P</sub> ≥ max(5.5, 13) = <b>13 ms</b> —— 被关键路径卡住，加核也没用</div>
+  </div>
+  <div class="note warm"><span class="lbl">勘误</span>手写原稿这一步写的是 <b>T∞ = 2 + 6 + 5 + 2 = 15 ms</b>，把 B（6ms）与 E（5ms）串在了同一条路径上；但按图示 B、E 分属两条不同分支，最长路径应为 A→B→D→F 或 A→C→E→F，<b>两者都等于 13 ms</b>。考试按 13 ms 作答，并写清"两条分支等长"。</div>
+</section>
+
+<section class="chapter" id="c7">
+  <h2><span class="cn">07</span>分布式计算与 Grid<span class="tag">原稿 p.13 – p.14</span></h2>
+
+  <h3 id="c7-1">Cluster / Grid / Cloud / Edge</h3>
+  <p><span class="term">Distributed Computing</span>（分布式计算）：大量通过网络连接的独立设备，包含 <b>Cluster、Grid、Cloud、Edge</b> 四种形态。而 <b>Cluster</b>（集群）是<b>紧耦合</b>（tightly coupled）的节点，相当于一台放大版的系统。</p>
+  <div class="formula" style="text-align:left;">
+    <b>关键区别</b>：Cluster 与 Grid 的区别在于 <b>所有权是否唯一</b>。<br>
+    <span style="color:var(--ink-soft);font-size:14px;">四者的边界不是技术，而是"这批机器归谁"和"资源离用户多远"。</span>
+  </div>
+  <p><b>Grid 的运作方式</b>：<span class="term">provider mode</span>（独立所有者）通过 <span class="term">middleware</span>（中间件），将多个不同的资源汇聚至一处，完成一项共同的任务；它们的地点、硬件、系统等均可能不同。而 <b>user-node 看到的，只是一个单一入口的 useful pool（资源池）</b>——底下有多杂，用户看不到。</p>
+
+  <h3 id="c7-2">VO 虚拟组织</h3>
+  <p><span class="term">VO</span>（Virtual Organization，虚拟组织）由五样东西构成：</p>
+  <dl class="terms">
+    <div><dt>temporary<span class="cn">临时的</span></dt><dd>任务期间成立，任务结束即解散。</dd></div>
+    <div><dt>shared goal<span class="cn">共同目标</span></dt><dd>大家一起要完成的那件事。</dd></div>
+    <div><dt>membership<span class="cn">成员资格</span></dt><dd>谁在里面、谁不在。</dd></div>
+    <div><dt>access rights<span class="cn">访问权</span></dt><dd>能访问什么、能用哪些资源。</dd></div>
+    <div><dt>rules<span class="cn">规则</span></dt><dd>认证授权审计、使用策略、结算方式。</dd></div>
+  </dl>
+  <p>它们<b>共享使用权，但并不会合并</b>——"一起干一件事"不等于"变成一家"。</p>
+
+  <h3 id="c7-3">本地优先<span class="ex">＋EX</span></h3>
+  <p><b>本地优先</b>：当本地有任务时，Grid 将排队任务自动分配到其它资源上。</p>
+  <div class="note ok"><span class="lbl">＋EX 新增一句</span><b>同时对中断的任务要补偿或重新运行。</b>——这正是考卷 Q9(c)「京都突然撤回一半机器，中间件应如何响应」的完整答案：既要把排队任务改派到别处，也要对被强制中断的任务给出补偿／重跑语义。</div>
+
+  <h3 id="c7-4">Grid 四层与两条边界</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>层</th><th>名称</th><th>职责</th></tr></thead>
+      <tbody>
+        <tr><td>Layer 1</td><td><b>Application</b> 应用层</td><td>解决用户实际问题（user workflow application）</td></tr>
+        <tr><td>Layer 2</td><td><b>Middleware</b> 中间件层</td><td>协调 user 与 provider 的供求（resource broker）</td></tr>
+        <tr><td>Layer 3</td><td><b>Resources</b> 资源层</td><td>暴露可用 capability（compute cluster）</td></tr>
+        <tr><td>Layer 4</td><td><b>Fabric</b> 织构层</td><td>保障 capability 能被访问（physical CPUs &amp; network hardware）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note"><span class="lbl">两条边界</span><b>Middleware 与 VO 不会凭空创造资源</b>——它们只是把已有的东西组织起来；同时，<b>同一个机构可能既为 user 也为 provider</b>。</div>
+
+  <h3 id="c7-5">两次辨析</h3>
+  <h4>例一：500 台电脑算什么</h4>
+  <p>500 台电脑，<b>under one administrative domain</b>，那就是 <b>cluster</b>。若想变为 Grid，则需要通过 <b>grid middleware</b> 对外暴露，并建立相同的 <b>access policies</b>（访问策略）。判据还是那一条：所有权与管理边界是否唯一。</p>
+  <h4>例二：HTC 与 HPC 分别落在哪一边</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th>HTC 高通量</th><th>HPC 高性能</th></tr></thead>
+      <tbody>
+        <tr><td>典型载体</td><td><b>Grid</b></td><td><b>Cluster</b></td></tr>
+        <tr><td>负载形态</td><td>拥有大量<b>独立</b>作业，且作业间<b>不通信</b></td><td>一个 <b>tightly coupled</b> 大任务</td></tr>
+        <tr><td>要求</td><td>吞吐量优先</td><td><b>Low Latency</b> 低时延</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h4>ClassAd</h4>
+  <p>Grid 里描述"谁要什么、谁给什么"的方式：<b>Job</b>——我需要什么？　<b>Machine</b>——我能给什么 + 策略。</p>
+  <p>典型实例：<b>Folding@home</b>——无数志愿者机器各自跑独立的小作业，谁也不跟谁通信。</p>
+</section>
+
+<section class="chapter" id="c8">
+  <h2><span class="cn">08</span>Grid 安全<span class="tag">原稿 p.15 – p.16</span></h2>
+  <p class="lead">Grid 访问本身就有风险。一次 <span class="term">request access</span>（访问请求）必须回答四个问题。</p>
+
+  <h3 id="c8-1">访问请求四问</h3>
+  <dl class="terms">
+    <div><dt>Authentication<span class="cn">认证</span></dt><dd>对方是谁？</dd></div>
+    <div><dt>Authorisation<span class="cn">授权</span></dt><dd>能允许做些什么？</dd></div>
+    <div><dt>Accounting &amp; audit<span class="cn">审计</span></dt><dd>监视动作记录。</dd></div>
+    <div><dt>Delegation<span class="cn">委托</span></dt><dd>权限与使用时间受限。</dd></div>
+  </dl>
+  <div class="note"><span class="lbl">原文批注</span><i>A valid identity doesn't imply permission, and permission doesn't remove the need for audit.</i><br>翻译过来：<b>有身份（认证通过）不等于能授权，授权后不等于不被监视</b>——这四问是四件事，不能拿前一问的答案去顶后一问。</div>
+
+  <h3 id="c8-2">密钥对<span class="ex">＋EX</span></h3>
+  <p><span class="term">Key pair</span>（密钥对）：一对数学上配对、用途上互补的密钥。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>动作</th><th>用哪把钥匙</th><th>方向</th></tr></thead>
+      <tbody>
+        <tr><td>Encrypts data for owners　加密数据</td><td><b>公钥</b>（后缀 <code>.pub</code>，shared openly 公开分享）</td><td>发给所有者 →</td></tr>
+        <tr><td>Decrypts received data　解密数据</td><td><b>私钥</b>（无后缀，remain secret 必须保密）</td><td>← 收到后解开</td></tr>
+        <tr><td>Verifies digital signatures　验证签名</td><td><b>公钥</b></td><td>← 校验对方身份</td></tr>
+        <tr><td>Create digital signatures　创建签名</td><td><b>私钥</b></td><td>自己签 →</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>两条容易搞错的：</p>
+  <ul class="plain">
+    <li>① <b>公钥不需保密，但公钥与身份需要绑定，故保护公钥也很重要</b>——公钥被看到没关系，被换掉才是灾难。</li>
+    <li>② <b>私钥通常是硬件载体，禁止发送给他人，否则就失去了意义。</b></li>
+  </ul>
+  <div class="note ok"><span class="lbl">＋EX 新增后果链</span><b>一旦私钥泄露，任何人都可以以被泄露者的身份享受服务，且无法撤销。</b>——这是考卷 Q10(b)「为什么绝不能把长期私钥拷到远端」最有力的一句：不可撤销 + 身份被冒用。</div>
+
+  <h3 id="c8-3">PKI 与 X.509</h3>
+  <div class="formula" style="text-align:left;font-size:15px;">
+    <b>PKI</b> = 一个 <b>connecting public keys to trusted identities</b> 的体系，帮助使用者确认某把公钥确实属于它所声称的网站、组织等。它做的两件事：<b>核验身份</b> + <b>签发证书</b>，从而<b>确定身份与公钥的绑定可信</b>。
+  </div>
+  <p><b>X.509 certification</b>：证书是一份<b>公开的、被 CA 数字签名的声明</b>，绑定 identity（身份）与 Public key（公钥），并说明 <b>validity 有效期</b>与 <b>constraints 约束</b>。CA 验证身份后签发证书，于是"身份—公钥"的绑定可以被信赖。</p>
+
+  <h3 id="c8-4">Proxy 与 SSH 证书<span class="ex">＋EX</span></h3>
+  <h4>Proxy 证书</h4>
+  <p>特点是 <b>short lifetime</b>（短寿命），并可进一步施加约束。Proxy 有<b>自己的私钥签名</b>；登录 server 时，用 Proxy certification 里的<b>公钥</b>验证，<b>故不需要用户私钥</b>——这就是它存在的理由：把长期私钥留在本地，只放出一把短命的替身。</p>
+  <div class="note ok"><span class="lbl">＋EX 关键补充</span><b>因此，过期 proxy 被泄露也不能认证。</b>——直接回答考卷 Q10(g)：过期即失效，验证方会拒绝。</div>
+  <div class="note warm"><span class="lbl">＋EX 答题提示（原文）</span>回答 Proxy 优点时，<b>一定要说明保护 private key 的重要性，并说明分发 private key 的缺点</b>——因为 proxy 与私钥无关，私钥永不泄露，即使 proxy 泄露影响也有限。<b>优点和代价要成对讲，只讲一半不算答完。</b></div>
+  <h4>SSH 证书</h4>
+  <p>让用户使用 CA 签名的公钥，并证明自己拥有私钥，以登录 SSH server。证书里写明 <b>principal</b>（身份）和 <b>lifetime</b>（有效期）。服务器上三个文件各管一件事，<code>-I</code> 与 <code>-Z</code> 让每次被使用都能追溯签发记录：</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>文件</th><th>是什么</th><th>怎么用</th></tr></thead>
+      <tbody>
+        <tr><td><code>id_grid</code></td><td>私钥</td><td><b>绝不离身</b></td></tr>
+        <tr><td><code>id_grid.pub</code></td><td>公钥</td><td>用来交由 CA 签名</td></tr>
+        <tr><td><code>id_grid-cert.pub</code></td><td>SSH 证书（已签名的）</td><td>登录时给 server 验证</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="formula">Trusted CA + valid certification + allowed principal + private-key proof ⇒ login accept
+    <div class="where">四件事同时成立，登录才成功。少任何一项都不行。</div>
+  </div>
+
+  <h3 id="c8-5">零信任</h3>
+  <p><span class="term">Zero-trust decisions</span>（零信任决策）：用户不会因为处于组织内部就被信任，仍然需要走验证流程。</p>
+  <div class="note"><span class="lbl">一句话</span>"在内网"不是身份，"走完验证"才是。</div>
+</section>
+
+<section class="chapter" id="c9">
+  <h2><span class="cn">09</span>GPU 与异构计算<span class="tag">原稿 p.17 – p.18</span></h2>
+
+  <h3 id="c9-1">CPU 与 GPU 的分工<span class="ex">＋EX</span></h3>
+  <p>两者的设计目标根本不是同一件事：一个要把延迟压到最小，一个要把吞吐拉到最大。</p>
+  <dl class="terms">
+    <div><dt>CPU<span class="cn">最小化 latency</span></dt><dd><b>Powerful core</b>：大缓存（Large caches）+ 复杂控制逻辑（Complex control），让少数几条线程尽快跑完。</dd></div>
+    <div><dt>GPU<span class="cn">最大化 throughput</span></dt><dd><b>Many threads hide latency</b>：用大量线程把延迟藏起来，擅长处理大量可反复利用的独立元素。</dd></div>
+  </dl>
+  <div class="note ok"><span class="lbl">＋EX 新增判断</span><b>CPU 可以尽快跑完"串行分支多、启动开销比运行开销大"的任务。</b>反过来——<b>短的并行链、heavily branching（分支多）、过多的并行操作</b>这三类都不适合 GPU：启动与调度开销会吃掉并行收益。</div>
+
+  <h3 id="c9-2">kernel 与数据搬运</h3>
+  <p>host（CPU）与 device（GPU）之间隔着一次<b>显式数据搬运</b>：<code>host memory</code> ⇄ <code>device memory</code>。数据一旦上了显存，就在设备侧反复运算；<b>只有过这条搬运线，才产生换边的代价</b>。</p>
+  <div class="note warm"><span class="lbl">＋EX 开销分解</span><b>每次搬运 = 搬运延迟 + 串行搬运 + 小计算的启动开销大。</b>故通常在 GPU 中经过<b>多次运算</b>后，仅把<b>最终结果</b>传回 CPU。也因此，<b>把操作从 GPU 转到 CPU 会因为搬运数据效率奇差</b>。</div>
+  <h4>kernel 是什么</h4>
+  <p><span class="term">kernel</span>（核函数）：GPU 对许多元素执行的<b>同一个函数</b>，用大量独立线程提供并行工作，让 GPU 始终保持忙碌；由 <b>index</b> 挑选元素，<b>元素间无通信</b>。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>写法</th><th>是否适合</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td><code>a[i] = update(a[i])</code></td><td><b>适合</b></td><td>每个元素独立取、独立算、独立写，元素之间没有关系</td></tr>
+        <tr><td><code>b[i] = b[i-1] + c[i]</code></td><td><b>不适合</b></td><td>元素之间存在 latency —— 下一个元素要用上一个的结果，只能串着走</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="c9-3">框架抽象层</h3>
+  <p><b>能不设计 kernel 就不设计</b>——越往下设计越复杂，且回报率低。中间一层是 <b>Framework</b>（框架，如 PyTorch、TensorFlow 等模型），可以用它代替程序员做三件事：</p>
+  <ul class="plain">
+    <li><b>device-memory management</b>　设备内存管理</li>
+    <li><b>host-device movement</b>　主机—设备数据搬运</li>
+    <li><b>selection and launch of GPU kernel</b>　选择、调用核函数</li>
+  </ul>
+</section>
+
+<section class="chapter" id="apA">
+  <h2><span class="cn">A</span>附录 A · EX 新增清单<span class="tag">对照旧整理版</span></h2>
+  <p class="lead">下表列出 EX 版相对旧整理版（<code>猫燐笔记.html</code>）新增或明显加强的内容，以及它们各自命中的考题。</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>位置</th><th>＋EX 新增内容</th><th>命中的考题</th></tr></thead>
+      <tbody>
+        <tr><td>p.1</td><td>四种部署形态：Public / <b>Private</b> / <b>Community</b> / <b>Hybrid</b> cloud 及各自定义</td><td>Q1(a) hybrid cloud 分类</td></tr>
+        <tr><td>p.1</td><td><b>在 cloud 里工作就一定高效吗</b>：否定；capacity ≠ utilisation；池化有耗损与延迟</td><td>Q1(d) 云不等于高效</td></tr>
+        <tr><td>p.1</td><td>On-demand self-service 的旁注：重点在"自"，平台自身要有资源池、要体现资源绑定</td><td>Q1(c) 五大特征</td></tr>
+        <tr><td>p.4</td><td><b>OpenMP 是单节点共享内存模型，只解决算力、不解决内存不足</b></td><td>Q3(a) 64 核救不了 600 GB</td></tr>
+        <tr><td>p.4</td><td><b>MPI 所有节点相互不断通信，缺少任一节点都会导致集体等待；地理距离远影响巨大（时延高）</b></td><td>Q4(d) 协同分配；Q9(f) 跨站点紧耦合</td></tr>
+        <tr><td>p.4</td><td>没有严格按申请量控制的<b>三后果</b>：资源调配失衡相互拖慢 / 无法审计失去监视 / 资源被个别用户占用</td><td>Q4(a) 手动 SSH 的问题</td></tr>
+        <tr><td>p.6</td><td>消息<b>仅在同一 communicator 内匹配</b>；<code>-n</code> 决定 size；rank 取值 {0, size−1}</td><td>Q5(a)</td></tr>
+        <tr><td>p.7</td><td><b>MPI_Sendrecv</b>：把"发"与"收"绑进同一次调用，避免 circular wait；recvval 不可与 sendval 重叠</td><td>Q5(c) 死锁改写</td></tr>
+        <tr><td>p.7</td><td><b>Barrier 强制对齐同一时刻但不改变操作顺序；打破死锁必须改变 communication pattern</b></td><td>Q5(e) Barrier 能否解死锁</td></tr>
+        <tr><td>p.8</td><td><b>MPI_Reduce 只把结果留在 root；其它进程 recvbuf 是 garbage，标准不保证</b></td><td>Q6(c) 只有 rank 0 能用</td></tr>
+        <tr><td>p.8</td><td><b>MPI_Allreduce = Reduce + Bcast</b></td><td>Q6(d)</td></tr>
+        <tr><td>p.8</td><td><b>集合通信写法简洁、统一格式、可读性高、多进程延迟低，优于手写 Send/Recv</b></td><td>Q6(e)</td></tr>
+        <tr><td>p.10</td><td><b>default(none)：forces data-scoping decisions，未声明即报错，消除隐性隐患</b></td><td>Q7(e)</td></tr>
+        <tr><td>p.11</td><td><b>四条总结</b>：看效率趋势 / 加核增通信开销（加 N 核提 N 倍是幻想）/ 用四项时间分解降低串行度 / C = P·T 成本爆炸</td><td>Q8(f) 64 核是否划算；Q8(g) 效率下降</td></tr>
+        <tr><td>p.13</td><td>本地优先之外：<b>对中断任务要补偿或重新运行</b></td><td>Q9(c) 京都撤回机器</td></tr>
+        <tr><td>p.15</td><td><b>私钥泄露 → 任何人可以以被泄露者身份享受服务，且无法撤销</b></td><td>Q10(b) 绝不外传私钥</td></tr>
+        <tr><td>p.16</td><td><b>过期 proxy 被泄露也不能认证</b>；Proxy 答题提示（优点与代价成对讲）</td><td>Q10(f)(g)</td></tr>
+        <tr><td>p.17</td><td>CPU 适合"串行分支多、启动开销 &gt; 运行开销"的任务；<b>每次搬运 = 延迟 + 串行搬运 + 小计算启动开销</b></td><td>Q11(a)(b)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note ok"><span class="lbl">结论</span>旧整理版里"笔记未收录"的三处（<code>MPI_Sendrecv</code>、Barrier 与死锁、<code>default(none)</code>）以及另带 On-demand/Allreduce/集合通信优点/过期 proxy 等 9 处"部分收录"，在 EX 版里<b>全部补齐</b>。据此重写的考卷答案，66 小问中已有 <b>65 处可直接引用笔记原文</b>，仅剩 Q2(f)「为何 16 核给不了 16×」需要自己用笔记里的 A、σ、Work Law 推一步。</div>
+</section>
+
+<section class="chapter" id="apB">
+  <h2><span class="cn">B</span>附录 B · 勘误与易错点</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>位置</th><th>问题</th><th>正确写法</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>p.12 例题</td><td>原稿写 T∞ = 2+6+5+2 = <b>15 ms</b>，把 B 与 E 串在同一条路径上</td><td>按图示两条分支 A→B→D→F 与 A→C→E→F 等长，<b>T∞ = 13 ms</b>，下界 = max(5.5, 13) = 13 ms</td></tr>
+        <tr><td>2</td><td>p.6 Hello World</td><td>原稿把取进程数那一行也写成 <code>MPI_Comm_rank</code></td><td>取总进程数用 <b><code>MPI_Comm_size</code></b>，取当前 rank 用 <code>MPI_Comm_rank</code></td></tr>
+        <tr><td>3</td><td>p.7 死锁</td><td>容易误答成"Send 一定阻塞"</td><td>准确表述：<b><code>MPI_Recv</code> 阻塞 + 两边都先 Recv → circular wait</b>；标准模式 Send 可能被 eager 缓冲</td></tr>
+        <tr><td>4</td><td>p.7 Sendrecv</td><td>用同一个变量既当 sendbuf 又当 recvbuf</td><td>标准禁止两缓冲区<b>重叠</b>，必须用两个变量（recvval 独立）</td></tr>
+        <tr><td>5</td><td>p.1 五大特征</td><td>把"7×24 运行"当成云</td><td>判据是整套特征：<b>按需自助 + 池化 + 弹性 + 可计量</b></td></tr>
+        <tr><td>6</td><td>p.11 公式符号</td><td>Amdahl 里的 S 既当 speedup 又当串行占比</td><td>写清：<b>串行占比 s（或 f）</b>，speedup 记 S(P)；考试用题目给的 s</td></tr>
+        <tr><td>7</td><td>p.14 辨析</td><td>把 HTC 与 HPC 的载体写反</td><td><b>HTC → Grid</b>（独立作业、吞吐优先）；<b>HPC → Cluster</b>（紧耦合、低时延）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer class="foot">并行计算机 · 猫燐笔记 EX 总结　|　依据 18 页手写原稿重读整理，<span class="ex">＋EX</span> 标记为相对旧整理版的新增内容</footer>
+</body>
+</html>
+
+

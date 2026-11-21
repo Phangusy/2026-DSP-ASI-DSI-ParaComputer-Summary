@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSP 补充讲义 · 最小相位／全通分解：常数归属、∞ 处零点、唯一性</title>
+<style>
+:root{
+  --ink:#3b2f23; --ink2:#6a5844; --ink3:#9c8a76;
+  --line:#e7d7c0; --line2:#f2e7d5;
+  --bg:#faf5ea; --card:#fffcf5;
+  --blue:#b5541f; --blue2:#f8ead9;
+  --red:#a4432a; --red2:#faece4;
+  --green:#67743a; --green2:#f1f3e1;
+  --amber:#c07a29; --amber2:#fcf0da;
+  --violet:#8a6a5a; --violet2:#f5ece3;
+  --serif:Cambria,"Times New Roman",Georgia,serif;
+  --sans:"Segoe UI",system-ui,-apple-system,"Microsoft YaHei",sans-serif;
+  --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:16.5px;line-height:2.0;letter-spacing:.012em;
+  -webkit-font-smoothing:antialiased;
+}
+#toc{
+  position:fixed;left:0;top:0;bottom:0;width:286px;
+  background:#fff;border-right:1px solid var(--line);
+  overflow-y:auto;padding:22px 0 60px;z-index:50;font-size:13.5px;
+}
+#toc .brand{padding:0 20px 14px;border-bottom:1px solid var(--line2);margin-bottom:10px}
+#toc .brand b{display:block;font-size:15px;letter-spacing:.2px;color:var(--blue)}
+#toc .brand span{font-size:11.5px;color:var(--ink3);letter-spacing:.6px;text-transform:uppercase}
+#toc h4{margin:14px 0 5px;padding:0 20px;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink3);font-weight:700}
+#toc a{display:block;padding:5px 20px;color:var(--ink2);text-decoration:none;border-left:3px solid transparent;line-height:1.55}
+#toc a:hover{background:var(--blue2);color:var(--blue)}
+#toc a.act{border-left-color:var(--blue);background:var(--blue2);color:var(--blue);font-weight:600}
+main{margin-left:286px;padding:0 0 120px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 40px}
+
+#cover{background:linear-gradient(150deg,#2f1d11 0%,#5e3418 48%,#8d4f21 100%);color:#fff;padding:56px 0 46px;margin-bottom:8px}
+#cover .wrap{position:relative}
+#cover .kicker{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#e0b98e}
+#cover h1{font-size:33px;line-height:1.3;margin:10px 0 6px;font-weight:700;letter-spacing:.4px}
+#cover h2{font-size:15.5px;font-weight:400;color:#ecd2b0;margin:0 0 22px;line-height:1.75}
+#cover .stats{display:flex;gap:32px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.18);padding-top:16px}
+#cover .stats div{font-size:12.5px;color:#d3ae85}
+#cover .stats b{display:block;font-size:21px;color:#fff;font-weight:600}
+
+h2.part{margin:62px 0 4px;font-size:13px;letter-spacing:3.5px;text-transform:uppercase;color:var(--blue);font-weight:700}
+h2.part::after{content:"";display:block;height:2px;background:var(--blue);width:44px;margin-top:8px}
+h3.ch{font-size:26px;margin:16px 0 6px;line-height:1.34}
+h3.ch .no{color:var(--ink3);font-weight:400;font-size:18px;margin-right:10px}
+.chlead{color:var(--ink2);font-size:15.5px;margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line);text-indent:0}
+h4{font-size:19px;margin:36px 0 10px;line-height:1.5}
+h5{font-size:15.5px;margin:24px 0 8px;color:var(--ink)}
+p{margin:0 0 13px;text-indent:2em}
+ul,ol{margin:12px 0;padding-left:26px}
+li{margin:6px 0}
+.key p,.trap p,.ans p,.warn p,.qbox p,.card p,.fig .cap,.steps>li,.der p,.eq p{text-indent:0}
+b,strong{font-weight:650}
+i.v{font-family:var(--serif);font-style:italic;font-size:1.06em;letter-spacing:.1px}
+sub,sup{font-size:.7em;line-height:0}
+.eq{font-family:var(--serif);font-size:17.5px;text-align:center;margin:16px 0;padding:13px 18px;background:#faf3e6;border-radius:8px;border:1px solid var(--line2);overflow-x:auto}
+.eq.l{text-align:left}
+.eq.big{font-size:19px;background:#fff;border-left:3px solid var(--blue);border-radius:0 6px 6px 0}
+.der{font-family:var(--serif);font-size:16.5px;margin:16px 0;padding:15px 24px;background:#faf3e6;border:1px solid var(--line2);border-radius:8px;overflow-x:auto}
+.der .row{display:block;white-space:nowrap;line-height:2.1;padding-left:2.2em;text-indent:-2.2em}
+.der .row .cmt{font-family:var(--sans);font-size:12px;color:var(--ink3);font-style:normal;margin-left:14px;white-space:nowrap}
+.fr{display:inline-block;vertical-align:middle;text-align:center;font-size:.94em;margin:0 .18em}
+.fr>.n{display:block;padding:0 .28em;border-bottom:1.2px solid currentColor;line-height:1.35}
+.fr>.d{display:block;padding:0 .28em;line-height:1.35}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:16px 22px;margin:20px 0}
+.ex{border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:7px;background:#fffdf7;padding:14px 20px 16px;margin:22px 0 26px}
+.xh{font-weight:700;color:var(--amber);font-size:15px;margin:2px 0 10px;letter-spacing:.02em}
+.ex p{text-indent:0}
+.ex .eq{margin:8px 0}
+.key{border-left:4px solid var(--blue);background:var(--blue2);border-radius:0 8px 8px 0;padding:13px 20px;margin:16px 0}
+.key .h{font-weight:700;color:var(--blue);font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:3px}
+.trap{border-left:4px solid var(--amber);background:var(--amber2);border-radius:0 8px 8px 0;padding:13px 20px;margin:16px 0}
+.trap .h{font-weight:700;color:var(--amber);font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:3px}
+.ans{border-left:4px solid var(--green);background:var(--green2);border-radius:0 8px 8px 0;padding:13px 20px;margin:16px 0}
+.ans .h{font-weight:700;color:var(--green);font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:3px}
+.warn{border-left:4px solid var(--red);background:var(--red2);border-radius:0 8px 8px 0;padding:13px 20px;margin:16px 0}
+.warn .h{font-weight:700;color:var(--red);font-size:12.5px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:3px}
+
+.steps{counter-reset:st;list-style:none;padding-left:0;margin:16px 0}
+.steps>li{position:relative;padding:0 0 0 34px;margin:0 0 16px;counter-increment:st}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:2px;width:23px;height:23px;border-radius:50%;background:var(--blue);color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--sans)}
+.steps>li>.st{display:block;font-weight:650;margin-bottom:2px}
+
+.fig{margin:24px 0 28px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px 12px}
+.fig .cap{font-size:13px;color:var(--ink2);margin-top:8px;padding-top:8px;border-top:1px solid var(--line2);line-height:1.7}
+.fig .cap b{color:var(--ink)}
+.fig .cap .n{color:var(--blue);font-weight:700;margin-right:6px}
+
+.qbox{background:#fff;border:1px solid var(--line);border-left:4px solid var(--violet);border-radius:0 9px 9px 0;padding:14px 22px;margin:30px 0 16px}
+.qbox .qh{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--violet);font-weight:700;margin-bottom:4px}
+.qbox .q{font-size:15.5px;color:var(--ink2);margin:6px 0;text-indent:0}
+
+table.t{width:100%;margin:18px 0 24px;border-collapse:collapse;font-size:14px;letter-spacing:0;word-break:break-word;overflow-wrap:anywhere}
+table.t th,table.t td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+table.t th{background:#f7efe1;font-weight:650;font-size:13px;letter-spacing:.4px;color:var(--ink2)}
+table.t td.c,table.t th.c{text-align:center}
+table.t.small{font-size:13.5px}
+.hr{border:0;border-top:1px solid var(--line);margin:42px 0}
+#totop{position:fixed;right:22px;bottom:22px;width:42px;height:42px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:0;font-size:17px;box-shadow:0 3px 12px rgba(60,38,20,.28);z-index:60}
+@media (max-width:1100px){#toc{display:none}main{margin-left:0}}
+</style>
+</head>
+<body>
+
+<nav id="toc">
+  <div class="brand"><b>补充讲义 · 5.4</b><span>Minimum-Phase / All-Pass</span></div>
+  <h4>辨析</h4>
+  <a href="#s0">0　你可能卡在哪：三处"看起来打架"</a>
+  <a href="#s1">1　先把两个定义钉死</a>
+  <a href="#s2">2　常数从哪来：一条恒等式</a>
+  <h4>重算</h4>
+  <a href="#s3">3　五步模板</a>
+  <a href="#s3b">3.5　<b>5.4「四步」的修正版</b></a>
+  <a href="#s4">4　Question 1 全程重算</a>
+  <a href="#s5">5　Question 4 全程重算</a>
+  <a href="#s6">6　三处对照：到底差在哪</a>
+  <h4>修正与自检</h4>
+  <a href="#s7">7　唯一性的正确说法</a>
+  <a href="#s8">8　九条必错清单</a>
+  <a href="#s9">9　一页自检</a>
+</nav>
+
+<main>
+
+<section id="cover">
+  <div class="wrap">
+    <div class="kicker">Digital Signal Processing · 补充讲义</div>
+    <h1>最小相位／全通分解：把"歧义"一次讲清</h1>
+    <h2>5.4 节、例 5.4、第 14 章 Question 1 与 Question 4 用的是<b>同一条规则</b>，不是两种解法。<br>
+    差别只在三处记账：常数写在谁身上、<i class="v">z</i>=∞ 处的零点怎么处理、"唯一"到底唯一到什么程度。</h2>
+    <div class="stats">
+      <div><b>4</b>处表述需修正／补全</div>
+      <div><b>2</b>道题逐点重算</div>
+      <div><b>1</b>条恒等式解释全部常数</div>
+      <div><b>9</b>条必错清单</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 0 ==================== -->
+<h2 class="part">第 0 节</h2>
+<h3 class="ch" id="s0"><span class="no">0</span>你可能卡在哪：三处"看起来打架"的地方</h3>
+<p class="chlead">先把你看到的矛盾原样摆出来，再一句一句说明它们其实是一回事。</p>
+
+<div class="qbox">
+<div class="qh">表面现象 ①　例 5.4 的常数写在最前面</div>
+<p class="q">例 5.4 的答案是 <i class="v">H</i> = <i class="v">K</i>·<i class="v">H</i><sub>min</sub>(<i class="v">z</i>)·<i class="v">A</i>(<i class="v">z</i>)，<i class="v">K</i>=3 单独写在最前面，<i class="v">A</i>(<i class="v">z</i>)=(<i class="v">z</i><sup>−1</sup>+1/3)/(1+<i class="v">z</i><sup>−1</sup>/3) 自己就是"单位模"。</p>
+</div>
+
+<div class="qbox">
+<div class="qh">表面现象 ②　Question 1 的常数塞进了 H<sub>min</sub></div>
+<p class="q">Q1 的答案是 <i class="v">H</i><sub>min</sub> = <b>3</b>(1−<i class="v">z</i><sup>−2</sup>/3)(1+0.5<i class="v">z</i><sup>−1</sup>)/(1−0.6<i class="v">z</i><sup>−1</sup>)，那个 3 跑进了 <i class="v">H</i><sub>min</sub> 的系数里；同时 <i class="v">H</i><sub>ap</sub> = (<b>1/3</b>)(1−3<i class="v">z</i><sup>−2</sup>)/(1−<i class="v">z</i><sup>−2</sup>/3) 里面反而多了一个 1/3。</p>
+</div>
+
+<div class="qbox">
+<div class="qh">表面现象 ③　Question 4 的常数根本没算出来</div>
+<p class="q">Q4 的答案是 <i class="v">H</i><sub>min</sub> = <i class="v">K</i><sub>1</sub>(1−<i class="v">z</i><sup>−1</sup>/4)/[(1−<i class="v">z</i><sup>−1</sup>/2)(1−<i class="v">z</i><sup>−1</sup>/3)]，<i class="v">K</i><sub>1</sub> 一直是个符号；而 <i class="v">H</i><sub>ap</sub> 里凭空出现一个纯延迟 <i class="v">z</i><sup>−1</sup>，前面却什么常数都没有。</p>
+</div>
+
+<div class="key">
+<div class="h">结论先行（后面每一句都会证）</div>
+<p style="margin-bottom:8px"><b>1. 三道题的答案都是对的。</b>本页第 4、5 节把 Q1 与 Q4 的每一处数字重算一遍，并在 <i class="v">ω</i>=0、<i class="v">π</i>/2、<i class="v">π</i> 三点验证"<i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 逐点等于 <i class="v">H</i>"与"|<i class="v">H</i><sub>ap</sub>|=1"。没有一个数字需要改。</p>
+<p style="margin-bottom:8px"><b>2. 参数只有一套记账规则：</b>要求 <b>|<i class="v">H</i><sub>ap</sub>(<i class="v">e</i><sup><i class="v">jω</i></sup>)|≡1</b>（对每个频率都成立），于是常数被逼着全部进 <i class="v">H</i><sub>min</sub>，且大小固定为
+<i class="v">K</i> = (所有圆外零点的 |<i class="v">a</i><sub>i</sub>| 相乘) ÷ (所有圆外极点的 |<i class="v">p</i><sub>j</sub>| 相乘)。常数"写在 <i class="v">H</i><sub>min</sub> 前面"还是"写在 <i class="v">H</i><sub>min</sub> 系数里"<b>只是排版</b>（3·<i class="v">H</i><sub>min</sub> 与 3<i class="v">H</i><sub>min</sub> 是同一个东西）。</p>
+<p style="margin-bottom:0"><b>3. 有四处表述需要补／改：</b>① 5.4 节第 4 步只说了"圆外零点带来 1/|<i class="v">a</i>|"，<b>漏了"圆外极点带来 1/|<i class="v">p</i>|</b>，而 Q4 恰好要用这一条；② Q4 那句"分解在相差一个常数因子的意义下唯一"太松，正确说法是"相差一个<b>模为 1</b> 的常数"；③ 纯延迟 <i class="v">z</i><sup>−1</sup> 不是"额外的特例"，它就是一阶全通块 (<i class="v">z</i><sup>−1</sup>−<i class="v">a</i><sup>*</sup>)/(1−<i class="v">az</i><sup>−1</sup>) 在 <i class="v">a</i>=0 时的退化形态；④ <b>Q4 的 <i class="v">H</i><sub>ap</sub> 是"把反射点搬回原位、倒着写块"得到的</b>，与 5.4 节"<i class="v">H</i><sub>ap</sub>=<i class="v">H</i>/<i class="v">H</i><sub>min</sub> 正向除"是同一条路的两头，但原文没交代这条等价性（详见<b>第 3.5 节</b>的修正方案）。</p>
+</div>
+
+<div class="ans">
+<div class="h">那么"哪个才是正确的"</div>
+<p style="margin-bottom:0">两道题的答案都正确、且互相兼容。<b>如果只要一个"最不容易出错的写法"，照 Q1（＝例 5.4）那一路走</b>：<i class="v">H</i><sub>ap</sub> 写到严格单位模，常数 <i class="v">K</i> 用上式的总账算成一个具体的数。<b>Q4 唯一"看起来不一样"的地方是它必须带一个 <i class="v">z</i><sup>−1</sup> 块</b>（题目给了 <i class="v">z</i>=∞ 处的一个零点），以及它把 <i class="v">K</i><sub>1</sub> 留成符号（题目没给系统总增益，算不成数，所以题面写"可差一个常数"）。这两点都不是"另一种解法"，而是同一规则的另外两个档位。</p>
+</div>
+
+<!-- ==================== 1 ==================== -->
+<h2 class="part">第 1 节</h2>
+<h3 class="ch" id="s1"><span class="no">1</span>先把两个定义钉死：最小相位、全通</h3>
+<p class="chlead">后面所有"哪个常数对"的争论，全部可以回到这两条定义上判。所以先把定义翻译成"在 z 平面上检查哪几件事"，一条一条来。</p>
+
+<h4>1.1　最小相位：不是"极点都在圆内"，是"两个系统都好用"</h4>
+<p>定义只有一句：<b><i class="v">H</i>(<i class="v">z</i>) 本身，和它的逆系统 1/<i class="v">H</i>(<i class="v">z</i>)，都因果、都稳定。</b>把它拆成四个条件，每一步都要说清楚"因果"和"稳定"分别翻译成什么。</p>
+
+<ol class="steps">
+<li><span class="st">稳定 ⇔ ROC 含单位圆</span>一个 LTI 系统稳定，等价于冲激响应绝对可和，等价于收敛域（ROC）里含有 |<i class="v">z</i>|=1 这条圆。对有理 <i class="v">H</i>，这又等价于"没有极点落在单位圆上，且 ROC 取到含圆的那一段"。</li>
+<li><span class="st">因果 ⇔ ROC 落在最外那个极点之外，并且不含 <i class="v">z</i> 的正幂</span>因果的意思是 <i class="v">h</i>[<i class="v">n</i>]=0（<i class="v">n</i>&lt;0）。把 <i class="v">H</i> 按 <i class="v">z</i><sup>−1</sup> 展开成幂级数（这就是 <i class="v">h</i>[<i class="v">n</i>]），只出现 <i class="v">z</i><sup>−1</sup>、<i class="v">z</i><sup>−2</sup>… 才是因果；出现 <i class="v">z</i><sup>+1</sup> 就是"提前"，非因果。</li>
+<li><span class="st">两条一合：<i class="v">H</i> 因果稳定 ⇔ 所有极点在单位圆内</span>极点全在圆内，就能取 ROC=|<i class="v">z</i>|&gt;最外极点半径，这个 ROC 既在最外极点之外（因果）又含单位圆（稳定）。反过来，只要有一个极点在圆外，因果与稳定就不能同时成立——这正是例 5.5、Q5 在讲的事。</li>
+<li><span class="st">对逆系统再做一遍</span>1/<i class="v">H</i> 的极点是 <i class="v">H</i> 的零点，所以"1/<i class="v">H</i> 稳定且因果"⇔ <b><i class="v">H</i> 的所有零点都在单位圆内</b>，并且 1/<i class="v">H</i> 不含 <i class="v">z</i> 的正幂。</li>
+</ol>
+
+<div class="key">
+<div class="h">最小相位的等价条件（三条，缺一不可）</div>
+<p style="margin-bottom:6px">① <i class="v">H</i> 的所有极点在 |<i class="v">z</i>|&lt;1 内；② <i class="v">H</i> 的所有零点在 |<i class="v">z</i>|&lt;1 内；③ <b><i class="v">H</i> 在 <i class="v">z</i>=∞ 处没有零点</b>（等价说法：把 <i class="v">H</i> 写成 <i class="v">z</i><sup>−1</sup> 的有理式，分子不含 <i class="v">w</i> 的公因子，其中 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup>；也等价于"没有净延迟因子 <i class="v">z</i><sup>−1</sup>"）。</p>
+<p style="margin-bottom:0">第 ③ 条最容易被当成"技术细节"跳过，但它就是 Q4 里那个 <i class="v">z</i><sup>−1</sup> 块的由来，下面单独说清。</p>
+</div>
+
+<h5>为什么会冒出"<i class="v">z</i>=∞ 处的零点"这种东西</h5>
+<p>因为一个有理系统函数在复平面上是"在球面上"的：如果分子的次数低于分母，多出来的零点就摆在无穷远处。看一个最小的例子：</p>
+<div class="der">
+<div class="row"><i class="v">H</i>(<i class="v">z</i>) = <i class="v">z</i><sup>−1</sup> <span class="cmt">← 一级纯延迟</span></div>
+<div class="row"><i class="v">H</i>(∞) = lim<sub><i class="v">z</i>→∞</sub> 1/<i class="v">z</i> = 0 <span class="cmt">← 零点在 z=∞</span></div>
+<div class="row">1/<i class="v">H</i>(<i class="v">z</i>) = <i class="v">z</i> <span class="cmt">← 逆系统是"超前一级"</span></div>
+<div class="row"><i class="v">h</i><sub>i</sub>[<i class="v">n</i>] = <i class="v">δ</i>[<i class="v">n</i>+1] <span class="cmt">← 在 n=−1 处非零 ⇒ 非因果</span></div>
+</div>
+<p>所以"<i class="v">H</i> 在 <i class="v">z</i>=∞ 处有零点"和"逆系统非因果"是同一件事。把这个检查换成最好算的形式：记 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup>，把 <i class="v">H</i> 写成两个 <i class="v">w</i> 的多项式之比</p>
+<div class="eq"><i class="v">H</i>(<i class="v">z</i>) = <span class="fr"><span class="n"><i class="v">N</i>(<i class="v">w</i>)</span><span class="d"><i class="v">D</i>(<i class="v">w</i>)</span></span>, &nbsp; <i class="v">w</i> = <i class="v">z</i><sup>−1</sup></div>
+<p style="margin-bottom:0">则：<b><i class="v">N</i>(0)≠0</b> ⇔ 分子不含公因子 <i class="v">w</i> ⇔ 没有净 <i class="v">z</i><sup>−1</sup> ⇔ <i class="v">z</i>=∞ 处没有零点 ⇔ 逆系统不超前。<b>这一个数 <i class="v">N</i>(0) 是不是 0，就要了 Q4 与 Q1 的命。</b>（另外 <i class="v">D</i>(0)≠0 保证 <i class="v">H</i> 自己因果，一般题目都给。）</p>
+
+<div class="trap">
+<div class="h">别把两种"0 处的零点"混成一种</div>
+<p style="margin-bottom:6px"><b>① <i class="v">N</i>(0)=0（零点在 <i class="v">z</i>=∞）：致命。</b>逆系统见到 <i class="v">z</i> 的正幂，非因果。Q4 就是这种情况。</p>
+<p style="margin-bottom:0"><b>② 分子次数低于分母次数（隐含一个零点在 <i class="v">z</i>=0）：完全无害。</b><i class="v">z</i>=0 在单位圆内，最小相位允许。Q4 的 <i class="v">H</i><sub>min</sub> = <i class="v">K</i><sub>1</sub>(1−<i class="v">w</i>/4)/[(1−<i class="v">w</i>/2)(1−<i class="v">w</i>/3)] 里分子次数 1、分母次数 2，就隐含一个 <i class="v">z</i>=0 的零点（化成 <i class="v">z</i> 的形式是 <i class="v">K</i><sub>1</sub><i class="v">z</i>(<i class="v">z</i>−1/4)/[(<i class="v">z</i>−1/2)(<i class="v">z</i>−1/3)]，在 <i class="v">z</i>=0 处为 0）。它不影响"逆系统因果且稳定"。</p>
+</div>
+
+<h4>1.2　全通：|<i class="v">H</i><sub>ap</sub>(<i class="v">e</i><sup><i class="v">jω</i></sup>)|≡1，注意是"恒等于"</h4>
+<p>全通的定义只有一条：<b>对每一个 <i class="v">ω</i>，|<i class="v">H</i><sub>ap</sub>(<i class="v">e</i><sup><i class="v">jω</i></sup>)|=1</b>。它一个幅度都不改，只改相位。合法的一阶块有三种写法，第三种就是 Q4 里那个"凭空冒出来"的 <i class="v">z</i><sup>−1</sup>：</p>
+
+<table class="t">
+<tr><th style="width:30%">写法</th><th style="width:22%">零点 / 极点</th><th>为什么模恒为 1</th></tr>
+<tr>
+  <td><b>A.</b> <span class="fr"><span class="n"><i class="v">z</i><sup>−1</sup>−<i class="v">a</i><sup>*</sup></span><span class="d">1−<i class="v">az</i><sup>−1</sup></span></span>（|<i class="v">a</i>|&lt;1）</td>
+  <td>零 <i class="v">z</i>=1/<i class="v">a</i><sup>*</sup>（圆外）<br>极 <i class="v">z</i>=<i class="v">a</i>（圆内）</td>
+  <td>|<i class="v">z</i><sup>−1</sup>−<i class="v">a</i><sup>*</sup>| = |<i class="v">z</i><sup>−1</sup>|·|1−<i class="v">a</i><sup>*</sup><i class="v">z</i>| = |1−<i class="v">a</i><sup>*</sup><i class="v">z</i>|；<br>而 |1−<i class="v">a</i><sup>*</sup><i class="v">z</i>| = |<i class="v">z</i>−<i class="v">a</i>|、|1−<i class="v">az</i><sup>−1</sup>| = |<i class="v">z</i><sup>−1</sup>|·|<i class="v">z</i>−<i class="v">a</i>| = |<i class="v">z</i>−<i class="v">a</i>| ⇒ 相等 ⇒ 比值 1</td>
+</tr>
+<tr>
+  <td><b>B.</b> <span class="fr"><span class="n">1</span><span class="d">|<i class="v">a</i>|</span></span>·<span class="fr"><span class="n">1−<i class="v">az</i><sup>−1</sup></span><span class="d">1−<i class="v">z</i><sup>−1</sup>/<i class="v">a</i><sup>*</sup></span></span>（|<i class="v">a</i>|&gt;1）</td>
+  <td>零 <i class="v">z</i>=<i class="v">a</i>（圆外）<br>极 <i class="v">z</i>=1/<i class="v">a</i><sup>*</sup>（圆内）</td>
+  <td>第 2 节的恒等式：|1−<i class="v">az</i><sup>−1</sup>| = |<i class="v">a</i>|·|1−<i class="v">z</i><sup>−1</sup>/<i class="v">a</i><sup>*</sup>| ⇒ 除以 |<i class="v">a</i>| 后为 1</td>
+</tr>
+<tr>
+  <td><b>C.</b> <i class="v">z</i><sup>−1</sup>（即 A 在 <i class="v">a</i>=0 的退化）</td>
+  <td>零 <i class="v">z</i>=∞<br>极 <i class="v">z</i>=0</td>
+  <td>|<i class="v">e</i><sup>−<i class="v">jω</i></sup>| = 1</td>
+</tr>
+</table>
+
+<p><b>把 A 里令 <i class="v">a</i>=0</b>：(<i class="v">z</i><sup>−1</sup>−0)/(1−0) = <i class="v">z</i><sup>−1</sup>。<b>所以纯延迟本来就是全通家族的一员</b>——它的"镜像对"是"零点在 ∞、极点在 0"，而 ∞ 的倒数是 0，正好符合"零极点互为倒数"这条要求。Q4 的 <i class="v">H</i><sub>ap</sub> 里那个 <i class="v">z</i><sup>−1</sup> 不是补丁，也不是笔误。</p>
+
+<div class="trap">
+<div class="h">再强调一次（例 5.3 也在说这件事）</div>
+<p style="margin-bottom:0">只验 <i class="v">ω</i>=0 与 <i class="v">ω</i>=π 两点相等，<b>不足以</b>说"全通"。这两点上任何"系数倒着写"的结构都会自动相等。真正的验算点要取中间频率，例如 <i class="v">ω</i>=π/2。本页第 4、5 节的验算都包含 <i class="v">ω</i>=π/2。</p>
+</div>
+
+<!-- ==================== 2 ==================== -->
+<h2 class="part">第 2 节</h2>
+<h3 class="ch" id="s2"><span class="no">2</span>常数从哪来：一条恒等式，三个方向</h3>
+<p class="chlead">"反射一个零点"凭什么不改变幅度谱？"那个 3 是谁给的"？全部由下面这一条恒等式回答。它只有三行，但它一次性解释了例 5.4 的 3、Q1 的 3、Q4 的 4/3。</p>
+
+<div class="key">
+<div class="h">恒等式（本页唯一的公式）</div>
+<p style="margin-bottom:0">对单位圆上的任意点（|<i class="v">z</i>|=1）和任意复数 <i class="v">c</i>（<i class="v">c</i>≠0）：</p>
+<div class="eq big">|1 − <i class="v">c z</i><sup>−1</sup>| = |<i class="v">c</i>| · |1 − <i class="v">z</i><sup>−1</sup>/<i class="v">c</i><sup>*</sup>|</div>
+<p style="margin-bottom:0">换句话说：<b>把系数 <i class="v">c</i> 换成它的共轭倒数 1/<i class="v">c</i><sup>*</sup>，幅度只差一个常数 |<i class="v">c</i>|。</b>这就是"反射不改幅度谱、只改常数"的全部内容。</p>
+</div>
+
+<h4>2.1　证明（一行都不许跳）</h4>
+<p>记 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup>。|<i class="v">z</i>|=1 ⇔ |<i class="v">w</i>|=1 ⇔ <i class="v">w</i> 的共轭 <i class="v">w̄</i> = 1/<i class="v">w</i>。这个替换是全部技巧所在。</p>
+<div class="der">
+<div class="row"><b>左边平方：</b>|1−<i class="v">cw</i>|<sup>2</sup> = (1−<i class="v">cw</i>)(1−<i class="v">c</i><sup>*</sup><i class="v">w̄</i>) = 1 − <i class="v">c</i><sup>*</sup><i class="v">w̄</i> − <i class="v">cw</i> + |<i class="v">c</i>|<sup>2</sup>|<i class="v">w</i>|<sup>2</sup> <span class="cmt">← 普通复数展开：(a−b)(ā−b̄)=|a|²+|b|²−āb̄−ā̄b</span></div>
+<div class="row">= 1 − <i class="v">c</i><sup>*</sup>/<i class="v">w</i> − <i class="v">cw</i> + |<i class="v">c</i>|<sup>2</sup> <span class="cmt">← 用了 |w|=1 ⇒ w̄=1/w、|w|²=1</span></div>
+<div class="row"><b>右边平方（先提出 |c|²）：</b>|<i class="v">c</i>|<sup>2</sup>·|1−<i class="v">w</i>/<i class="v">c</i><sup>*</sup>|<sup>2</sup> = |<i class="v">c</i>|<sup>2</sup>(1 − <i class="v">w</i>/<i class="v">c</i><sup>*</sup>)(1 − <i class="v">w̄</i>/<i class="v">c</i>) <span class="cmt">← 再展开一次</span></div>
+<div class="row">= |<i class="v">c</i>|<sup>2</sup> − |<i class="v">c</i>|<sup>2</sup><i class="v">w̄</i>/<i class="v">c</i> − |<i class="v">c</i>|<sup>2</sup><i class="v">w</i>/<i class="v">c</i><sup>*</sup> + |<i class="v">c</i>|<sup>2</sup>|<i class="v">w</i>|<sup>2</sup>/|<i class="v">c</i>|<sup>2</sup> <span class="cmt">← 第三项：w·w̄=1</span></div>
+<div class="row">= |<i class="v">c</i>|<sup>2</sup> − <i class="v">cw̄</i> − <i class="v">c</i><sup>*</sup><i class="v">w</i> + 1 <span class="cmt">← 因为 |c|²/c = c*，|c|²/c* = c</span></div>
+<div class="row">= 1 − <i class="v">c</i><sup>*</sup>/<i class="v">w</i> − <i class="v">cw</i> + |<i class="v">c</i>|<sup>2</sup> <span class="cmt">← 再把 w̄=1/w 换回去，与左边逐项相同 ✓</span></div>
+</div>
+<p style="margin-bottom:0">两边都是非负数，平方相等 ⇒ 本身相等。恒等式成立。<b>注意它最后一步只说了"模相等"，一个字都没说相位——这正是"反射只动相位"的来源。</b></p>
+
+<h4>2.2　三个方向：零点、极点、∞</h4>
+
+<h5>方向 ①　反射一个圆外零点 <i class="v">a</i>（|<i class="v">a</i>|&gt;1）：常数 = |<i class="v">a</i>|</h5>
+<p>分子里的因子是 (1−<i class="v">az</i><sup>−1</sup>)，反射后换成 (1−<i class="v">z</i><sup>−1</sup>/<i class="v">a</i><sup>*</sup>)。把恒等式里的 <i class="v">c</i> 取成 <i class="v">a</i>：</p>
+<div class="der">
+<div class="row">|1−<i class="v">az</i><sup>−1</sup>| = |<i class="v">a</i>|·|1−<i class="v">z</i><sup>−1</sup>/<i class="v">a</i><sup>*</sup>| <span class="cmt">← 直接代</span></div>
+<div class="row">⇒ 比值 <span class="fr"><span class="n">1−<i class="v">az</i><sup>−1</sup></span><span class="d">1−<i class="v">z</i><sup>−1</sup>/<i class="v">a</i><sup>*</sup></span></span> 的模恒为 |<i class="v">a</i>| <span class="cmt">← 这就是"未配平的全通块"，模不是 1</span></div>
+<div class="row">⇒ 要让它单位模，必须再乘 1/|<i class="v">a</i>|；把 |<i class="v">a</i>| 留在前面，就得到常数 <i class="v">K</i> 里的一个 |<i class="v">a</i>| <span class="cmt">← 例 5.4 的 3、Q1 的 3 就是这一项</span></div>
+</div>
+
+<h5>方向 ②　反射一个圆外极点 <i class="v">p</i>（|<i class="v">p</i>|&gt;1）：常数 = <b>1/|<i class="v">p</i>|</b>（注意方向相反！）</h5>
+<p>极点藏在分母里，因子是 1/(1−<i class="v">pz</i><sup>−1</sup>)，反射后是 1/(1−<i class="v">z</i><sup>−1</sup>/<i class="v">p</i><sup>*</sup>)。还是同一条恒等式，只是把 <i class="v">c</i> 取成 <i class="v">p</i> 以后<b>两边相除的顺序反过来</b>：</p>
+<div class="der">
+<div class="row">|1−<i class="v">pz</i><sup>−1</sup>| = |<i class="v">p</i>|·|1−<i class="v">z</i><sup>−1</sup>/<i class="v">p</i><sup>*</sup>| <span class="cmt">← 同一条恒等式</span></div>
+<div class="row">⇒ <span class="fr"><span class="n">|1−<i class="v">z</i><sup>−1</sup>/<i class="v">p</i><sup>*</sup>|</span><span class="d">|1−<i class="v">pz</i><sup>−1</sup>|</span></span> = 1/|<i class="v">p</i>| <span class="cmt">← 分子分母换了位置，所以是倒数</span></div>
+<div class="row">⇒ 未配平的"极点块"模只有 1/|<i class="v">p</i>|，要单位模必须乘 |<i class="v">p</i>| <span class="cmt">← 相当于 K 里"除一个 |p|"</span></div>
+</div>
+<div class="trap">
+<div class="h">5.4 节第 4 步漏的就是这一条</div>
+<p style="margin-bottom:0">正文第 4 步写的是"每个<b>圆外零点</b> <i class="v">a</i> 反射时比值带来一个 1/|<i class="v">a</i>| 的幅度因子"。这句话对，但只覆盖了零外。一旦像 Q4 那样存在<b>圆外极点</b>（<i class="v">z</i>=3），分母也会带来一个因子，而且是<b>反方向</b>的 1/|<i class="v">p</i>|（即 K 要除以 3）。漏掉它，Q4 的常数会算成 4 而不是 4/3，ω=0 处会得到 9 而不是 3。</p>
+</div>
+
+<h5>方向 ③　∞ 处的零点反射到原点：常数 = 1（但要留一个 <i class="v">z</i><sup>−1</sup> 给全通）</h5>
+<p>分子里那个"净 <i class="v">z</i><sup>−1</sup>"（即 <i class="v">w</i> 的一次因子）不放进 <i class="v">H</i><sub>min</sub>，于是 <i class="v">H</i>/<i class="v">H</i><sub>min</sub> 里就多出它。<b>它的模是 1，所以不产生任何常数</b>，但它必须原样留在 <i class="v">H</i><sub>ap</sub> 里，否则乘积对不上 <i class="v">H</i>。</p>
+
+<div class="key">
+<div class="h">常数总账（记这一条就够）</div>
+<div class="eq big">|<i class="v">K</i>| = <span class="fr"><span class="n">∏ |<i class="v">a</i><sub>i</sub>|</span><span class="d">∏ |<i class="v">p</i><sub>j</sub>|</span></span>　　（<i class="v">a</i><sub>i</sub>：落在圆外的<b>零点</b>；<i class="v">p</i><sub>j</sub>：落在圆外的<b>极点</b>；∞ 处的零点不计入）</div>
+<p style="margin-bottom:0">这个 <i class="v">K</i> 全部记在 <i class="v">H</i><sub>min</sub> 名下（写成 <i class="v">K</i>·<i class="v">H</i><sub>min</sub> 或直接并进 <i class="v">H</i><sub>min</sub> 的系数都行），<i class="v">H</i><sub>ap</sub> 就自动是严格单位模。</p>
+</div>
+
+<h4>2.3　三条账目各来一个数字</h4>
+<table class="t small">
+<tr><th style="width:24%">情形</th><th style="width:30%">式子</th><th>数字核对</th></tr>
+<tr>
+  <td>反射零点 <i class="v">a</i>=−3<br>（例 5.4）</td>
+  <td>|<i class="v">a</i>| = 3 ⇒ <i class="v">K</i> 里乘 3</td>
+  <td>单位圆上：|1+3<i class="v">z</i><sup>−1</sup>| = 3·|1+<i class="v">z</i><sup>−1</sup>/3|；<i class="v">ω</i>=0 处左边 4，右边 3·(4/3)=4 ✓</td>
+</tr>
+<tr>
+  <td>反射零点 <i class="v">a</i>=√3<br>（Q1，共两个）</td>
+  <td>|±√3| = √3，两个 ⇒ 乘 √3·√3 = 3</td>
+  <td>|1−3<i class="v">z</i><sup>−2</sup>| = 3·|1−<i class="v">z</i><sup>−2</sup>/3|；<i class="v">ω</i>=0 处左边 2，右边 3·(2/3)=2 ✓</td>
+</tr>
+<tr>
+  <td>反射极点 <i class="v">p</i>=3<br>（Q4，一个）</td>
+  <td>|<i class="v">p</i>| = 3 ⇒ <i class="v">K</i> 里<b>除</b> 3</td>
+  <td>|1−3<i class="v">z</i><sup>−1</sup>| = 3·|1−<i class="v">z</i><sup>−1</sup>/3|；<i class="v">ω</i>=0 处左边 2，右边 3·(2/3)=2 ✓（所以"极点块"的模只有 1/3）</td>
+</tr>
+<tr>
+  <td>∞ 处零点 → 0<br>（Q4，一个）</td>
+  <td>模恒为 1 ⇒ 不产生常数</td>
+  <td>|<i class="v">e</i><sup>−<i class="v">jω</i></sup>| = 1 ✓</td>
+</tr>
+</table>
+
+<div class="ex">
+<div class="xh">为什么必须用 1/<i class="v">a</i><sup>*</sup> 而不是 1/<i class="v">a</i>：一个复零点的数字</div>
+<p>取 <i class="v">a</i> = 2<i class="v">e</i><sup><i class="v">j</i>π/3</sup> = 1 + 1.732051<i class="v">j</i>（|<i class="v">a</i>|=2，在圆外）。两个候选反射点：</p>
+<div class="der">
+<div class="row">1/<i class="v">a</i><sup>*</sup> = 0.5<i class="v">e</i><sup><i class="v">j</i>π/3</sup> = 0.25 + 0.433013<i class="v">j</i> <span class="cmt">← 正确：共轭倒数</span></div>
+<div class="row">1/<i class="v">a</i> = 0.5<i class="v">e</i><sup>−<i class="v">j</i>π/3</sup> = 0.25 − 0.433013<i class="v">j</i> <span class="cmt">← 错误：只是倒数</span></div>
+</div>
+<table class="t small">
+<tr><th>频率</th><th class="c">原式 |1−<i class="v">az</i><sup>−1</sup>|</th><th class="c">用 1/<i class="v">a</i><sup>*</sup>：|<i class="v">a</i>|·|1−<i class="v">z</i><sup>−1</sup>/<i class="v">a</i><sup>*</sup>|</th><th class="c">用 1/<i class="v">a</i>：|<i class="v">a</i>|·|1−<i class="v">z</i><sup>−1</sup>/<i class="v">a</i>|</th></tr>
+<tr><td class="c"><i class="v">ω</i>=0</td><td class="c">1.732051</td><td class="c" style="color:var(--green);font-weight:600">1.732051 ✓</td><td class="c" style="color:var(--red)">0.433013 ✗</td></tr>
+<tr><td class="c"><i class="v">ω</i>=π/2</td><td class="c">1.239314</td><td class="c" style="color:var(--green);font-weight:600">1.239314 ✓</td><td class="c" style="color:var(--red)">0.727328 ✗</td></tr>
+<tr><td class="c"><i class="v">ω</i>=π</td><td class="c">2.645751</td><td class="c" style="color:var(--green);font-weight:600">2.645751 ✓</td><td class="c" style="color:var(--red)">0.661438 ✗</td></tr>
+</table>
+<p style="margin-bottom:0">用 1/<i class="v">a</i> 反射，幅度谱被改了（三个频率全错），那就不是"全通"了。<b>实数零点的 1/<i class="v">a</i> 与 1/<i class="v">a</i><sup>*</sup> 恰好相同，所以例 5.4 与 Q1 看不出这个坑；Q4 的 4 与 3 也都是实数，同样看不出。但写成 1/<i class="v">a</i> 是错的，考试一换复零点就全错。</b></p>
+</div>
+
+<!-- ==================== 3 ==================== -->
+<h2 class="part">第 3 节</h2>
+<h3 class="ch" id="s3"><span class="no">3</span>五步模板：把 H 拆成 K·H<sub>min</sub>·H<sub>ap</sub></h3>
+<p class="chlead">Q1、Q4、例 5.4 都能用这五步走完，一步不多。走完以后再做第 6 步验算。</p>
+
+<ol class="steps">
+<li><span class="st">第 1 步：全部换成 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup> 的多项式</span>分子、分母都乘开成 <i class="v">w</i> 的升幂多项式，写成 <i class="v">H</i>=<i class="v">N</i>(<i class="v">w</i>)/<i class="v">D</i>(<i class="v">w</i>)。同时记下两个"体检指标"：<b><i class="v">N</i>(0)</b>（≠0 就没有 ∞ 处零点）与 <b><i class="v">D</i>(0)</b>（≠0 就保证 <i class="v">H</i> 因果）。</li>
+<li><span class="st">第 2 步：列零极点清单，圆外的一个都别漏</span>解 <i class="v">N</i>(<i class="v">w</i>)=0 得 <i class="v">w</i>，再取 <i class="v">z</i>=1/<i class="v">w</i>；解 <i class="v">D</i>(<i class="v">w</i>)=0 得极点。另外单独写一行"<b>∞ 处的零点：<i class="v">N</i>(0) 是否为 0</b>"。极点里出现 <i class="v">z</i>=0 的（来自 <i class="v">D</i> 次数低于 <i class="v">N</i>）是纯延迟，别慌，它在圆内。</li>
+<li><span class="st">第 3 步：反射圆外的零点与极点</span>零点 <i class="v">a</i> → 1/<i class="v">a</i><sup>*</sup>，极点 <i class="v">p</i> → 1/<i class="v">p</i><sup>*</sup>，∞ 处的零点 → 直接不写。圆内的原样不动。<b>结果就是 <i class="v">H</i><sub>min</sub>（先不写常数）</b>。</li>
+<li><span class="st">第 4 步：常数用总账定，不靠猜</span>|<i class="v">K</i>| = ∏|圆外零点| / ∏|圆外极点|。写成 <i class="v">H</i><sub>min</sub>=<i class="v">K</i>·（第 3 步的结果）。</li>
+<li><span class="st">第 5 步：<i class="v">H</i><sub>ap</sub> = <i class="v">H</i>/<i class="v">H</i><sub>min</sub>，然后逐块检查模为 1</span>按定义算出来，它应该恰好等于若干"标准全通块"的乘积；每个块都用第 1.2 节 A/B/C 三种形态之一核对模 = 1（或直接用第 2 节恒等式）。<b>若少了一个 <i class="v">z</i><sup>−1</sup> 块，这里不会报错（模还是 1），只有第 6 步会露馅。</b></li>
+<li><span class="st">第 6 步：三个点验算，模和乘积都要验</span>取 <i class="v">ω</i>=0、π/2、π（即 <i class="v">w</i>=1, −<i class="v">j</i>, −1）。每点算三个数：<i class="v">H</i>、<i class="v">H</i><sub>min</sub>、<i class="v">H</i><sub>ap</sub>，然后核对 ① |<i class="v">H</i><sub>ap</sub>|=1；② <i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 的实部虚部都等于 <i class="v">H</i>。<b>只验 ① 会漏掉"漏因子"，只验 ② 的模会漏掉相位。</b></li>
+</ol>
+
+<div class="trap">
+<div class="h">第 6 步为什么要取 ω=π/2</div>
+<p style="margin-bottom:0">π/2 处 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup>=−<i class="v">j</i> 是纯虚数，此时 <i class="v">w</i><sup>2</sup>=−1，各项不会自动相同，任何"漏项、错号、错的常数"都会暴露出来。0 与 π 两点上很多错误会互相抵消，全对也不说明问题。</p>
+</div>
+
+<!-- ==================== 3.5 ==================== -->
+<h2 class="part">第 3.5 节　修正方案</h2>
+<h3 class="ch" id="s3b"><span class="no">3.5</span>5.4 节「四步」的修正版：改哪几刀，才能算对 Q4</h3>
+<p class="chlead">这一节专门给"照 5.4 节算却算错"的人看。第 3 节的五步模板是"正确做法"，本节是"5.4 原文四步 → 修正版八个动作"的逐条对照（最后两个动作是原文没有的验算闸）：哪一句要补、补什么、补完以后 Q4 能一步步算到底。如果你已经按 5.4 算错，先看 3.5.1 的自查表对号入座。</p>
+
+<h4>3.5.1　先对号：按 5.4 算错，通常是这三个症状之一</h4>
+<table class="t">
+<tr><th style="width:33%">症状（你算出来的）</th><th style="width:22%">根因</th><th>修正</th></tr>
+<tr>
+  <td><b>A.</b> 常数只算成"圆外零点相乘"。Q4 里得 <i class="v">K</i><sub>1</sub>=4<i class="v">c</i>，<i class="v">ω</i>=0 处乘出 <b>9</b>，而 <i class="v">H</i>(1)=<b>3</b></td>
+  <td>5.4 第 4 步<b>只写了圆外零点</b>，没写圆外极点</td>
+  <td>常数总账加一项：<b>圆外极点要"除"|p|</b>。改成 |<i class="v">K</i>|=(∏|<i class="v">a</i>|)/（∏|<i class="v">p</i>|）⇒ Q4 得 4<i class="v">c</i>/3 ✓（见 3.5.4）</td>
+</tr>
+<tr>
+  <td><b>B.</b> <i class="v">H</i><sub>ap</sub> 里没有任何纯延迟 <i class="v">z</i><sup>−1</sup>，全是 (<i class="v">z</i><sup>−1</sup>−<i class="v">a</i><sup>*</sup>)/(1−<i class="v">az</i><sup>−1</sup>) 型的块</td>
+  <td>5.4 第 2 步没提"∞ 处的零点"，第 3 步又只说"差异收进全通"</td>
+  <td>清点时补第三类对象：<b>∞ 处零点</b>（<i class="v">N</i>(0)=0）。它不进 <i class="v">H</i><sub>min</sub>，在 <i class="v">H</i><sub>ap</sub> 里就是一个 <i class="v">z</i><sup>−1</sup>（重数 = <i class="v">N</i> 中 <i class="v">w</i> 的最低次幂）</td>
+</tr>
+<tr>
+  <td><b>C.</b> 在 <i class="v">ω</i>=0 与 <i class="v">ω</i>=π 验过，觉得没问题</td>
+  <td>漏了 <i class="v">z</i><sup>−1</sup> 时，<b><i class="v">ω</i>=0 处完全通过</b>（那里 <i class="v">z</i><sup>−1</sup>=1，有没有它一样）；<i class="v">ω</i>=π 处只差一个负号</td>
+  <td>验算点必须加 <b><i class="v">ω</i>=π/2</b>：漏 <i class="v">z</i><sup>−1</sup> 的错误版本在那里与 <i class="v">H</i> 差 1.649（<i class="v">c</i>=1），一眼就看出来</td>
+</tr>
+</table>
+<p style="margin-bottom:0">C 这一条最坑：<b>错误答案在 <i class="v">ω</i>=0 处"等于 <i class="v">H</i>"是巧合</b>（因为 <i class="v">z</i><sup>−1</sup>=1 时那个块等于 1），所以只用 0 与 π 验算的人很容易以为自己对了。</p>
+
+<h4>3.5.2　原文四步 → 修正版（逐条对照）</h4>
+<table class="t small">
+<tr><th style="width:26%">5.4 原文</th><th style="width:32%">缺什么</th><th>修正后怎么写</th></tr>
+<tr>
+  <td><b>第 1 步</b>　把 <i class="v">H</i>(<i class="v">z</i>) 分解成零极点；每个圆外零点 <i class="v">a</i>（|<i class="v">a</i>|&gt;1）与每个圆外极点都要处理，圆内的留原样。</td>
+  <td>没说"∞ 处零点是第三类对象"，没说"怎么在表达式里认出它"，也没说圆外<b>极点</b>的处理会改变因果性。</td>
+  <td><b>先统一成 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup> 的有理式</b> <i class="v">N</i>(<i class="v">w</i>)/<i class="v">D</i>(<i class="v">w</i>)，乘开成升幂多项式。<br><b>再清点三类对象</b>：圆外零点 {<i class="v">a</i><sub>i</sub>}、圆外极点 {<i class="v">p</i><sub>j</sub>}、<b>∞ 处零点重数 <i class="v">m</i></b>（＝<i class="v">N</i>(<i class="v">w</i>) 里 <i class="v">w</i> 的最低次幂，也就是 <i class="v">N</i>(0)=0 的阶数）。<br><b>并记两个体检数</b>：<i class="v">N</i>(0)（≠0 ⇔ 无 ∞ 处零点）、<i class="v">D</i>(0)（≠0 ⇔ <i class="v">H</i> 自己因果）。</td>
+</tr>
+<tr>
+  <td><b>第 2 步</b>　把圆外的零极点反射到圆内：零点 <i class="v">a</i>→1/<i class="v">a</i><sup>*</sup>，极点同理。反射不改变幅度谱，所以 <i class="v">H</i><sub>min</sub> 与原系统幅度只差一个常数。</td>
+  <td>没说 ∞ 处的零点反射到哪、也没说反射完的 <i class="v">H</i><sub>min</sub> 可能从"稳定非因果"变成"因果稳定"（Q4 就是）。</td>
+  <td><b>反射</b>：<i class="v">a</i><sub>i</sub>→1/<i class="v">a</i><sub>i</sub><sup>*</sup>，<i class="v">p</i><sub>j</sub>→1/<i class="v">p</i><sub>j</sub><sup>*</sup>；<b>∞ 处零点 → 不写</b>（它的落点是 <i class="v">z</i>=0，在 <i class="v">H</i><sub>ap</sub> 里由 <i class="v">z</i><sup>−<i class="v">m</i></sup> 承担）；圆内的原样保留。<br><b>顺便记一句</b>：<i class="v">H</i><sub>min</sub> 的极点全在圆内 ⇒ 它（和它的逆）都可取"因果且稳定"的 ROC；原系统若含圆外极点，则它本来是"稳定但非因果"，这不是矛盾。</td>
+</tr>
+<tr>
+  <td><b>第 3 步</b>　把差异全部收进全通因子：<i class="v">H</i><sub>ap</sub>=<i class="v">H</i>/<i class="v">H</i><sub>min</sub>，它的每一对零极点都互为镜像，因此自动是全通。</td>
+  <td>（a）"自动是全通"这句话<i class="v">不等于</i>"|<i class="v">H</i><sub>ap</sub>|=1"（差常数时模不是 1）；（b）只给了"正向除"这一条路，Q4 那种"倒着写块"的写法没交代；（c）没说必须化简成标准块。</td>
+  <td><b>正向除 + 化成标准块</b>：<i class="v">H</i><sub>ap</sub>=<i class="v">H</i>/<i class="v">H</i><sub>min</sub> 先算出来，然后<b>必须</b>整理成"标准块之积"：A 型 (<i class="v">w</i>−<i class="v">a</i><sup>*</sup>)/(1−<i class="v">aw</i>)、B 型（A 的倒数形态）、C 型 <i class="v">z</i><sup>−<i class="v">m</i></sup>。<b>落在哪一块，一眼就能验模</b>。<br>（Q4 的答案就是这条路的化简结果；"把反射点搬回原位"只是同一件事倒着写，结果必然相同。）</td>
+</tr>
+<tr>
+  <td><b>第 4 步</b>　补常数使 |<i class="v">H</i><sub>ap</sub>|=1：每个圆外零点 <i class="v">a</i> 反射时比值带来一个 1/|<i class="v">a</i>| 的幅度因子，要乘回去。</td>
+  <td><b>只写了圆外零点，漏了圆外极点</b>；而且"乘回去"方向含糊（零点那一项到底乘 1/|<i class="v">a</i>| 还是 |<i class="v">a</i>|，原文从字面读不出来）。</td>
+  <td><b>常数总账（一句话）</b>：<b>圆外零点 ⇒ 常数乘 |<i class="v">a</i>|；圆外极点 ⇒ 常数除 |<i class="v">p</i>|；∞ 处零点 ⇒ 因子 1（不变）</b>。即 |<i class="v">K</i>|=(∏|<i class="v">a</i><sub>i</sub>|)/(∏|<i class="v">p</i><sub>j</sub>|)×（<i class="v">H</i> 自己的系数，写成常数项为 1 的形式时就是 1）。<b>正负号用一点定</b>：取 <i class="v">w</i>=1 算 <i class="v">K</i>=<i class="v">H</i>(1)/[<i class="v">H</i><sub>min</sub>(1)·<i class="v">H</i><sub>ap</sub>(1)]。</td>
+</tr>
+<tr>
+  <td colspan="3" style="background:#fdf7ea"><b>原文没有的两步（必须补，否则"算对了"也只是运气）：</b></td>
+</tr>
+<tr>
+  <td><b>（新增）</b></td>
+  <td>—</td>
+  <td><b>逐块验模</b>：对 <i class="v">H</i><sub>ap</sub> 的每一个块单独确认模恰为 1；<b>至少要代一次 <i class="v">ω</i>=π/2</b>（那里 <i class="v">w</i>=−<i class="v">j</i>，各项不会自动相同）。</td>
+</tr>
+<tr>
+  <td><b>（新增）</b></td>
+  <td>—</td>
+  <td><b>三点验乘积</b>：在 <i class="v">ω</i>=0、π/2、π 比 <i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 与 <i class="v">H</i> 的<b>实部与虚部</b>（不只比模）。这一步专抓"漏 <i class="v">z</i><sup>−<i class="v">m</i></sup>"和"常数为 0 倍/倍数错"。<br>最后复核：1/<i class="v">H</i><sub>min</sub> 的极点（＝<i class="v">H</i><sub>min</sub> 的零点）是否全在圆内、<i class="v">N</i><sub>min</sub>(0)≠0。</td>
+</tr>
+</table>
+
+<h4>3.5.3　修正版流程（可直接抄在草稿纸上）</h4>
+<div class="der">
+<div class="row"><b>①</b> 换 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup>：<i class="v">H</i>=<i class="v">N</i>(<i class="v">w</i>)/<i class="v">D</i>(<i class="v">w</i>)，乘开 <span class="cmt">← 不换就会漏掉 ∞ 处零点（Q4 的坑）</span></div>
+<div class="row"><b>②</b> 清点：圆外零点 {<i class="v">a</i><sub>i</sub>}　圆外极点 {<i class="v">p</i><sub>j</sub>}　<b>∞ 处零点重数 <i class="v">m</i></b> <span class="cmt">← m = N(w) 中 w 的最低次幂</span></div>
+<div class="row"><b>③</b> 反射：<i class="v">a</i><sub>i</sub>→1/<i class="v">a</i><sub>i</sub><sup>*</sup>　<i class="v">p</i><sub>j</sub>→1/<i class="v">p</i><sub>j</sub><sup>*</sup>　∞→不写　圆内的不动 <span class="cmt">← 一律 1/a*，别写 1/a</span></div>
+<div class="row"><b>④</b> 写 <i class="v">H</i><sub>min</sub>：反射后的零极点 + 常数 <i class="v">K</i> <span class="cmt">← 此步先留 K，别急</span></div>
+<div class="row"><b>⑤</b> <i class="v">H</i><sub>ap</sub>=<i class="v">H</i>/<i class="v">H</i><sub>min</sub>，化成标准块之积（含 <i class="v">z</i><sup>−<i class="v">m</i></sup>） <span class="cmt">← 化不成就说明前面漏了对象</span></div>
+<div class="row"><b>⑥</b> 常数总账：|<i class="v">K</i>|=(∏|<i class="v">a</i>|)/(∏|<i class="v">p</i>|)，符号用 <i class="v">w</i>=1 定 <span class="cmt">← 这一步是 5.4 第 4 步漏的那一半</span></div>
+<div class="row"><b>⑦</b> 逐块验 |<i class="v">H</i><sub>ap</sub>|=1，至少代 <i class="v">ω</i>=π/2 <span class="cmt">← 只代 0 与 π 会放过错误</span></div>
+<div class="row"><b>⑧</b> 三点验乘积（0、π/2、π，比实虚部）+ 复核 1/<i class="v">H</i><sub>min</sub> 的极点全在圆内 <span class="cmt">← 收工前的两道闸</span></div>
+</div>
+
+<h4>3.5.4　用修正版把 Q4 走一遍（就是"照 5.4 会算错"的那道）</h4>
+<p>题：极点 <i class="v">z</i>=1/2 与 3，零点 <i class="v">z</i>=4 及 <i class="v">z</i>=∞，系统稳定。逐条对上 3.5.3 的 ⑧ 步（数字细节见第 5 节）：</p>
+<table class="t small">
+<tr><th style="width:9%" class="c">步</th><th>在 Q4 上的实际操作</th><th style="width:34%">结果</th></tr>
+<tr><td class="c">①</td><td><i class="v">H</i>=<i class="v">c</i>·<i class="v">w</i>(1−4<i class="v">w</i>)/[(1−<i class="v">w</i>/2)(1−3<i class="v">w</i>)]</td><td>分子最低次幂 <b>1</b> ⇒ <i class="v">m</i>=1</td></tr>
+<tr><td class="c">②</td><td>解 <i class="v">N</i>=0 与 <i class="v">D</i>=0，再取 <i class="v">z</i>=1/<i class="v">w</i></td><td>圆外零点 {4}；圆外极点 {3}；<b>∞ 处零点 1 个</b>；圆内极点 {1/2}</td></tr>
+<tr><td class="c">③</td><td>4→1/4，3→1/3，∞→不写，1/2 不动</td><td>—</td></tr>
+<tr><td class="c">④</td><td><i class="v">H</i><sub>min</sub>=<i class="v">K</i><sub>1</sub>(1−<i class="v">w</i>/4)/[(1−<i class="v">w</i>/2)(1−<i class="v">w</i>/3)]</td><td>零极点全在圆内；<i class="v">N</i><sub>min</sub>(0)=<i class="v">K</i><sub>1</sub>≠0</td></tr>
+<tr><td class="c">⑤</td><td>(<i class="v">c</i>/<i class="v">K</i><sub>1</sub>)·<i class="v">w</i>(1−4<i class="v">w</i>)(1−<i class="v">w</i>/3)/[(1−<i class="v">w</i>/4)(1−3<i class="v">w</i>)] → 化简</td><td><i class="v">z</i><sup>−1</sup>·<span class="fr"><span class="n"><i class="v">z</i><sup>−1</sup>−3</span><span class="d">1−3<i class="v">z</i><sup>−1</sup></span></span>·<span class="fr"><span class="n"><i class="v">z</i><sup>−1</sup>−1/4</span><span class="d">1−<i class="v">z</i><sup>−1</sup>/4</span></span>（三块）</td></tr>
+<tr><td class="c">⑥</td><td>|<i class="v">K</i><sub>1</sub>|=(|4|)/(|3|)·<i class="v">c</i>=4<i class="v">c</i>/3；<i class="v">w</i>=1 定号取正</td><td><b><i class="v">K</i><sub>1</sub>=4<i class="v">c</i>/3</b>（<i class="v">c</i>=1 时 4/3）</td></tr>
+<tr><td class="c">⑦</td><td>三个块：|<i class="v">w</i>|=1、|<i class="v">w</i>−3|/|1−3<i class="v">w</i>|=1、|<i class="v">w</i>−1/4|/|1−<i class="v">w</i>/4|=1；代 <i class="v">ω</i>=π/2</td><td>|<i class="v">H</i><sub>ap</sub>|=1 ✓（<i class="v">ω</i>=π/2 处 <i class="v">H</i><sub>ap</sub>=0.152941−0.988235<i class="v">j</i>，模 1）</td></tr>
+<tr><td class="c">⑧</td><td><i class="v">ω</i>=0：3×1=3=<i class="v">H</i>(1) ✓；<i class="v">ω</i>=π/2：(1−0.6<i class="v">j</i>)(0.152941−0.988235<i class="v">j</i>)=−0.44−1.08<i class="v">j</i> ✓；<i class="v">ω</i>=π：(0.833333)(−1)=−5/6 ✓</td><td>1/<i class="v">H</i><sub>min</sub> 极点 {1/4, 0} 全在圆内 ⇒ 最小相位 ✓</td></tr>
+</table>
+
+<div class="warn">
+<div class="h">三处"漏一刀"的后果（都在 <i class="v">ω</i>=π/2 暴露）</div>
+<p style="margin-bottom:6px"><b>漏 ⑥（把 <i class="v">K</i><sub>1</sub> 写成 4<i class="v">c</i>）：</b><i class="v">ω</i>=0 处乘出 9，而 <i class="v">H</i>(1)=3，差 3 倍 = |<i class="v">p</i>|。</p>
+<p style="margin-bottom:6px"><b>漏 ⑤（<i class="v">H</i><sub>ap</sub> 不写 <i class="v">z</i><sup>−1</sup>）：</b>|<i class="v">H</i><sub>ap</sub>| 仍是 1，<b><i class="v">ω</i>=0 处也仍然等于 <i class="v">H</i></b>；只有 <i class="v">ω</i>=π/2（差 1.649）与 <i class="v">ω</i>=π（差 5/3、符号相反）才露馅。所以"除了 0 与 π 再加一个 π/2"不是多此一举，而是唯一能抓住它的手段。</p>
+<p style="margin-bottom:0"><b>只做 ④ 不做 ⑤：</b><i class="v">H</i><sub>min</sub> 里带一个 <i class="v">z</i><sup>−1</sup>，则 1/<i class="v">H</i><sub>min</sub> 出现 <i class="v">z</i> 的正幂 ⇒ 超前 ⇒ 不再最小相位（5.4 节第 ③ 条判据）。</p>
+</div>
+
+<h4>3.5.5　验收：用修正版重算 5.4 自己举的两个算例</h4>
+<p><b>为什么必须先做这一步：</b>如果修正版在 5.4 原文自己举的例子上算出的结果与原文不同，那就说明是我改错了。下面把 5.4 节里出现过的两个例子——正文那个一阶例 <i class="v">H</i>(<i class="v">z</i>)=(1−2<i class="v">z</i><sup>−1</sup>)/(1−0.5<i class="v">z</i><sup>−1</sup>) 与例 5.4——按 3.5.3 的八个动作<b>原样重走一遍</b>。</p>
+<p>结论先说：<b>两个例子的结果与原文逐字相同</b>（<i class="v">K</i>=−2、<i class="v">K</i>=3），修正版没有任何地方推翻原文；它做的只是把"常数 <i class="v">K</i> 凭什么等于这个数"从"看括号里的系数提出来"改成"一条能写下来的账"。</p>
+
+<h5>算例 ①　5.4 节正文那个一阶例：<i class="v">H</i>(<i class="v">z</i>)=(1−2<i class="v">z</i><sup>−1</sup>)/(1−0.5<i class="v">z</i><sup>−1</sup>)</h5>
+<div class="der">
+<div class="row"><b>①</b> 换 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup>：<i class="v">H</i>=(1−2<i class="v">w</i>)/(1−0.5<i class="v">w</i>)，<i class="v">N</i>(0)=<b>1≠0</b>、<i class="v">D</i>(0)=1≠0 <span class="cmt">← 无 ∞ 处零点、H 自己因果，两项体检都过</span></div>
+<div class="row"><b>②</b> 清点：圆外零点 {2}　圆外极点 {无}　<b>∞ 处零点 0 个</b>　圆内极点 {0.5} <span class="cmt">← 1−2w=0 ⇒ w=1/2 ⇒ z=2；1−0.5w=0 ⇒ w=2 ⇒ z=0.5</span></div>
+<div class="row"><b>③</b> 反射：<i class="v">z</i>=2 → 1/2；<i class="v">z</i>=0.5 不动 <span class="cmt">← 1/a*=1/2</span></div>
+<div class="row"><b>④</b> <i class="v">H</i><sub>min</sub> = <i class="v">K</i>·(1−<i class="v">w</i>/2)/(1−0.5<i class="v">w</i>) = <i class="v">K</i>·[<b>1</b>] = <i class="v">K</i> <span class="cmt">← 分子分母完全相同，约掉 ⇒ H_min 就是个常数（原文说的 H_min=1 就是 K=1 的那一支）</span></div>
+<div class="row"><b>⑤</b> <i class="v">H</i><sub>ap</sub> = <i class="v">H</i>/<i class="v">H</i><sub>min</sub> = <span class="fr"><span class="n">1</span><span class="d"><i class="v">K</i></span></span>·<span class="fr"><span class="n">1−2<i class="v">w</i></span><span class="d">1−<i class="v">w</i>/2</span></span> <span class="cmt">← 按定义相除</span></div>
+<div class="row">而 1−2<i class="v">w</i> = −2(<i class="v">w</i>−0.5)、1−<i class="v">w</i>/2 = −(<i class="v">w</i>−2)/2 <span class="cmt">← 各提出系数，把零点摆到 a 的位置</span></div>
+<div class="row">⇒ <span class="fr"><span class="n">1−2<i class="v">w</i></span><span class="d">1−<i class="v">w</i>/2</span></span> = <span class="fr"><span class="n">−2(<i class="v">w</i>−0.5)</span><span class="d">−(<i class="v">w</i>−2)/2</span></span> = <span class="fr"><span class="n">4(<i class="v">w</i>−0.5)</span><span class="d"><i class="v">w</i>−2</span></span> = −2·<span class="fr"><span class="n"><i class="v">w</i>−0.5</span><span class="d">1−0.5<i class="v">w</i></span></span> <span class="cmt">← w−2 = −2(1−0.5w)</span></div>
+<div class="row">⇒ |<i class="v">H</i><sub>ap</sub>| = <span class="fr"><span class="n">1</span><span class="d">|<i class="v">K</i>|</span></span>·2·<span class="fr"><span class="n">|<i class="v">w</i>−0.5|</span><span class="d">|1−0.5<i class="v">w</i>|</span></span> = <span class="fr"><span class="n">2</span><span class="d">|<i class="v">K</i>|</span></span>·1 ⇒ 要求 =1 ⇒ <b>|<i class="v">K</i>|=2</b> <span class="cmt">← 第二个因子在单位圆上恒为 1（A 型块），所以只剩 2/|K|；与 ⑥ 的总账一致</span></div>
+<div class="row"><b>⑥</b> 总账：|<i class="v">K</i>| = ∏|<i class="v">a</i>|/∏|<i class="v">p</i>| = |2|/1 = <b>2</b> <span class="cmt">← 一个圆外零点 2，无圆外极点</span></div>
+<div class="row">符号用 <i class="v">w</i>=1 定：<i class="v">H</i>(1)=<span class="fr"><span class="n">1−2</span><span class="d">1−0.5</span></span>=<b>−2</b>；<i class="v">H</i><sub>min</sub> 取 <i class="v">K</i>=1 时 <i class="v">H</i><sub>min</sub>(1)=1；<i class="v">H</i><sub>ap</sub>(1)=1 <span class="cmt">← 三个量都代 w=1（H_ap 在这一步还是 (1−2w)/(K(1−w/2))）</span></div>
+<div class="row">⇒ <i class="v">K</i> = −2/(1×1) = <b>−2</b> <span class="cmt">← 原文那个 −2 就是这一步；原文靠"提出 −2"看出来，这里是算出来的</span></div>
+<div class="row"><b>⑦</b> <i class="v">H</i><sub>ap</sub> = <span class="fr"><span class="n"><i class="v">w</i>−0.5</span><span class="d">1−0.5<i class="v">w</i></span></span> <span class="cmt">← 把 (1/K)·(−2) = 1 代进去；这是 a=0.5 的 A 型块，模恒 1</span></div>
+<div class="row">代 <i class="v">ω</i>=π/2（<i class="v">w</i>=−<i class="v">j</i>）：<i class="v">H</i><sub>ap</sub> = <span class="fr"><span class="n">−0.5−<i class="v">j</i></span><span class="d">1+0.5<i class="v">j</i></span></span> = <b>−0.8−0.6<i class="v">j</i></b>，模 = √(0.64+0.36) = <b>1</b> ✓</div>
+</div>
+<table class="t small">
+<tr><th style="width:12%" class="c"><i class="v">ω</i></th><th class="c">直接算 <i class="v">H</i></th><th class="c"><i class="v">H</i><sub>min</sub> = −2</th><th class="c"><i class="v">H</i><sub>ap</sub></th><th class="c">乘积</th></tr>
+<tr><td class="c">0</td><td class="c">(1−2)/0.5 = <b>−2</b></td><td class="c">−2</td><td class="c">+1</td><td class="c">−2 ✓</td></tr>
+<tr><td class="c">π/2</td><td class="c"><b>1.6 + 1.2<i class="v">j</i></b>（|<i class="v">H</i>|=2）</td><td class="c">−2</td><td class="c">−0.8 − 0.6<i class="v">j</i></td><td class="c">1.6 + 1.2<i class="v">j</i> ✓</td></tr>
+<tr><td class="c">π</td><td class="c">(1+2)/1.5 = <b>+2</b></td><td class="c">−2</td><td class="c">−1</td><td class="c">+2 ✓</td></tr>
+</table>
+<p style="margin-bottom:0"><b>与原文对照：</b>原文最后一行是 <i class="v">H</i> = −2·(<i class="v">z</i><sup>−1</sup>−0.5)/(1−0.5<i class="v">z</i><sup>−1</sup>)，验幅度是"<i class="v">ω</i>=0 处 2、<i class="v">ω</i>=π 处 2，真恒为 2"。本表给的正是同一条式子、同一组数——<b>三个频率上 |<i class="v">H</i>| 都是 2</b>，这就是原文"幅度谱是一条常数 2"的意思。</p>
+
+<h5>算例 ②　例 5.4：<i class="v">H</i>(<i class="v">z</i>)=(1+3<i class="v">z</i><sup>−1</sup>)(1−0.25<i class="v">z</i><sup>−1</sup>)/(1−0.5<i class="v">z</i><sup>−1</sup>)</h5>
+<div class="der">
+<div class="row"><b>①</b> 换 <i class="v">w</i>：分子 (1+3<i class="v">w</i>)(1−0.25<i class="v">w</i>) = 1 + 2.75<i class="v">w</i> − 0.75<i class="v">w</i><sup>2</sup> <span class="cmt">← −0.25w+3w=2.75w，3w·(−0.25w)=−0.75w²</span></div>
+<div class="row"><i class="v">N</i>(0)=1≠0（无 ∞ 处零点）、<i class="v">D</i>(0)=1≠0（因果）</div>
+<div class="row"><b>②</b> 清点：圆外零点 {−3}　圆外极点 {无}　∞ 处零点 0 个　圆内零点 {0.25}、圆内极点 {0.5} <span class="cmt">← 1+3w=0 ⇒ w=−1/3 ⇒ z=−3；1−0.25w=0 ⇒ w=4 ⇒ z=0.25</span></div>
+<div class="row"><b>③</b> 反射：<i class="v">z</i>=−3 → <b>−1/3</b>；0.25 与 0.5 不动 <span class="cmt">← 1/a*=1/(−3)=−1/3</span></div>
+<div class="row"><b>④</b> <i class="v">H</i><sub>min</sub> = <i class="v">K</i>(1+<i class="v">w</i>/3)(1−0.25<i class="v">w</i>)/(1−0.5<i class="v">w</i>) <span class="cmt">← 反射后的零点写成 (1−w/a*)</span></div>
+<div class="row"><b>⑤</b> <i class="v">H</i><sub>ap</sub> = <i class="v">H</i>/<i class="v">H</i><sub>min</sub> = <span class="fr"><span class="n">1+3<i class="v">w</i></span><span class="d"><i class="v">K</i>(1+<i class="v">w</i>/3)</span></span> = <span class="fr"><span class="n">3(<i class="v">w</i>+1/3)</span><span class="d"><i class="v">K</i>(1+<i class="v">w</i>/3)</span></span> <span class="cmt">← (1−0.25w)、(1−0.5w) 全约掉</span></div>
+<div class="row">⇒ |<i class="v">H</i><sub>ap</sub>| = 3/|<i class="v">K</i>| ⇒ <b>|<i class="v">K</i>|=3</b> <span class="cmt">← 与 ⑥ 一致</span></div>
+<div class="row"><b>⑥</b> 总账：|<i class="v">K</i>| = ∏|<i class="v">a</i>|/∏|<i class="v">p</i>| = |−3|/1 = <b>3</b> <span class="cmt">← 一个圆外零点，无圆外极点</span></div>
+<div class="row">符号用 <i class="v">w</i>=1：<i class="v">H</i>(1)=(4)(0.75)/0.5=<b>6</b>、<i class="v">H</i><sub>min</sub>(<i class="v">K</i>=1,1)=(4/3)(0.75)/0.5=<b>2</b>、<i class="v">H</i><sub>ap</sub>(1)=1 ⇒ <i class="v">K</i>=6/2=<b>3</b></div>
+<div class="row"><b>⑦</b> <i class="v">H</i><sub>ap</sub> = <span class="fr"><span class="n"><i class="v">w</i>+1/3</span><span class="d">1+<i class="v">w</i>/3</span></span> <span class="cmt">← a=−1/3 的 A 型块，模恒 1；与例 5.4 的 A(z) 逐字相同</span></div>
+<div class="row">代 <i class="v">ω</i>=π/2：<i class="v">H</i><sub>ap</sub> = <b>0.6 − 0.8<i class="v">j</i></b>，模 = √(0.36+0.64) = <b>1</b> ✓</div>
+</div>
+<table class="t small">
+<tr><th style="width:12%" class="c"><i class="v">ω</i></th><th class="c">直接算 <i class="v">H</i></th><th class="c"><i class="v">H</i><sub>min</sub></th><th class="c"><i class="v">H</i><sub>ap</sub></th><th class="c">乘积</th></tr>
+<tr><td class="c">0</td><td class="c">(4)(0.75)/0.5 = <b>6</b></td><td class="c">6</td><td class="c">+1</td><td class="c">6 ✓</td></tr>
+<tr><td class="c">π/2</td><td class="c"><b>0.3 − 2.9<i class="v">j</i></b>（|<i class="v">H</i>|=2.915476）</td><td class="c">2.5 − 1.5<i class="v">j</i></td><td class="c">0.6 − 0.8<i class="v">j</i></td><td class="c">0.3 − 2.9<i class="v">j</i> ✓</td></tr>
+<tr><td class="c">π</td><td class="c">(−2)(1.25)/1.5 = <b>−5/3</b></td><td class="c">+5/3</td><td class="c">−1</td><td class="c">−5/3 ✓</td></tr>
+</table>
+<p style="margin-bottom:0"><b>与原文对照：</b>原文给 <i class="v">K</i>=3、<i class="v">A</i>(<i class="v">z</i>)=(<i class="v">z</i><sup>−1</sup>+1/3)/(1+<i class="v">z</i><sup>−1</sup>/3)，并在 <i class="v">ω</i>=0 验出 6、<i class="v">ω</i>=π 验出 5/3。本表三个频率都对上，<b>并且补上了原文没算的 <i class="v">ω</i>=π/2</b>（那里 <i class="v">H</i><sub>ap</sub>=0.6−0.8<i class="v">j</i> 是个不平凡的复数，最有说服力）。</p>
+
+<h5>为什么 5.4 原文在它自己这两个例子上不出错</h5>
+<p>把三个例子按"需要用到哪几条规则"排一下，答案就出来了：</p>
+<table class="t">
+<tr><th style="width:26%">例子</th><th class="c" style="width:15%">圆外零点</th><th class="c" style="width:15%">圆外极点</th><th class="c" style="width:15%">∞ 处零点</th><th>原文那四步够用吗</th></tr>
+<tr>
+  <td>5.4 正文一阶例</td><td class="c">2（1 个）</td><td class="c">无</td><td class="c">0</td>
+  <td style="color:var(--green)"><b>够用</b>：只需要"把 |<i class="v">a</i>| 提出来"这一步，而它正好等于"提出 −2"</td>
+</tr>
+<tr>
+  <td>例 5.4</td><td class="c">−3（1 个）</td><td class="c">无</td><td class="c">0</td>
+  <td style="color:var(--green)"><b>够用</b>：同理，|<i class="v">a</i>|=3 就是"提出 3"</td>
+</tr>
+<tr>
+  <td>Q4</td><td class="c">4 与 ∞（2 个）</td><td class="c"><b>3（1 个）</b></td><td class="c"><b>1</b></td>
+  <td style="color:var(--red)"><b>不够</b>：要 ÷|3|、还要留一个 <i class="v">z</i><sup>−1</sup>，原文两条都没写</td>
+</tr>
+</table>
+<div class="key">
+<div class="h">这一步验收说明了什么</div>
+<p style="margin-bottom:0"><b>原文的"提系数"招（提 −2、提 3）本质上就是在算 ∏|<i class="v">a</i>|。</b>只要题目里没有圆外极点、也没有 <i class="v">z</i>=∞ 处的零点，它就是一本完整的账——而 5.4 节自己举的两个例子<b>恰好都落在这个区间里</b>，所以你照它做、做到 Q4 之前都不会出错。Q4 一离开这个区间，"少除 |<i class="v">p</i>|"和"少写 <i class="v">z</i><sup>−1</sup>"就同时露馅。修正版在三个例子上给出<b>同一批数字</b>（<i class="v">K</i>=−2、<i class="v">K</i>=3、<i class="v">K</i><sub>1</sub>=4<i class="v">c</i>/3），所以它是"补两刀"，不是"另立一套"。</p>
+</div>
+
+<div class="ans">
+<div class="h">一句话记住修正</div>
+<p style="margin-bottom:0"><b>5.4 的四步只加了三个字就能用：</b>第 1 步加"<b>∞ 也算</b>"（清点 ∞ 处零点），第 4 步加"<b>极点也除</b>"（常数除以 ∏|<i class="v">p</i>|），验算加"<b>π/2</b>"。剩下一切都照原文。</p>
+</div>
+
+<!-- ==================== 4 ==================== -->
+<h2 class="part">第 4 节</h2>
+<h3 class="ch" id="s4"><span class="no">4</span>Question 1 全程重算（每个参数都写出来）</h3>
+<p class="chlead">题目：因果 LTI 系统 <i class="v">H</i>(<i class="v">z</i>)=(1−3<i class="v">z</i><sup>−2</sup>)(1+0.5<i class="v">z</i><sup>−1</sup>)/(1−0.6<i class="v">z</i><sup>−1</sup>)，求 <i class="v">H</i>=<i class="v">H</i><sub>min</sub><i class="v">H</i><sub>ap</sub>。下面把讲义给的答案从头到尾用第 3 节的五步复现一遍，并补上讲义省掉的三个数。</p>
+
+<h5>第 0 步：换成 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup>，顺便做两个体检</h5>
+<div class="der">
+<div class="row"><i class="v">H</i>(<i class="v">w</i>) = <span class="fr"><span class="n">(1−3<i class="v">w</i><sup>2</sup>)(1+0.5<i class="v">w</i>)</span><span class="d">1−0.6<i class="v">w</i></span></span> <span class="cmt">← 直接抄，w=z⁻¹</span></div>
+<div class="row">分子乘开：(1−3<i class="v">w</i><sup>2</sup>)(1+0.5<i class="v">w</i>) = 1 + 0.5<i class="v">w</i> − 3<i class="v">w</i><sup>2</sup> − 1.5<i class="v">w</i><sup>3</sup> <span class="cmt">← 逐项乘：1·1, 1·0.5w, −3w²·1, −3w²·0.5w</span></div>
+<div class="row"><i class="v">N</i>(0) = <b>1 ≠ 0</b> <span class="cmt">← 常数项是 1，不是 0 ⇒ 分子没有公因子 w ⇒ 没有 z=∞ 处零点</span></div>
+<div class="row"><i class="v">D</i>(0) = 1 ≠ 0 <span class="cmt">← 分母常数项 1 ⇒ H 自己因果</span></div>
+</div>
+<p style="margin-bottom:0"><b>这两行就是本题与 Q4 最大的不同：<i class="v">N</i>(0)≠0，所以本题根本不会出现纯延迟块 <i class="v">z</i><sup>−1</sup>。</b>先把它记下来，后面第 5 步就能一键解释"为什么 Q1 的 <i class="v">H</i><sub>ap</sub> 里没有 <i class="v">z</i><sup>−1</sup>"。</p>
+
+<h5>第 1 步：零点（解 <i class="v">N</i>(<i class="v">w</i>)=0，再取 <i class="v">z</i>=1/<i class="v">w</i>）</h5>
+<div class="der">
+<div class="row">1−3<i class="v">w</i><sup>2</sup> = 0 ⇒ <i class="v">w</i><sup>2</sup> = 1/3 ⇒ <i class="v">w</i> = ±1/√3 = ±0.577350 ⇒ <b><i class="v">z</i> = ±√3 = ±1.732051</b> <span class="cmt">← 两个零点，都在圆外</span></div>
+<div class="row">1+0.5<i class="v">w</i> = 0 ⇒ <i class="v">w</i> = −2 ⇒ <b><i class="v">z</i> = −0.5</b> <span class="cmt">← 一个零点，圆内，不动</span></div>
+</div>
+
+<h5>第 2 步：极点</h5>
+<div class="der">
+<div class="row">1−0.6<i class="v">w</i> = 0 ⇒ <i class="v">w</i> = 1/0.6 = 5/3 ⇒ <b><i class="v">z</i> = 0.6</b> <span class="cmt">← 圆内，不动</span></div>
+<div class="row">补一句：分母只有一次 ⇒ <i class="v">z</i> 形式里 <i class="v">z</i>=0 是二重极点 <span class="cmt">← 因为分子最高次是 w³、分母是 w¹，差两次；z=0 在圆内，是两拍纯延迟，无害</span></div>
+</div>
+<p><b>先下一个小结论：</b>极点 0.6 在圆内，但零点 ±√3 在圆外 ⇒ <i class="v">H</i> 的逆系统在 <i class="v">z</i>=±√3 处有极点 ⇒ 逆系统不稳定 ⇒ <b><i class="v">H</i> 不是最小相位</b>。这一步只看极点会判错，这正是 5.4 节第二条（零点也要在圆内）的用处。</p>
+
+<h5>第 3 步：反射（写成 1/<i class="v">a</i><sup>*</sup>，别偷懒写 1/<i class="v">a</i>）</h5>
+<div class="der">
+<div class="row"><i class="v">z</i>=√3 → 1/√3 = 0.577350 <span class="cmt">← 1/a*=1/a 因为 a 是实数</span></div>
+<div class="row"><i class="v">z</i>=−√3 → −1/√3 = −0.577350 <span class="cmt">← 同上</span></div>
+<div class="row">(1−(1/√3)<i class="v">w</i>)(1+(1/√3)<i class="v">w</i>) = 1 − <i class="v">w</i><sup>2</sup>/3 <span class="cmt">← 平方差，两个反射零点合成一项</span></div>
+</div>
+
+<h5>第 4 步：写出 <i class="v">H</i><sub>min</sub>（先带未知常数 <i class="v">K</i>）</h5>
+<div class="eq"><i class="v">H</i><sub>min</sub>(<i class="v">z</i>) = <i class="v">K</i> · <span class="fr"><span class="n">(1−<i class="v">z</i><sup>−2</sup>/3)(1+0.5<i class="v">z</i><sup>−1</sup>)</span><span class="d">1−0.6<i class="v">z</i><sup>−1</sup></span></span></div>
+<p>它的零点：±1/√3 = ±0.577350、−0.5；极点：0.6、0（二重）。全在圆内 ✓；<i class="v">N</i><sub>min</sub>(0)=<i class="v">K</i>·1·1≠0，无 ∞ 处零点 ✓。<b>结构上已经是"最小相位"，只差常数 <i class="v">K</i> 待定。</b></p>
+
+<h5>第 5 步：<i class="v">H</i><sub>ap</sub>=<i class="v">H</i>/<i class="v">H</i><sub>min</sub>，用总账定 <i class="v">K</i></h5>
+<div class="der">
+<div class="row"><i class="v">H</i><sub>ap</sub> = <span class="fr"><span class="n">(1−3<i class="v">w</i><sup>2</sup>)(1+0.5<i class="v">w</i>)</span><span class="d">1−0.6<i class="v">w</i></span></span> ÷ <span class="fr"><span class="n"><i class="v">K</i>(1−<i class="v">w</i><sup>2</sup>/3)(1+0.5<i class="v">w</i>)</span><span class="d">1−0.6<i class="v">w</i></span></span> <span class="cmt">← 按定义相除</span></div>
+<div class="row">= <span class="fr"><span class="n">1</span><span class="d"><i class="v">K</i></span></span>·<span class="fr"><span class="n">1−3<i class="v">w</i><sup>2</sup></span><span class="d">1−<i class="v">w</i><sup>2</sup>/3</span></span> <span class="cmt">← (1+0.5w) 与 (1−0.6w) 全部约掉</span></div>
+<div class="row">总账：|<i class="v">K</i>| = ∏|圆外零点| / ∏|圆外极点| = (√3·√3)/1 = <b>3</b> <span class="cmt">← 两个圆外零点，没有圆外极点</span></div>
+<div class="row">⇒ <i class="v">K</i> = 3（实系数、取正） <span class="cmt">← 这个 3 是算出来的，不是凑的</span></div>
+</div>
+<p><b>同一个 <i class="v">K</i> 用"直接验模"也能得出来（两条路必须给同一个数）：</b></p>
+<div class="der">
+<div class="row">|<i class="v">H</i><sub>ap</sub>| = <span class="fr"><span class="n">|1−3<i class="v">w</i><sup>2</sup>|</span><span class="d">|<i class="v">K</i>|·|1−<i class="v">w</i><sup>2</sup>/3|</span></span> <span class="cmt">← 取模</span></div>
+<div class="row">令 <i class="v">v</i> = <i class="v">w</i><sup>2</sup> = <i class="v">z</i><sup>−2</sup>，则 |<i class="v">v</i>|=1 <span class="cmt">← |w|=1 ⇒ |w²|=1，恒等式只要求"变量在单位圆上"</span></div>
+<div class="row">|1−3<i class="v">v</i>| = 3·|1−<i class="v">v</i>/3| <span class="cmt">← 第 2 节恒等式，取 c=3，变量叫 v</span></div>
+<div class="row">⇒ |<i class="v">H</i><sub>ap</sub>| = 3/(|<i class="v">K</i>|·1) = 3/|<i class="v">K</i>| <span class="cmt">← 分子分母同一个量 |1−v/3| 约掉</span></div>
+<div class="row">要求 = 1 ⇒ <b><i class="v">K</i> = 3</b> <span class="cmt">← 与总账一致 ✓</span></div>
+</div>
+<div class="ans">
+<div class="h">Q1 答案（与讲义一致）</div>
+<p style="margin-bottom:0"><i class="v">H</i><sub>min</sub>(<i class="v">z</i>) = <b>3</b>(1−<i class="v">z</i><sup>−2</sup>/3)(1+0.5<i class="v">z</i><sup>−1</sup>)/(1−0.6<i class="v">z</i><sup>−1</sup>)　　　<i class="v">H</i><sub>ap</sub>(<i class="v">z</i>) = (<b>1/3</b>)(1−3<i class="v">z</i><sup>−2</sup>)/(1−<i class="v">z</i><sup>−2</sup>/3)</p>
+</div>
+
+<h5>第 6 步：把 <i class="v">H</i><sub>ap</sub> 拆成两个标准全通块（确认那个 1/3 不是硬凑）</h5>
+<div class="der">
+<div class="row">1−3<i class="v">w</i><sup>2</sup> = (1−√3<i class="v">w</i>)(1+√3<i class="v">w</i>) <span class="cmt">← 平方差</span></div>
+<div class="row">1−√3<i class="v">w</i> = −√3(<i class="v">w</i>−1/√3)，　1+√3<i class="v">w</i> = √3(<i class="v">w</i>+1/√3) <span class="cmt">← 各提出一个系数，把零点放到 a 的位置</span></div>
+<div class="row">⇒ 1−3<i class="v">w</i><sup>2</sup> = −3(<i class="v">w</i>−1/√3)(<i class="v">w</i>+1/√3) <span class="cmt">← (−√3)(√3) = −3</span></div>
+<div class="row">1−<i class="v">w</i><sup>2</sup>/3 = (1−<i class="v">w</i>/√3)(1+<i class="v">w</i>/√3) <span class="cmt">← 同样平方差</span></div>
+<div class="row">⇒ <i class="v">H</i><sub>ap</sub> = (1/3)·[−3(<i class="v">w</i>−1/√3)(<i class="v">w</i>+1/√3)]/[(1−<i class="v">w</i>/√3)(1+<i class="v">w</i>/√3)] <span class="cmt">← 代入</span></div>
+<div class="row">= −<span class="fr"><span class="n"><i class="v">w</i>−1/√3</span><span class="d">1−<i class="v">w</i>/√3</span></span>·<span class="fr"><span class="n"><i class="v">w</i>+1/√3</span><span class="d">1+<i class="v">w</i>/√3</span></span> <span class="cmt">← (1/3)·(−3) = −1，两个块都是 1.2 节 A 型（a=±1/√3 是实数）</span></div>
+</div>
+<p style="margin-bottom:0">两个块各自模恒为 1 ⇒ <i class="v">H</i><sub>ap</sub> 模恒为 1。<b>那个 1/3 的作用就是抵消 |<i class="v">a</i>|² = 3。</b></p>
+
+<h5>第 7 步：三点验算（<i class="v">ω</i>=0、π/2、π，即 <i class="v">w</i>=1, −<i class="v">j</i>, −1）</h5>
+<table class="t small">
+<tr><th style="width:12%"><i class="v">ω</i></th><th style="width:15%"><i class="v">w</i></th><th style="width:30%">直接算 <i class="v">H</i></th><th>分解算 <i class="v">H</i><sub>min</sub> 与 <i class="v">H</i><sub>ap</sub></th></tr>
+<tr>
+  <td class="c">0</td><td class="c">1</td>
+  <td><i class="v">H</i> = (1−3)(1+0.5)/(1−0.6) = (−2)(1.5)/0.4 = <b>−7.5</b></td>
+  <td><i class="v">H</i><sub>min</sub> = 3(1−1/3)(1.5)/0.4 = 3·0.666667·3.75 = <b>+7.5</b>；<br><i class="v">H</i><sub>ap</sub> = (1/3)(1−3)/(1−1/3) = (1/3)(−2)/(2/3) = <b>−1</b>；7.5×(−1) = −7.5 ✓</td>
+</tr>
+<tr>
+  <td class="c">π/2</td><td class="c">−<i class="v">j</i></td>
+  <td><i class="v">w</i><sup>2</sup>=−1：<i class="v">H</i> = (1+3)(1−0.5<i class="v">j</i>)/(1+0.6<i class="v">j</i>) = (2.8−4.4<i class="v">j</i>)/1.36<br>= <b>2.058824 − 3.235294<i class="v">j</i></b>，|<i class="v">H</i>| = <b>3.834825</b></td>
+  <td><i class="v">H</i><sub>ap</sub> = (1/3)(1+3)/(1+1/3) = (1/3)·4/(4/3) = <b>+1</b>；<br>⇒ <i class="v">H</i><sub>min</sub> = <i class="v">H</i> 本身 = 2.058824 − 3.235294<i class="v">j</i> ✓</td>
+</tr>
+<tr>
+  <td class="c">π</td><td class="c">−1</td>
+  <td><i class="v">H</i> = (1−3)(1−0.5)/(1+0.6) = (−2)(0.5)/1.6 = <b>−0.625</b></td>
+  <td><i class="v">H</i><sub>min</sub> = 3(1−1/3)(0.5)/1.6 = 1/1.6 = <b>+0.625</b>；<i class="v">H</i><sub>ap</sub> = <b>−1</b>；乘积 −0.625 ✓</td>
+</tr>
+</table>
+<p style="margin-bottom:0">三点全过：|<i class="v">H</i><sub>ap</sub>|=1（含最关键的 π/2 点），且 <i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 的实部虚部逐点等于 <i class="v">H</i>。<b>Q1 的答案是完全正确的，一个数字都不用改。</b></p>
+
+<h5>第 8 步：它与例 5.4 的写法只差"3 写在哪儿"</h5>
+<div class="der">
+<div class="row">Q1 的写法：<i class="v">H</i> = [<b>3</b>(1−<i class="v">w</i><sup>2</sup>/3)(1+0.5<i class="v">w</i>)/(1−0.6<i class="v">w</i>)] · <i class="v">H</i><sub>ap</sub> <span class="cmt">← 3 塞在 H_min 的系数里</span></div>
+<div class="row">例 5.4 的写法：<i class="v">H</i> = <b>3</b> · [(1−<i class="v">w</i><sup>2</sup>/3)(1+0.5<i class="v">w</i>)/(1−0.6<i class="v">w</i>)] · <i class="v">H</i><sub>ap</sub> <span class="cmt">← 3 单独写在最前面</span></div>
+<div class="row">两式逐字相同，只是括号位置不同 <span class="cmt">← 这就是"表面现象 ① 与 ②"的真相</span></div>
+</div>
+
+<!-- ==================== 5 ==================== -->
+<h2 class="part">第 5 节</h2>
+<h3 class="ch" id="s5"><span class="no">5</span>Question 4 全程重算（含 <i class="v">z</i>=∞ 零点与那个 <i class="v">z</i><sup>−1</sup> 块）</h3>
+<p class="chlead">题目：稳定系统 <i class="v">H</i>(<i class="v">z</i>) 的零极点图为：极点 <i class="v">z</i>=1/2 与 <i class="v">z</i>=3，零点 <i class="v">z</i>=4（另有一个零点在 <i class="v">z</i>=∞）。求 <i class="v">H</i><sub>min</sub> 与 <i class="v">H</i><sub>ap</sub>（可差一个常数），并说明分解是否唯一。这道题比 Q1 多出三件事：一个圆外极点、一个 ∞ 处的零点、一个未定的总增益。</p>
+
+<h5>第 0 步：先把零极点图还原成表达式（必须带 <i class="v">w</i>）</h5>
+<div class="der">
+<div class="row"><i class="v">H</i>(<i class="v">z</i>) = <i class="v">c</i>·<span class="fr"><span class="n"><i class="v">w</i>(1−4<i class="v">w</i>)</span><span class="d">(1−<i class="v">w</i>/2)(1−3<i class="v">w</i>)</span></span>,　<i class="v">w</i>=<i class="v">z</i><sup>−1</sup> <span class="cmt">← c 是题目没给出的总增益</span></div>
+<div class="row">零点：1−4<i class="v">w</i>=0 ⇒ <i class="v">w</i>=1/4 ⇒ <b><i class="v">z</i>=4</b> ✓　；　<i class="v">w</i>=0 ⇒ <b><i class="v">z</i>=∞</b> ✓ <span class="cmt">← 两个零点，与题面一致</span></div>
+<div class="row">极点：1−<i class="v">w</i>/2=0 ⇒ <b><i class="v">z</i>=1/2</b> ✓　；　1−3<i class="v">w</i>=0 ⇒ <b><i class="v">z</i>=3</b> ✓</div>
+<div class="row">等价写法：<i class="v">H</i>(<i class="v">z</i>) = <span class="fr"><span class="n"><i class="v">c</i>(<i class="v">z</i>−4)</span><span class="d">(<i class="v">z</i>−1/2)(<i class="v">z</i>−3)</span></span> <span class="cmt">← 两个式子同一个系统</span></div>
+<div class="row">令 <i class="v">z</i>→∞：<i class="v">H</i>→<i class="v">c</i>·<i class="v">z</i>/<i class="v">z</i><sup>2</sup>→0 <span class="cmt">← 这就是"零点在 z=∞"的直观含义：分子次数比它分母少一次</span></div>
+<div class="row"><i class="v">N</i>(0) = 0（分子含公因子 <i class="v">w</i>） <span class="cmt">← 体检指标红灯：H 不是最小相位，且 H_ap 里必然出现一个 z⁻¹</span></div>
+</div>
+<div class="warn">
+<div class="h">为什么"可差一个常数"——先把 c 说清</div>
+<p style="margin-bottom:0">题面只给零极点位置，<b>没有给系统的总增益</b>。对任意 <i class="v">c</i>≠0，上面那个 <i class="v">H</i> 的零极点图完全相同，所以题面描述的是"一整族"系统。分解出的 <i class="v">K</i><sub>1</sub> 只能写到含 <i class="v">c</i> 的形式（本页算出 <i class="v">K</i><sub>1</sub>=4<i class="v">c</i>/3）。<b>Q1 之所以能算出 <i class="v">K</i>=3，是因为 Q1 把完整的 <i class="v">H</i> 给了出来。</b>这不是两种规矩，而是"给的信息不一样"。</p>
+</div>
+
+<h5>第 1 步：题面只说"稳定"，所以先把 ROC 定下来</h5>
+<p>极点半径是 1/2 与 3，能含单位圆的 ROC 只有一段：</p>
+<div class="der">
+<div class="row">|<i class="v">z</i>|&gt;3 ⇒ 因果，但不含单位圆 ⇒ 不稳定 <span class="cmt">← 排除</span></div>
+<div class="row">1/2 &lt; |<i class="v">z</i>| &lt; 3 ⇒ 含单位圆 ⇒ <b>稳定</b>，但是双边序列 ⇒ 非因果 <span class="cmt">← 题面"稳定"只可能指这一段</span></div>
+<div class="row">|<i class="v">z</i>|&lt;1/2 ⇒ 反因果，且不含单位圆 ⇒ 不稳定 <span class="cmt">← 排除</span></div>
+</div>
+<p style="margin-bottom:0">所以 <i class="v">H</i> 是<b>稳定但非因果</b>的系统。这会带来一个"看起来奇怪"的现象：分解出来的 <i class="v">H</i><sub>ap</sub> 里有一个圆外极点（<i class="v">z</i>=3），它当然也不因果——<b>这是对的，不是错</b>。全通只要求幅度恒为 1，从来不要求因果。</p>
+
+<h5>第 2 步：四件反射的账（一张表看完）</h5>
+<table class="t small">
+<tr><th style="width:15%">对象</th><th style="width:12%">原位置</th><th style="width:12%">反射到</th><th style="width:26%"><i class="v">H</i><sub>ap</sub> 里对应的块</th><th style="width:10%">块的模</th><th>对 <i class="v">K</i> 的贡献</th></tr>
+<tr>
+  <td>零点</td><td class="c"><i class="v">z</i>=4<br>（圆外）</td><td class="c"><i class="v">z</i>=1/4</td>
+  <td><span class="fr"><span class="n"><i class="v">w</i>−1/4</span><span class="d">1−<i class="v">w</i>/4</span></span>　零在 4、极在 1/4</td>
+  <td class="c">1</td><td>|<i class="v">a</i>|=4，进分子 ⇒ <i class="v">K</i> <b>乘</b> 4</td>
+</tr>
+<tr>
+  <td>极点</td><td class="c"><i class="v">z</i>=3<br>（圆外）</td><td class="c"><i class="v">z</i>=1/3</td>
+  <td><span class="fr"><span class="n"><i class="v">w</i>−3</span><span class="d">1−3<i class="v">w</i></span></span>　零在 1/3、极在 3</td>
+  <td class="c">1</td><td>|<i class="v">p</i>|=3，在分母 ⇒ <i class="v">K</i> <b>除</b> 3</td>
+</tr>
+<tr>
+  <td>零点</td><td class="c"><i class="v">z</i>=∞</td><td class="c"><i class="v">z</i>=0</td>
+  <td><i class="v">z</i><sup>−1</sup>　零在 ∞、极在 0（＝1.2 节 C 型，<i class="v">a</i>=0）</td>
+  <td class="c">1</td><td>模为 1 ⇒ <b>不变</b></td>
+</tr>
+<tr>
+  <td>极点</td><td class="c"><i class="v">z</i>=1/2<br>（圆内）</td><td class="c">不动</td>
+  <td>不产生块（它留在 <i class="v">H</i><sub>min</sub> 里）</td>
+  <td class="c">—</td><td>—</td>
+</tr>
+</table>
+<p>三个块为什么模都是 1，逐个用第 2 节恒等式核对（|<i class="v">w</i>|=1）：</p>
+<div class="der">
+<div class="row">零零点的块：<span class="fr"><span class="n">|<i class="v">w</i>−1/4|</span><span class="d">|1−<i class="v">w</i>/4|</span></span>，用 |<i class="v">w</i>−<i class="v">a</i><sup>*</sup>| = |1−<i class="v">aw</i>|（<i class="v">a</i>=1/4 是实数）⇒ = 1 <span class="cmt">← 分子 |w|·|1−1/(4w)| = |1−w̄/4| = |1−w/4|</span></div>
+<div class="row">极点的块：<span class="fr"><span class="n">|<i class="v">w</i>−3|</span><span class="d">|1−3<i class="v">w</i>|</span></span>，同理 |<i class="v">w</i>−3| = |<i class="v">w</i>|·|1−3/<i class="v">w</i>| = |1−3<i class="v">w̄</i>| = |1−3<i class="v">w</i>| ⇒ = 1 <span class="cmt">← 3 是实数，共轭后不变</span></div>
+<div class="row">∞ 处零点的块：|<i class="v">w</i>| = 1 <span class="cmt">← 直接读</span></div>
+</div>
+
+<h5>第 3 步：写出 <i class="v">H</i><sub>min</sub></h5>
+<div class="eq"><i class="v">H</i><sub>min</sub>(<i class="v">z</i>) = <i class="v">K</i><sub>1</sub>·<span class="fr"><span class="n">1−<i class="v">z</i><sup>−1</sup>/4</span><span class="d">(1−<i class="v">z</i><sup>−1</sup>/2)(1−<i class="v">z</i><sup>−1</sup>/3)</span></span></div>
+<div class="der">
+<div class="row">零点：<i class="v">z</i>=1/4（圆内）、<i class="v">z</i>=0（隐含：分子次数 1 &lt; 分母次数 2，见 1.1 节的"无害零点"）</div>
+<div class="row">极点：<i class="v">z</i>=1/2、<i class="v">z</i>=1/3 <span class="cmt">← 原来的 3 反射成 1/3</span></div>
+<div class="row"><i class="v">N</i><sub>min</sub>(0) = <i class="v">K</i><sub>1</sub> ≠ 0 <span class="cmt">← 没有 z=∞ 处零点 ⇒ 逆系统不超前</span></div>
+<div class="row">逆系统 1/<i class="v">H</i><sub>min</sub> = <span class="fr"><span class="n">(1−<i class="v">w</i>/2)(1−<i class="v">w</i>/3)</span><span class="d"><i class="v">K</i><sub>1</sub>(1−<i class="v">w</i>/4)</span></span> <span class="cmt">← 极点只有 z=1/4（圆内）⇒ 取 ROC |z|>1/4 ⇒ 因果稳定 ✓</span></div>
+</div>
+<p style="margin-bottom:0">三条判据全过：零极点都在圆内、<i class="v">N</i><sub>min</sub>(0)≠0 ⇒ <b><i class="v">H</i><sub>min</sub> 是最小相位</b>。</p>
+
+<h5>第 4 步：<i class="v">H</i><sub>ap</sub> = <i class="v">H</i>/<i class="v">H</i><sub>min</sub>（自己除一遍，不要背）</h5>
+<div class="der">
+<div class="row"><i class="v">H</i><sub>ap</sub> = <span class="fr"><span class="n"><i class="v">c</i>·<i class="v">w</i>(1−4<i class="v">w</i>)</span><span class="d">(1−<i class="v">w</i>/2)(1−3<i class="v">w</i>)</span></span> ÷ <span class="fr"><span class="n"><i class="v">K</i><sub>1</sub>(1−<i class="v">w</i>/4)</span><span class="d">(1−<i class="v">w</i>/2)(1−<i class="v">w</i>/3)</span></span> <span class="cmt">← 相除 = 乘倒数</span></div>
+<div class="row">= <span class="fr"><span class="n"><i class="v">c</i></span><span class="d"><i class="v">K</i><sub>1</sub></span></span>·<i class="v">w</i>·<span class="fr"><span class="n">(1−4<i class="v">w</i>)(1−<i class="v">w</i>/3)</span><span class="d">(1−<i class="v">w</i>/4)(1−3<i class="v">w</i>)</span></span> <span class="cmt">← (1−w/2) 约掉，剩下三块</span></div>
+<div class="row">= <span class="fr"><span class="n"><i class="v">c</i></span><span class="d"><i class="v">K</i><sub>1</sub></span></span>·<i class="v">w</i>·[−4(<i class="v">w</i>−1/4)]·[−(1/3)(<i class="v">w</i>−3)] / [(1−<i class="v">w</i>/4)(1−3<i class="v">w</i>)] <span class="cmt">← 1−4w=−4(w−1/4)，1−w/3=−(1/3)(w−3)</span></div>
+<div class="row">= <span class="fr"><span class="n">4<i class="v">c</i></span><span class="d">3<i class="v">K</i><sub>1</sub></span></span>·<i class="v">w</i>·<span class="fr"><span class="n">(<i class="v">w</i>−1/4)(<i class="v">w</i>−3)</span><span class="d">(1−<i class="v">w</i>/4)(1−3<i class="v">w</i>)</span></span> <span class="cmt">← (−4)·(−1/3) = 4/3</span></div>
+</div>
+<p>取模（|<i class="v">w</i>|=1，两个块的模都是 1）：</p>
+<div class="eq">|<i class="v">H</i><sub>ap</sub>| = <span class="fr"><span class="n">4|<i class="v">c</i>|</span><span class="d">3|<i class="v">K</i><sub>1</sub>|</span></span>·1·1·1　⇒　要求 |<i class="v">H</i><sub>ap</sub>|=1　⇒　<b>|<i class="v">K</i><sub>1</sub>| = 4|<i class="v">c</i>|/3</b></div>
+<p><b>这与总账公式对上了吗？</b>|<i class="v">K</i>| = ∏|圆外零点|/∏|圆外极点| = 4/3 ✓ 完全一致。<b>两种算法必须给出同一个数，这是最好的自查。</b></p>
+<div class="ans">
+<div class="h">Q4 答案（与讲义一致，把 <i class="v">K</i><sub>1</sub> 的值补上）</div>
+<p style="margin-bottom:6px"><i class="v">H</i><sub>min</sub>(<i class="v">z</i>) = <i class="v">K</i><sub>1</sub>(1−<i class="v">z</i><sup>−1</sup>/4)/[(1−<i class="v">z</i><sup>−1</sup>/2)(1−<i class="v">z</i><sup>−1</sup>/3)]，其中 <b><i class="v">K</i><sub>1</sub> = 4<i class="v">c</i>/3</b>（若把总增益取 <i class="v">c</i>=1，则 <i class="v">K</i><sub>1</sub>=4/3）</p>
+<p style="margin-bottom:0"><i class="v">H</i><sub>ap</sub>(<i class="v">z</i>) = <i class="v">z</i><sup>−1</sup>·<span class="fr"><span class="n"><i class="v">z</i><sup>−1</sup>−3</span><span class="d">1−3<i class="v">z</i><sup>−1</sup></span></span>·<span class="fr"><span class="n"><i class="v">z</i><sup>−1</sup>−1/4</span><span class="d">1−<i class="v">z</i><sup>−1</sup>/4</span></span>，|<i class="v">H</i><sub>ap</sub>(<i class="v">e</i><sup><i class="v">jω</i></sup>)| ≡ 1</p>
+</div>
+<p>三个块的答案与第 4 步推出来的那一行是同一个式子（把 4<i class="v">c</i>/3<i class="v">K</i><sub>1</sub> = 1 代进去，再把系数 −4 与 −1/3 折回括号里）：</p>
+<div class="der">
+<div class="row"><span class="fr"><span class="n">4<i class="v">c</i></span><span class="d">3<i class="v">K</i><sub>1</sub></span></span> = 1 时：<i class="v">H</i><sub>ap</sub> = <i class="v">w</i>(<i class="v">w</i>−1/4)(<i class="v">w</i>−3)/[(1−<i class="v">w</i>/4)(1−3<i class="v">w</i>)] <span class="cmt">← 与上面答案逐项相同</span></div>
+</div>
+
+<h5>第 5 步：三点验算（取 <i class="v">c</i>=1，于是 <i class="v">K</i><sub>1</sub>=4/3）</h5>
+<table class="t small">
+<tr><th style="width:11%"><i class="v">ω</i></th><th style="width:13%"><i class="v">w</i></th><th style="width:30%">直接算 <i class="v">H</i></th><th>分解算 <i class="v">H</i><sub>min</sub> 与 <i class="v">H</i><sub>ap</sub></th></tr>
+<tr>
+  <td class="c">0</td><td class="c">1</td>
+  <td><i class="v">H</i> = (1−4)/[(1−1/2)(1−3)] = (−3)/[(0.5)(−2)] = <b>3</b></td>
+  <td><i class="v">H</i><sub>min</sub> = (4/3)(1−1/4)/[(1/2)(2/3)] = 1/(1/3) = <b>3</b>；<br><i class="v">H</i><sub>ap</sub> = 1·[(1−3)/(1−3)]·[(3/4)/(3/4)] = <b>1</b>；3×1 = 3 ✓</td>
+</tr>
+<tr>
+  <td class="c">π/2</td><td class="c">−<i class="v">j</i></td>
+  <td><i class="v">w</i>(1−4<i class="v">w</i>) = (−<i class="v">j</i>)(1+4<i class="v">j</i>) = 4−<i class="v">j</i>；<br>分母 (1+0.5<i class="v">j</i>)(1+3<i class="v">j</i>) = −0.5+3.5<i class="v">j</i><br><i class="v">H</i> = (4−<i class="v">j</i>)/(−0.5+3.5<i class="v">j</i>) = <b>−0.44 − 1.08<i class="v">j</i></b>，|<i class="v">H</i>|=<b>1.166190</b></td>
+  <td><i class="v">H</i><sub>min</sub> = (4/3)(1+0.25<i class="v">j</i>)/[(1+0.5<i class="v">j</i>)(1+0.3333<i class="v">j</i>)]<br>= (1.333333+0.333333<i class="v">j</i>)/(0.833333+0.833333<i class="v">j</i>) = <b>1 − 0.6<i class="v">j</i></b>，模 1.166190 ✓<br><i class="v">H</i><sub>ap</sub> = <b>0.152941 − 0.988235<i class="v">j</i></b>，模 = 1 ✓<br>(1−0.6<i class="v">j</i>)(0.152941−0.988235<i class="v">j</i>) = −0.44−1.08<i class="v">j</i> ✓</td>
+</tr>
+<tr>
+  <td class="c">π</td><td class="c">−1</td>
+  <td><i class="v">H</i> = (−1)(1+4)/[(1.5)(4)] = <b>−5/6 ≈ −0.833333</b></td>
+  <td><i class="v">H</i><sub>min</sub> = (4/3)(1.25)/[(1.5)(1.333333)] = 1.666667/2 = <b>0.833333</b>；<br><i class="v">H</i><sub>ap</sub> = (−1)[(−4)/4]·[(−1.25)/1.25] = <b>−1</b>；乘积 −0.833333 ✓</td>
+</tr>
+</table>
+<p style="margin-bottom:0">三点全过，<b>包括最不给面子的 <i class="v">ω</i>=π/2</b>（那里 <i class="v">H</i><sub>ap</sub> 是个不平凡的复数）。Q4 的答案同样完全正确。</p>
+
+<h5>第 6 步：如果漏掉那三件事，会怎样（反面验算）</h5>
+<table class="t small">
+<tr><th style="width:26%">漏掉什么</th><th style="width:24%">错误结果</th><th>怎么发现</th></tr>
+<tr>
+  <td>漏掉 <i class="v">H</i><sub>ap</sub> 里的 <i class="v">z</i><sup>−1</sup></td>
+  <td><i class="v">H</i><sub>ap</sub> = (<i class="v">w</i>−3)(<i class="v">w</i>−1/4)/[(1−3<i class="v">w</i>)(1−<i class="v">w</i>/4)]</td>
+  <td><b>|<i class="v">H</i><sub>ap</sub>| 仍然等于 1，光看模查不出来！</b>要算乘积：<i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 里会缺一个 <i class="v">w</i>，在 <i class="v">z</i>=∞ 处不再趋于 0，不等于 <i class="v">H</i></td>
+</tr>
+<tr>
+  <td>把 <i class="v">z</i><sup>−1</sup> 塞进 <i class="v">H</i><sub>min</sub></td>
+  <td><i class="v">H</i><sub>min</sub> = <i class="v">w</i>(1−<i class="v">w</i>/4)/[(1−<i class="v">w</i>/2)(1−<i class="v">w</i>/3)]</td>
+  <td>逆系统 1/<i class="v">H</i><sub>min</sub> = (<i class="v">z</i>)(1−<i class="v">w</i>/2)(1−<i class="v">w</i>/3)/(1−<i class="v">w</i>/4) 里出现 <b><i class="v">z</i> 的正幂</b> ⇒ 超前 ⇒ 不再是最小相位。这就是 5.4 节第 ③ 条判据</td>
+</tr>
+<tr>
+  <td>忘了圆外极点的常数（把 <i class="v">K</i><sub>1</sub> 当 4<i class="v">c</i>）</td>
+  <td><i class="v">K</i><sub>1</sub> = 4<i class="v">c</i></td>
+  <td><i class="v">ω</i>=0 处 <i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 会算出 <b>9</b>（<i class="v">c</i>=1 时），而 <i class="v">H</i>(1)=<b>3</b> ⇒ 差 3 倍，正好是 |<i class="v">p</i>|=3</td>
+</tr>
+</table>
+
+<!-- ==================== 6 ==================== -->
+<h2 class="part">第 6 节</h2>
+<h3 class="ch" id="s6"><span class="no">6</span>三处对照：例 5.4、Q1、Q4 到底差在哪</h3>
+<p class="chlead">把三道题的每一格填出来，你会看到"差别"只在最后三行，而这三行都不是规则问题。</p>
+
+<table class="t">
+<tr><th style="width:26%">项目</th><th style="width:24%">例 5.4</th><th style="width:24%">Question 1</th><th>Question 4</th></tr>
+<tr><td>题目给的信息</td><td>完整的 <i class="v">H</i>(<i class="v">z</i>)</td><td>完整的 <i class="v">H</i>(<i class="v">z</i>)（并说因果）</td><td>只有零极点图（并说稳定）</td></tr>
+<tr><td>圆外零点</td><td><i class="v">z</i>=−3（1 个）</td><td><i class="v">z</i>=±√3（2 个）</td><td><i class="v">z</i>=4 与 <i class="v">z</i>=∞（2 个）</td></tr>
+<tr><td>圆外极点</td><td>无</td><td>无</td><td><b><i class="v">z</i>=3（1 个）</b></td></tr>
+<tr><td><i class="v">N</i>(0) 是否为 0<br>（有没有 ∞ 处零点）</td><td>不是 0</td><td>不是 0（常数项 1）</td><td><b>是 0</b>（分子含公因子 <i class="v">w</i>）</td></tr>
+<tr><td><i class="v">H</i><sub>ap</sub> 里有纯延迟块 <i class="v">z</i><sup>−1</sup> 吗</td><td>没有</td><td>没有</td><td><b>有，1 个</b></td></tr>
+<tr><td>常数公式</td><td>|<i class="v">K</i>| = 3/1 = 3</td><td>|<i class="v">K</i>| = (√3·√3)/1 = 3</td><td>|<i class="v">K</i><sub>1</sub>| = 4/3（且 ∝ <i class="v">c</i>）</td></tr>
+<tr><td>常数能算成具体数吗</td><td>能：<i class="v">K</i>=3</td><td>能：<i class="v">K</i>=3</td><td>不能：<i class="v">K</i><sub>1</sub>=4<i class="v">c</i>/3，<i class="v">c</i> 未给 ⇒ 只能"差一个常数"</td></tr>
+<tr><td>常数写在版面的哪里</td><td>最前面：<i class="v">H</i>=<b>3</b>·<i class="v">H</i><sub>min</sub>·<i class="v">A</i></td><td>并进系数：<i class="v">H</i><sub>min</sub>=<b>3</b>(…)</td><td>留在前面：<i class="v">H</i><sub>min</sub>=<b><i class="v">K</i><sub>1</sub></b>(…)</td></tr>
+<tr><td>|<i class="v">H</i><sub>ap</sub>| 是否恒为 1</td><td>是</td><td>是</td><td>是</td></tr>
+</table>
+
+<div class="key">
+<div class="h">一句话</div>
+<p style="margin-bottom:0"><b>三处的规则完全相同：</b>把圆外零点、圆外极点反射进圆内得到 <i class="v">H</i><sub>min</sub>；常数 = ∏|圆外零点|/∏|圆外极点|，全部记在 <i class="v">H</i><sub>min</sub> 名下；剩下的部分自动严格单位模，就是 <i class="v">H</i><sub>ap</sub>。<b>三处只差两件与规则无关的事：</b>①常数是"写在最前面"还是"并进括号"（纯排版，3·<i class="v">H</i><sub>min</sub> 与 3<i class="v">H</i><sub>min</sub> 是同一个东西）；②题目有没有给出"总增益"，决定了这个常数能不能落成一个具体的数字。</p>
+</div>
+
+<!-- ==================== 7 ==================== -->
+<h2 class="part">第 7 节</h2>
+<h3 class="ch" id="s7"><span class="no">7</span>唯一性的正确说法：差一个<b>模为 1</b> 的常数</h3>
+<p class="chlead">Q4 原文写"分解在相差一个常数因子的意义下唯一"。前半句（<i class="v">H</i><sub>min</sub> 不能再吸收全通块）是对的，但"相差一个常数因子"这个说法太松，会直接引出本题的第三种"歧义"。</p>
+
+<h4>7.1　错在哪：随手乘 2 就不成立</h4>
+<div class="der">
+<div class="row">取 <i class="v">H</i> = <i class="v">K</i><sub>1</sub>·<i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub>，把常数挪一挪：<i class="v">H</i> = (2<i class="v">K</i><sub>1</sub>)·<i class="v">H</i><sub>min</sub>·(<i class="v">H</i><sub>ap</sub>/2) <span class="cmt">← 乘积确实没变</span></div>
+<div class="row">但 |<i class="v">H</i><sub>ap</sub>/2| = 1/2 ≠ 1 <span class="cmt">← 它不再全通了</span></div>
+<div class="row">⇒ "差一个任意常数"是错的；<b>缩放因子的模必须恰好是 1</b> <span class="cmt">← 否则 |H_ap| 恒为 1 这条定义当场破掉</span></div>
+</div>
+
+<h4>7.2　那为什么 Q1 的 <i class="v">K</i>=3 敢写成一个确定的数</h4>
+<p>因为 Q1 给了完整的 <i class="v">H</i>。<b>|<i class="v">H</i><sub>ap</sub>|≡1 不是一个"建议"，是一条硬约束</b>，它把常数钉死：</p>
+<div class="eq">|<i class="v">H</i><sub>min</sub>| = |<i class="v">H</i>|/|<i class="v">K</i>|　且　|<i class="v">H</i><sub>ap</sub>| = 1　⇒　|<i class="v">K</i>| 由 <i class="v">H</i> 与 <i class="v">H</i><sub>min</sub> 唯一确定</div>
+<p>Q1 里这个约束给出 3/<i class="v">K</i> = 1 ⇒ <i class="v">K</i>=3（第 4 节第 5 步）。所以 <b>3 不是"选"出来的，是"解"出来的。</b></p>
+
+<h4>7.3　正确的唯一性定理（分两种情形说）</h4>
+<div class="key">
+<div class="h">唯一性（正确表述）</div>
+<p style="margin-bottom:6px"><b>情形 A：<i class="v">H</i> 的表达式完整给出</b>（含增益）。把 <i class="v">H</i> 写成 <i class="v">K</i>·<i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub>，其中 <i class="v">H</i><sub>min</sub> 最小相位、|<i class="v">H</i><sub>ap</sub>(<i class="v">e</i><sup><i class="v">jω</i></sup>)|≡1，则 <b><i class="v">H</i><sub>min</sub> 的零极点位置、<i class="v">H</i><sub>ap</sub> 的零极点位置、以及 |<i class="v">K</i>| 全部唯一</b>；唯一没被定住的只有一个<b>模为 1</b> 的常数（写成 <i class="v">e</i><sup><i class="v">jθ</i></sup>）。实系数题目里它只能是 ±1，而 ( <i class="v">H</i><sub>min</sub>, <i class="v">H</i><sub>ap</sub> ) 同时变号不改变任何性质，所以按惯例取 <i class="v">K</i>&gt;0（把符号留给 <i class="v">H</i><sub>ap</sub> 内部）就完全定死。Q1 的 <i class="v">K</i>=3 属这一档。</p>
+<p style="margin-bottom:0"><b>情形 B：只给零极点图，增益 <i class="v">c</i> 未给</b>。题目描述的是"一整族"系统，<b>零极点位置与 <i class="v">H</i><sub>ap</sub> 仍然唯一</b>，只有 <i class="v">H</i><sub>min</sub> 前面那个常数随 <i class="v">c</i> 漂移（<i class="v">K</i><sub>1</sub>=4<i class="v">c</i>/3），所以答案只能写成"差一个常数"。Q4 的"可差一个常数"是这一档，<i class="v">c</i> 一给定 <i class="v">K</i><sub>1</sub> 就定死。<b>注意：这里的"差一个常数"指的是 <i class="v">H</i><sub>min</sub> 的增益，不是允许把 <i class="v">H</i><sub>ap</sub> 也乘一个数——<i class="v">H</i><sub>ap</sub> 必须始终满足 |<i class="v">H</i><sub>ap</sub>|=1。</b></p>
+</div>
+
+<h4>7.4　为什么 <i class="v">H</i><sub>min</sub> 不能再吸收一个全通块（讲义那句话补完）</h4>
+<p>讲义的理由是"多加一块会在圆内产生新极点，<i class="v">H</i><sub>min</sub> 抵不掉"。把它写清楚：</p>
+<ol class="steps">
+<li><span class="st">设两种分解都存在</span><i class="v">H</i> = <i class="v">H</i><sub>min</sub><i class="v">H</i><sub>ap</sub> = <i class="v">H̃</i><sub>min</sub><i class="v">H̃</i><sub>ap</sub>，两边都是"最小相位 × 严格单位模全通"。</li>
+<li><span class="st">作比值</span><i class="v">H</i><sub>min</sub>/<i class="v">H̃</i><sub>min</sub> = <i class="v">H̃</i><sub>ap</sub>/<i class="v">H</i><sub>ap</sub>。</li>
+<li><span class="st">看右边</span><i class="v">H̃</i><sub>ap</sub>/<i class="v">H</i><sub>ap</sub> 在单位圆上模为 1/1 = 1。</li>
+<li><span class="st">看左边</span>最小相位的零极点全在圆内 ⇒ 在 |<i class="v">z</i>|&gt;1 上解析、没有极点、也没有零点；且它在 |<i class="v">z</i>|=1 上模为 1、在 ∞ 处有限非零。</li>
+<li><span class="st">结论</span>一个在圆外（含 ∞）解析、无零点、圆上模恰为 1 的函数，只能是常数（对它和它的倒数各用一次最大模：圆外 |·|≤1 且 |1/·|≤1 ⇒ |·|=1 恒成立）。这个常数的模是 1，正是"模为 1 的常数"，不是"任意常数"。</li>
+</ol>
+<p style="margin-bottom:0">第 4、5 步如果只想记结论，可以只记：<b>两个最小相位因子乘同一幅度谱，只能差一个模 1 常数；这也说明"差一个任意常数"会把 <i class="v">H</i><sub>ap</sub> 的模改坏。</b></p>
+
+<!-- ==================== 8 ==================== -->
+<h2 class="part">第 8 节</h2>
+<h3 class="ch" id="s8"><span class="no">8</span>九条必错清单（每条都给出"怎么发现"）</h3>
+<p class="chlead">这九条覆盖了 5.4 节、例 5.4、Q1、Q4 全部坑位。考试时按"怎么发现"那一列自检，比死记结论有效。</p>
+
+<table class="t">
+<tr><th style="width:4%" class="c">#</th><th style="width:44%">错法</th><th>怎么发现</th></tr>
+<tr><td class="c">1</td>
+  <td>只验 |<i class="v">H</i><sub>ap</sub>|=1 就收工</td>
+  <td>在 <i class="v">ω</i>=π/2 处把 <i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 乘出来，与 <i class="v">H</i> 比<b>实部与虚部</b>。Q4 漏掉 <i class="v">z</i><sup>−1</sup> 时 |<i class="v">H</i><sub>ap</sub>| 仍是 1，只有乘积露馅。</td></tr>
+<tr><td class="c">2</td>
+  <td>把 <i class="v">z</i><sup>−1</sup>（∞ 处零点）塞进 <i class="v">H</i><sub>min</sub></td>
+  <td>写 1/<i class="v">H</i><sub>min</sub> 看有没有 <i class="v">z</i> 的正幂（等价地看 <i class="v">N</i><sub>min</sub>(0) 是否为 0）。有 ⇒ 逆系统超前 ⇒ 不是最小相位。</td></tr>
+<tr><td class="c">3</td>
+  <td>反射写成 1/<i class="v">a</i> 而不是 1/<i class="v">a</i><sup>*</sup></td>
+  <td>换一个复零点验一次（第 2.3 节：<i class="v">a</i>=2<i class="v">e</i><sup><i class="v">j</i>π/3</sup>，<i class="v">ω</i>=π/2 处 1.239314 会被算成 0.727328）。</td></tr>
+<tr><td class="c">4</td>
+  <td>漏掉"圆外极点"的常数（5.4 节第 4 步就没写）</td>
+  <td>用总账 |<i class="v">K</i>|=∏|<i class="v">a</i>|/∏|<i class="v">p</i>| 再算一遍。Q4 会从 4/3 变成 4，<i class="v">ω</i>=0 处乘积变 9 而不是 3。</td></tr>
+<tr><td class="c">5</td>
+  <td>只看极点在圆内就判"最小相位"</td>
+  <td>Q1 的 <i class="v">H</i> 就是反例：极点 0.6 在圆内，零点 ±√3 在圆外 ⇒ 不是最小相位。</td></tr>
+<tr><td class="c">6</td>
+  <td>不检查 <i class="v">z</i>=∞ 处的零点</td>
+  <td>把 <i class="v">H</i> 写成 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup> 的有理式，只看 <b><i class="v">N</i>(0)</b> 是不是 0。Q4 的分子是 <i class="v">w</i>(1−4<i class="v">w</i>)，<i class="v">N</i>(0)=0 ⇒ 有 ∞ 处零点。</td></tr>
+<tr><td class="c">7</td>
+  <td>把"零点在 <i class="v">z</i>=0"（分子次数低）当成致命错误</td>
+  <td><i class="v">z</i>=0 在单位圆内，无害。致命的只有 <i class="v">z</i>=∞（<i class="v">N</i>(0)=0）。Q4 的 <i class="v">H</i><sub>min</sub> 就隐含一个 <i class="v">z</i>=0 的零点，它照样是最小相位。</td></tr>
+<tr><td class="c">8</td>
+  <td>把唯一性写成"差一个任意常数"</td>
+  <td>把 <i class="v">H</i><sub>min</sub> 乘 2、<i class="v">H</i><sub>ap</sub> 除 2，|<i class="v">H</i><sub>ap</sub>| 变 1/2，不再全通。差的那个常数模必须是 1。</td></tr>
+<tr><td class="c">9</td>
+  <td>认为纯延迟 <i class="v">z</i><sup>−1</sup> 不是全通块</td>
+  <td>看 1.2 节：它是 (<i class="v">z</i><sup>−1</sup>−<i class="v">a</i><sup>*</sup>)/(1−<i class="v">az</i><sup>−1</sup>) 在 <i class="v">a</i>=0 的退化，零在 ∞、极在 0，模恒为 1。</td></tr>
+</table>
+
+<!-- ==================== 9 ==================== -->
+<h2 class="part">第 9 节</h2>
+<h3 class="ch" id="s9"><span class="no">9</span>一页自检：做完题先过这三问</h3>
+<p class="chlead">不用背任何新公式，答完这三问就能抓住 95% 的错误。</p>
+
+<div class="card">
+<p style="text-indent:0;margin-bottom:10px"><b>问 1（结构）：<i class="v">H</i><sub>min</sub> 真的最小相位吗？</b><br>
+零极点是否全在 |<i class="v">z</i>|&lt;1 内？把 <i class="v">H</i><sub>min</sub> 写成 <i class="v">w</i>=<i class="v">z</i><sup>−1</sup> 的有理式，<b><i class="v">N</i><sub>min</sub>(0) 是不是 0</b>（必须不是）？写出 1/<i class="v">H</i><sub>min</sub>，它的极点是否全在圆内？</p>
+<p style="text-indent:0;margin-bottom:10px"><b>问 2（幅度）：|<i class="v">H</i><sub>ap</sub>| 真的每个频率都是 1 吗？</b><br>
+把 <i class="v">H</i><sub>ap</sub> 拆成"标准块"的乘积（A 型 (<i class="v">w</i>−<i class="v">a</i><sup>*</sup>)/(1−<i class="v">aw</i>)、B 型或 C 型 <i class="v">w</i>），逐块确认模为 1。<b>至少代 <i class="v">ω</i>=π/2 一次</b>，别只代 0 和 π。</p>
+<p style="text-indent:0;margin-bottom:0"><b>问 3（乘积）：<i class="v">H</i><sub>min</sub>·<i class="v">H</i><sub>ap</sub> 逐点等于 <i class="v">H</i> 吗？</b><br>
+在 <i class="v">ω</i>=0 与 <i class="v">ω</i>=π 处把两边的<b>实部和虚部分别</b>比一次（不只是比模）。这一步专门抓"漏因子"和"常数漏乘"。</p>
+</div>
+
+<div class="ans">
+<div class="h">口诀（四句）</div>
+<p style="margin-bottom:0">换 <b><i class="v">w</i>=<i class="v">z</i><sup>−1</sup></b>，数清<b>圆外零点、圆外极点、∞ 处零点</b>；<br>
+反射一律 <b>1/<i class="v">a</i><sup>*</sup></b>，圆外极点也要反射；<br>
+常数 <b>∏|<i class="v">a</i>|/∏|<i class="v">p</i>|</b> 全给 <i class="v">H</i><sub>min</sub>，<i class="v">H</i><sub>ap</sub> 严格单位模；<br>
+∞ 处零点生出的 <b><i class="v">z</i><sup>−1</sup></b> 留在 <i class="v">H</i><sub>ap</sub>，最后三点点验算。</p>
+</div>
+
+<div class="warn">
+<div class="h">本页结论汇总（对应第 0 节的三处"歧义"）</div>
+<p style="margin-bottom:6px"><b>①</b> 例 5.4、Q1、Q4 三道题的答案<b>全部正确</b>，用的是同一条规则；本页第 4、5 节给出了 Q1 与 Q4 在 <i class="v">ω</i>=0、π/2、π 三点的完整数字，实部虚部逐点吻合。</p>
+<p style="margin-bottom:6px"><b>②</b> 需要补的一条：<b>圆外极点反射时带来的是 1/|<i class="v">p</i>|（常数要除 |<i class="v">p</i>|）</b>。5.4 节第 4 步只写了圆外零点，Q4 正是靠这条才能得到 <i class="v">K</i><sub>1</sub>=4<i class="v">c</i>/3 而不是 4<i class="v">c</i>。</p>
+<p style="margin-bottom:0"><b>③</b> 需要改的一条：Q4 的"相差一个常数因子"把两种不同的自由度混在了一起，应拆成两句：<b>（a）</b>零极点位置与 <i class="v">H</i><sub>ap</sub> 唯一，<i class="v">H</i><sub>min</sub> 与 <i class="v">H</i><sub>ap</sub> 只能相差一个<b>模为 1</b> 的常数（实系数下 ±1，惯例取正）；<b>（b）</b>本题只给了零极点图、没给总增益 <i class="v">c</i>，所以 <i class="v">H</i><sub>min</sub> 前面的常数 <i class="v">K</i><sub>1</sub>=4<i class="v">c</i>/3 写不成具体数字，这才是"可差一个常数"的真正含义。给出完整 <i class="v">H</i> 时（如 Q1）这个常数被 |<i class="v">H</i><sub>ap</sub>|≡1 完全定死，K=3 是解出来的，不是选的（见第 7 节）。</p>
+</div>
+
+<hr class="hr">
+<p style="text-indent:0;color:var(--ink3);font-size:13.5px">本页只做<b>补充与修正</b>，正文讲义 <span style="font-family:var(--mono)">DSP讲义.html</span> 未被改动（其 5.4 节、例 5.4 与第 14 章 Q1／Q4 的原有答案均保持原样，本页第 4、5 节只在此基础上补齐了被省略的中间数字，并补全了 5.4 节第 4 步的常数账目（圆外极点那一条）与 Q4 的唯一性措辞）。</p>
+
+
+</main>
+<button id="totop" title="回到顶部">↑</button>
+<script>
+document.getElementById('totop').onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
+const links=[...document.querySelectorAll('#toc a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+window.addEventListener('scroll',()=>{
+  let cur=null;
+  secs.forEach(s=>{ if(s.getBoundingClientRect().top<160) cur=s.id; });
+  links.forEach(a=>a.classList.toggle('act',a.getAttribute('href')==='#'+cur));
+},{passive:true});
+</script>
+</body>
+</html>

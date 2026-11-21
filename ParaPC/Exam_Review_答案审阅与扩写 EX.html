@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>并行计算机 · Exam Review 题目 + 答案（中英对照 · EX 版）</title>
+<style>
+  :root{
+    --paper:#fdfcf9; --paper-2:#f7f4ed; --ink:#22272e; --ink-soft:#5c636e;
+    --ink-faint:#8b929c; --line:#e4dfd3; --line-soft:#eeeae0;
+    --accent:#1f4e79; --accent-2:#2f6d9e; --accent-bg:#edf2f8;
+    --warm:#a8542a; --warm-bg:#fbf0e9; --green:#2f7a4f; --green-bg:#eaf5ee;
+    --amber:#9a6b12; --amber-bg:#fbf3e0; --red:#a33a3a; --code-bg:#f6f4ee;
+    --qbg:#fbfaf4; --qline:#cfc7b4;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Segoe UI","Noto Sans SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-size:16px;line-height:1.78;-webkit-font-smoothing:antialiased;
+  }
+  .cover{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff 0%,var(--paper) 100%);padding:56px 32px 40px;}
+  .cover-inner{max-width:1160px;margin:0 auto;}
+  .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 14px;}
+  .cover h1{margin:0;font-size:38px;line-height:1.25;font-weight:700;letter-spacing:-.01em;}
+  .cover h1 .sub{display:block;font-size:16px;font-weight:400;color:var(--ink-soft);letter-spacing:.02em;margin-top:12px;}
+  .cover-meta{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px 26px;font-size:13px;color:var(--ink-soft);}
+  .cover-meta span b{color:var(--ink);font-weight:600;}
+  .stat{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;}
+  .stat div{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 16px;font-size:13px;color:var(--ink-soft);}
+  .stat div b{display:block;font-size:20px;color:var(--ink);line-height:1.3;font-variant-numeric:tabular-nums;}
+  .stat div.g b{color:var(--green);} .stat div.a b{color:var(--amber);} .stat div.r b{color:var(--red);}
+  .layout{max-width:1160px;margin:0 auto;padding:0 32px;display:grid;grid-template-columns:252px minmax(0,1fr);gap:44px;align-items:start;}
+  nav.toc{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:40px 0 60px;font-size:13.5px;border-right:1px solid var(--line-soft);}
+  nav.toc h2{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 16px;font-weight:600;}
+  nav.toc ol{list-style:none;margin:0;padding:0 20px 0 0;}
+  nav.toc ol li{margin:0 0 6px;}
+  nav.toc ol li > a{display:block;color:var(--ink-soft);text-decoration:none;padding:3px 0 3px 11px;border-left:2px solid transparent;line-height:1.5;transition:color .15s,border-color .15s;}
+  nav.toc ol li > a:hover{color:var(--accent);border-left-color:var(--accent-2);}
+  nav.toc ol li .num{font-variant-numeric:tabular-nums;color:var(--ink-faint);font-size:11.5px;margin-right:7px;}
+  nav.toc .sub-list{list-style:none;margin:2px 0 12px;padding:0 0 0 4px;}
+  nav.toc .sub-list li{margin:0;display:flex;align-items:baseline;}
+  nav.toc .sub-list a{font-size:12.4px;color:var(--ink-faint);text-decoration:none;padding:2px 0 2px 14px;border-left:1px solid var(--line-soft);display:block;flex:1;}
+  nav.toc .sub-list a:hover{color:var(--accent-2);border-left-color:var(--accent-2);}
+  .dot{width:6px;height:6px;border-radius:50%;flex:none;margin-left:2px;}
+  .d-ok{background:var(--green);} .d-part{background:#d9a327;} .d-no{background:var(--red);}
+  main{padding:40px 0 100px;min-width:0;}
+  section.chapter{margin:0 0 64px;scroll-margin-top:24px;}
+  section.chapter > h2{font-size:26px;font-weight:700;margin:0 0 6px;letter-spacing:-.01em;padding-bottom:14px;border-bottom:2px solid var(--ink);display:flex;align-items:baseline;gap:14px;}
+  section.chapter > h2 .cn{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;flex:none;}
+  h3{font-size:17.5px;font-weight:650;margin:38px 0 8px;scroll-margin-top:24px;color:var(--ink);}
+  h3::before{content:"";display:inline-block;width:8px;height:8px;background:var(--accent-2);margin-right:10px;vertical-align:2px;border-radius:2px;}
+  h4{font-size:15px;font-weight:650;margin:26px 0 8px;color:var(--accent);letter-spacing:.01em;}
+  .badge{display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.04em;padding:2px 9px;border-radius:20px;margin-left:10px;vertical-align:2px;border:1px solid;}
+  .b-ok{color:var(--green);background:var(--green-bg);border-color:#cbe4d4;}
+  .b-part{color:var(--amber);background:var(--amber-bg);border-color:#ecdcb4;}
+  .b-no{color:var(--red);background:#fbeeee;border-color:#edcccc;}
+  p{margin:0 0 12px;}
+  p > em:only-child{display:block;font-size:13.4px;color:var(--ink-soft);background:#fff;border-left:2px solid var(--line);padding:7px 12px;margin:0 0 12px;border-radius:0 4px 4px 0;font-style:normal;}
+  ul,ol{padding-left:22px;margin:0 0 14px;}
+  li{margin:0 0 6px;}
+  ul.plain{list-style:none;padding-left:0;}
+  ul.plain li{padding-left:18px;position:relative;}
+  ul.plain li::before{content:"";position:absolute;left:3px;top:11px;width:5px;height:5px;background:var(--accent-2);border-radius:50%;}
+  b,strong{font-weight:650;}
+  em{font-style:italic;color:var(--ink-soft);}
+  code{font-family:"Cascadia Code","Consolas","SFMono-Regular",monospace;font-size:.9em;background:var(--code-bg);padding:1.5px 5px;border-radius:4px;border:1px solid var(--line-soft);color:#2b3a49;}
+  .note{margin:18px 0;padding:13px 18px;background:var(--accent-bg);border-left:3px solid var(--accent-2);border-radius:0 6px 6px 0;font-size:14.4px;color:#2c3e50;}
+  .note .lbl{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);margin-right:9px;}
+  .note.warn{background:var(--warm-bg);border-left-color:var(--warm);color:#5b3a26;}
+  .note.warn .lbl{color:var(--warm);}
+  .qbox{margin:16px 0;padding:12px 16px;background:var(--qbg);border:1px solid var(--qline);border-left:3px solid #7c8b7a;border-radius:0 6px 6px 0;font-size:14.2px;color:#333a37;}
+  .qbox .lbl{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.16em;color:#6d7a6a;margin-right:9px;}
+  .qbox strong{color:#2c3a2c;}
+  .qbox em{color:#8a8f7d;}
+  pre{margin:16px 0;padding:16px 18px;background:var(--code-bg);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto;font-size:13.2px;line-height:1.72;}
+  pre code{background:none;border:none;padding:0;font-size:inherit;color:#26313c;}
+  .table-wrap{overflow-x:auto;margin:18px 0;}
+  table{border-collapse:collapse;width:100%;font-size:14.2px;font-variant-numeric:tabular-nums;}
+  th,td{padding:8px 14px;border-bottom:1px solid var(--line-soft);text-align:left;vertical-align:top;}
+  thead th{border-bottom:1.5px solid var(--ink);font-weight:650;font-size:13.2px;color:var(--ink);}
+  tbody tr:hover{background:var(--paper-2);}
+  hr{border:none;border-top:1px solid var(--line);margin:34px 0;}
+  .foot{border-top:1px solid var(--line);padding:26px 32px;text-align:center;font-size:12.5px;color:var(--ink-faint);}
+  @media (max-width:960px){
+    .layout{grid-template-columns:1fr;gap:0;}
+    nav.toc{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line-soft);padding:24px 0;}
+    nav.toc .sub-list{display:none;}
+    .cover{padding:38px 20px 30px;} .cover h1{font-size:28px;} .layout{padding:0 20px;}
+  }
+  @media print{
+    nav.toc{display:none;} .layout{grid-template-columns:1fr;} body{font-size:12pt;}
+    section.chapter{page-break-inside:avoid;} pre{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<header class="cover">
+  <div class="cover-inner">
+    <p class="kicker">Parallel Computing Architectures, Clusters, and Grids</p>
+    <h1>Exam Review Questions · 题目 + 答案（EX 版）
+      <span class="sub">判定依据换成《猫燐笔记 EX》：原题英文 + 中文译文 → 中文回答 → English answer；每题灰底「笔记定位」注明 EX 笔记第几页给出哪句原话</span>
+    </h1>
+    <div class="cover-meta">
+      <span>题目来源 <b>Exam_Review_Questions (1).pdf</b></span>
+      <span>判定依据 <b>猫燐笔记 EX.pdf</b> → <b>猫燐笔记 EX 总结.html</b></span>
+      <span>覆盖范围 <b>11 题 · 66 个小问</b></span>
+      <span>语言 <b>题目 EN+中文 · 答案 中文 + English（UK spelling）</b></span>
+    </div>
+    <div class="stat">
+      <div class="g"><b>65</b>笔记已收录 ✅</div>
+      <div class="a"><b>1</b>部分收录 🟡</div>
+      <div class="r"><b>0</b>笔记未收录 ❌</div>
+    </div>
+  </div>
+</header>
+<div class="layout">
+<nav class="toc"><h2>目录</h2><ol>
+<li><a href="#s1-h">使用说明与覆盖总览</a>
+<ul class="sub-list">
+<li><a href="#s2-h">覆盖总览</a></li>
+</ul>
+</li>
+<li><a href="#s3-h"><span class="num">Q1</span>云计算与交付模型 · Cloud delivery and service models</a>
+<ul class="sub-list">
+<li><a href="#s4-h">(a) Design B 属于哪种云</a></li>
+<li><a href="#s5-h">(b) Design A 与 Design B 的 CapEx / OpEx 比较</a></li>
+<li><a href="#s6-h">(c) 让 Design B 特别合适的两条云特征</a></li>
+<li><a href="#s7-h">(d) "在云里就一定高效"错在哪</a></li>
+<li><a href="#s8-h">(e) 云可扩展性 vs 软件并行性</a></li>
+<li><a href="#s9-h">(f) 两个服务的模型分类</a></li>
+</ul>
+</li>
+<li><a href="#s10-h"><span class="num">Q2</span>依赖图、关键路径与扩展性定律 · Dependency graph, span and scalability laws</a>
+<ul class="sub-list">
+<li><a href="#s11-h">(a) 总工作量 T₁</a></li>
+<li><a href="#s12-h">(b) Span T∞</a></li>
+<li><a href="#s13-h">(c) 关键路径</a></li>
+<li><a href="#s14-h">(d) 平均并行度 T₁/T∞</a></li>
+<li><a href="#s15-h">(e) P = 4 时的 work/span 下界</a></li>
+<li><a href="#s16-h">(f) 为什么 16 个处理器给不了 16×</a></li>
+<li><a href="#s17-h">(g) Amdahl 定律：16 核的理论加速比</a></li>
+<li><a href="#s18-h">(h) P → ∞ 的极限加速比</a></li>
+<li><a href="#s19-h">(i) Gustafson 定律：P = 16 的缩放加速比</a></li>
+</ul>
+</li>
+<li><a href="#s20-h"><span class="num">Q3</span>内存容量、MPI 与集群构成 · Memory capacity, MPI and cluster anatomy</a>
+<ul class="sub-list">
+<li><a href="#s21-h">(a) 64 核 OpenMP 为什么解决不了根本问题</a></li>
+<li><a href="#s22-h">(b) 至少需要多少个 128 GB 节点</a></li>
+<li><a href="#s23-h">(c) 为什么 MPI 更自然</a></li>
+<li><a href="#s24-h">(d) 四类组件的角色</a></li>
+<li><a href="#s25-h">(e) 单一超大仿真的负载分类</a></li>
+<li><a href="#s26-h">(f) 分类如何改变</a></li>
+</ul>
+</li>
+<li><a href="#s27-h"><span class="num">Q4</span>集群调度与作业管理 · Cluster scheduling and job management</a>
+<ul class="sub-list">
+<li><a href="#s28-h">(a) 用户手动 SSH 到计算节点的两个问题</a></li>
+<li><a href="#s29-h">(b) 调度器如何改善资源分配与公平</a></li>
+<li><a href="#s30-h">(c) 大量独立作业的负载分类与核心指标</a></li>
+<li><a href="#s31-h">(d) 64 节点 MPI 作业为何要被区别对待</a></li>
+</ul>
+</li>
+<li><a href="#s32-h"><span class="num">Q5</span>MPI 死锁与消息语义 · MPI deadlock and message semantics</a>
+<ul class="sub-list">
+<li><a href="#s33-h">(a) size / rank / MPI_COMM_WORLD</a></li>
+<li><a href="#s34-h">(b) 为什么会死锁</a></li>
+<li><a href="#s35-h">(c) 用 MPI_Sendrecv 改写</a></li>
+<li><a href="#s36-h">(d) source / destination / tag / communicator</a></li>
+<li><a href="#s37-h">(e) 通信前加 MPI_Barrier 能解决死锁吗</a></li>
+</ul>
+</li>
+<li><a href="#s38-h"><span class="num">Q6</span>MPI 归约与集合通信 · MPI reduction and collective communication</a>
+<ul class="sub-list">
+<li><a href="#s39-h">(a) root 上的 global 值</a></li>
+<li><a href="#s40-h">(b) MPI_INT / MPI_SUM / 0 / MPI_COMM_WORLD</a></li>
+<li><a href="#s41-h">(c) 为什么通常只有 rank 0 能用最终值</a></li>
+<li><a href="#s42-h">(d) 每个进程都要这个值 → 换成哪个集合操作</a></li>
+<li><a href="#s43-h">(e) 集合通信为什么优于手写 Send/Recv</a></li>
+</ul>
+</li>
+<li><a href="#s44-h"><span class="num">Q7</span>OpenMP 竞态与数据作用域 · OpenMP race conditions and data scope</a>
+<ul class="sub-list">
+<li><a href="#s45-h">(a) 竞态 + 两次丢更新</a></li>
+<li><a href="#s46-h">(b) 用最合适的机制改写</a></li>
+<li><a href="#s47-h">(c) 为什么 critical 正确但不合适</a></li>
+<li><a href="#s48-h">(d) values / total / i 的作用域</a></li>
+<li><a href="#s49-h">(e) 为什么 default(none) 更安全</a></li>
+<li><a href="#s50-h">(f) firstprivate(scale) 做什么</a></li>
+</ul>
+</li>
+<li><a href="#s51-h"><span class="num">Q8</span>性能度量、强缩放与弱缩放 · Performance measurement, strong and weak scaling</a>
+<ul class="sub-list">
+<li><a href="#s52-h">(a) 为什么计时前放 MPI_Barrier</a></li>
+<li><a href="#s53-h">(b) 为什么用 MPI_MAX 而不是 SUM 或平均</a></li>
+<li><a href="#s54-h">(c) 计算 S(16)</a></li>
+<li><a href="#s55-h">(d) 计算 E(16)</a></li>
+<li><a href="#s56-h">(e) 这是强缩放还是弱缩放</a></li>
+<li><a href="#s57-h">(f) 换成 64 个处理器为什么可能不划算</a></li>
+<li><a href="#s58-h">(g) 效率下降的两个可能原因</a></li>
+<li><a href="#s59-h">(h) 每处理器工作量不变的实验属于哪种缩放</a></li>
+<li><a href="#s60-h">(i) 计算弱缩放效率 E_W(16)</a></li>
+</ul>
+</li>
+<li><a href="#s62-h"><span class="num">Q9</span>Grid 与虚拟组织 · Grids and virtual organisations</a>
+<ul class="sub-list">
+<li><a href="#s63-h">(a) 为什么更像 Grid 而不是 Cluster</a></li>
+<li><a href="#s64-h">(b) Virtual Organisation 的含义</a></li>
+<li><a href="#s65-h">(c) 京都撤回一半机器，中间件应如何响应</a></li>
+<li><a href="#s66-h">(d) 四层归属</a></li>
+<li><a href="#s67-h">(e) middleware 能分配资源但不能创造算力</a></li>
+<li><a href="#s68-h">(f) 一个紧耦合 MPI 程序跨站点跑会怎样</a></li>
+</ul>
+</li>
+<li><a href="#s69-h"><span class="num">Q10</span>Grid 安全：密钥、PKI 与代理 · Grid security: keys, PKI and proxies</a>
+<ul class="sub-list">
+<li><a href="#s70-h">(a) 公钥与私钥的区别</a></li>
+<li><a href="#s71-h">(b) 为什么绝不能把长期私钥拷到远端</a></li>
+<li><a href="#s72-h">(c) 什么是 PKI</a></li>
+<li><a href="#s73-h">(d) CA 在 PKI 中的作用</a></li>
+<li><a href="#s74-h">(e) X.509 绑定什么，CA 签名为何重要</a></li>
+<li><a href="#s75-h">(f) 为什么短命 proxy 更安全（优点 + 代价成对讲）</a></li>
+<li><a href="#s76-h">(g) 过期后才被偷，为何损失有限</a></li>
+</ul>
+</li>
+<li><a href="#s77-h"><span class="num">Q11</span>GPU 与异构计算 · GPUs and heterogeneous computing</a>
+<ul class="sub-list">
+<li><a href="#s78-h">(a) 为什么这个负载适合 GPU</a></li>
+<li><a href="#s79-h">(b) 反复搬运为什么会吃掉加速比</a></li>
+<li><a href="#s80-h">(c) 更好的组织方式</a></li>
+</ul>
+</li>
+<li><a href="#s81-h"><span class="num">A</span>附录 A · 笔记里有、但这套题没考到的考点 / Topics in the notes not examined here</a>
+</li>
+<li><a href="#s82-h"><span class="num">B</span>附录 B · 最容易被扣分的地方 / Common deductions checklist</a>
+</li>
+<li><a href="#s83-h"><span class="num">C</span>附录 C · EX 笔记带来的判定变化</a>
+</li>
+</ol></nav>
+<main>
+<section class="chapter" id="s1">
+<h2 id="s1-h">使用说明与覆盖总览</h2>
+<p>对照文件：</p>
+<ul class="plain">
+<li>题目/答案：<code>Exam_Review_Questions (1).pdf</code>（University of Huddersfield，Dr Raphael Fortulan，2026–2027）</li>
+<li>笔记（新）：<code>猫燐笔记 EX.pdf</code>（18 页手写原稿扫描）→ 整理为 <code>猫燐笔记 EX 总结.html</code></li>
+<li>笔记（旧）：<code>猫燐笔记.html</code>（9 章 18 页的初版整理；保留作对照，凡 EX 版补齐处均已在下文标出）</li>
+</ul>
+<p>标注约定（每小问标题后的标记）：</p>
+<div class="table-wrap"><table><thead><tr><th>标记</th><th>含义</th><th>处理方式</th></tr></thead><tbody><tr><td>✅</td><td>笔记<strong>已收录</strong>该知识点</td><td>可直接背笔记原话，扩写只是"让答案更像满分级"</td></tr><tr><td>🟡</td><td><strong>部分收录</strong>：笔记有支撑素材/公式/判据，但结论要自己推</td><td>标明笔记缺哪一句，再用笔记的素材补齐推导</td></tr><tr><td>❌</td><td>笔记<strong>未收录</strong></td><td><strong>按要求不扩写</strong>，只保留原答案 + 必要的正确性提醒</td></tr></tbody></table></div>
+<div class="note warn"><span class="lbl">笔记未收录</span>每题格式：先给 <strong>原题英文（verbatim）+ 中文译文</strong>，再给「中文回答」，最后给「English answer」。<strong>EX 版说明</strong>：判定依据已全部换成《猫燐笔记 EX》——旧版标"笔记未收录"的 3 处、标"部分收录"的 9 处，EX 版全部补齐；每题开头的灰底「笔记定位」会指出 EX 笔记的第几页给了哪句原话。英文答案按 PDF 里标注的 expected length 写成"结论 + 理由 + 术语"的满分级答案，拼写与术语按英式规范（utilisation、authorisation、synchronisation、parallelise、minimise、organisation）。</div>
+<h3 id="s2-h">覆盖总览</h3>
+<div class="table-wrap"><table><thead><tr><th>题</th><th>主题</th><th>小问覆盖</th><th>笔记位置</th></tr></thead><tbody><tr><td>Q1</td><td>Cloud: delivery &amp; service models</td><td>a✅ b✅ c✅ d✅ e✅ f✅</td><td>01 章（<strong>EX p.1</strong>：四分法 + capacity≠utilisation 问答）</td></tr><tr><td>Q2</td><td>Dependency graph, span, Amdahl/Gustafson</td><td>a✅ b✅ c✅ d✅ e✅ f🟡 g✅ h✅ i✅</td><td>02 + 06 全章</td></tr><tr><td>Q3</td><td>Memory wall, MPI vs OpenMP, cluster anatomy, HPC/HTC/HA</td><td>a✅ b✅ c✅ d✅ e✅ f✅</td><td>03 章（<strong>EX p.4</strong>：只解决算力不解决内存）</td></tr><tr><td>Q4</td><td>Job scheduler, Slurm, fairness, gang scheduling</td><td>a✅ b✅ c✅ d✅</td><td>03 章（<strong>EX p.4</strong>：三后果 + 集体等待）</td></tr><tr><td>Q5</td><td>MPI deadlock, Sendrecv, message semantics, Barrier</td><td>a✅ b✅ c✅ d✅ e✅</td><td>04 章（<strong>EX p.7</strong>：Sendrecv + Barrier 结论）</td></tr><tr><td>Q6</td><td>MPI_Reduce and collective communication</td><td>a✅ b✅ c✅ d✅ e✅</td><td>04 章（<strong>EX p.8</strong>：Allreduce + garbage + 优点）</td></tr><tr><td>Q7</td><td>OpenMP race condition, reduction/critical, data scope</td><td>a✅ b✅ c✅ d✅ e✅ f✅</td><td>05 章（<strong>EX p.10</strong>：default(none)）</td></tr><tr><td>Q8</td><td>T/S/E, strong vs weak scaling, efficiency loss</td><td>a✅ b✅ c✅ d✅ e✅ f✅ g✅ h✅ i✅</td><td>06 章（<strong>EX p.11</strong>：四条总结）</td></tr><tr><td>Q9</td><td>Grid, Virtual Organisation, layering, coupling</td><td>a✅ b✅ c✅ d✅ e✅ f✅</td><td>07 章（<strong>EX p.13</strong>：补偿或重跑）</td></tr><tr><td>Q10</td><td>Key pairs, PKI, X.509, proxy credentials</td><td>a✅ b✅ c✅ d✅ e✅ f✅ g✅</td><td>08 章（<strong>EX p.15–16</strong>：私钥后果 + 过期不可认证）</td></tr><tr><td>Q11</td><td>GPU, data parallelism, kernels, data movement</td><td>a✅ b✅ c✅</td><td>09 章（<strong>EX p.17</strong>：搬运开销分解）</td></tr></tbody></table></div>
+<p><strong>结论（依《猫燐笔记 EX》重新判定）：11 题 66 个小问里，笔记已收录 65 个（✅），部分收录 1 个（🟡），未收录 0 个（❌）。</strong></p>
+<p><strong>EX 版把旧版 3 处"未收录"全部补齐：</strong></p>
+<ol>
+<li><strong>Q5(c) <code>MPI_Sendrecv</code></strong> —— EX p.7：把"发"与"收"绑进同一次调用以避免 circular wait；<code>sendval = (rank==0)?10:20</code>；<code>recvval</code> 不可与 <code>sendval</code> 重叠。</li>
+<li><strong>Q5(e) Barrier 与死锁</strong> —— EX p.7：Barrier 强制对齐同一时刻但<strong>不改变操作顺序</strong>；打破死锁必须改变 communication pattern。</li>
+<li><strong>Q7(e) <code>default(none)</code></strong> —— EX p.10：forces data-scoping decisions，未声明即报错，消除隐性隐患。</li>
+</ol>
+<p><strong>EX 版另把 9 处"部分收录"升级为"已收录"：</strong> Q1(a) 四分法、Q1(d) capacity≠utilisation、Q3(a) 只解决算力不解决内存、Q4(a) 三后果、Q4(d) 集体等待、Q6(d) Allreduce、Q6(e) 集合通信优点、Q8(f) 四条总结、Q2(f)→仍为 🟡（EX 笔记给了 A、σ、Work Law 与"加 N 核提 N 倍是幻想"，但没有逐句写出"16 核上限 1.58×"，仍需自己推一步，故保留 🟡）。</p>
+<hr>
+</section>
+<section class="chapter" id="s3">
+<h2 id="s3-h"><span class="cn">Q1</span>云计算与交付模型 · Cloud delivery and service models</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：InGen is developing a dinosaur genome-analysis system. Most of the year, the system is used by only a few researchers. However, for six weeks each year, a large genome-reconstruction campaign requires hundreds of processors. InGen already owns a small private data centre containing confidential genetic data. Management proposes three designs: Design A — buy enough servers for the maximum workload and keep them in the InGen data centre all year. Design B — keep confidential data and normal workloads on InGen's infrastructure, but temporarily rent additional public-cloud resources during the annual campaign. Design C — move everything to a cloud provider but reserve a fixed number of machines for the entire year.<br><strong>题干译文</strong>：InGen 正在开发一套恐龙基因组分析系统。一年中大部分时间只有少数研究人员使用；但每年有六周，一次大规模基因组重建任务需要数百个处理器。InGen 已拥有一个小型私有数据中心，存放机密基因数据。管理层提出三种方案：方案 A —— 买够满足峰值负载的服务器，全年放在 InGen 数据中心；方案 B —— 机密数据与常态负载留在 InGen 自有基础设施，年度任务期间临时租用公有云资源；方案 C —— 整体迁到云提供商，但预留固定数量的机器一整年。</div>
+<h3 id="s4-h">(a) Design B 属于哪种云<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Classify Design B as private, public, or hybrid cloud. Briefly justify your answer. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：把 Design B 归类为 private、public 或 hybrid cloud，并简要说明理由。（约 25 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.1 已收录完整四分法</strong>——Public cloud（服务商提供的环境）／Private cloud（为单个组织专用、<strong>不公开</strong>）／<strong>Community cloud（多个组织共用）</strong>／Hybrid cloud（含有不止一种云环境）。Q1(a) 的 hybrid 判据可直接引用笔记原文。</em></p>
+<p><strong>中文回答</strong>：Design B 属于 <strong>hybrid cloud（混合云）</strong>。判据是"资源归谁拥有、谁运维"，不是技术：常态负载与机密基因组数据留在 InGen 自有的 <strong>private cloud</strong> 上，年度 campaign 期间临时租用 <strong>public cloud</strong> 资源；两者跨越所有权边界组合起来、协同交付同一项服务，所以是混合形态。纯 public 会把全部负载迁到提供商，纯 private 则全部留在本地。</p>
+<p><strong>English answer</strong>：Design B is a <strong>hybrid cloud</strong>. The deployment model is decided by ownership and operational control, not by technology: normal workloads and the confidential genomic data stay on InGen's own <strong>private cloud</strong>, while the resources needed for the six-week campaign are rented temporarily from a <strong>public cloud</strong> run by a third party. Because the two parts are combined across the ownership boundary and co-operate to deliver one service, the result is hybrid; moving everything to the provider would be public, and keeping everything in-house would be private.</p>
+<h3 id="s5-h">(b) Design A 与 Design B 的 CapEx / OpEx 比较<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Compare Designs A and B in terms of CapEx and OpEx. Why might Design B be financially attractive when peak demand lasts only six weeks? <em>Expected: 50 words.</em><br><strong>题干译文</strong>：从 CapEx 与 OpEx 两个角度比较方案 A 与方案 B。当峰值需求只持续六周时，为什么方案 B 在财务上更有吸引力？（约 50 词）</div>
+<p><em>笔记定位：01 章「CapEx 与 OpEx」——"云把 CapEx 转成了 OpEx"；03 章给了 <code>efficiency</code> 与 <code>core-hours</code> 两把尺子。</em></p>
+<p><strong>中文回答</strong>：Design A 是 <strong>CapEx-heavy（资本性支出重）</strong>：t=0 一次性采购服务器、机房、供电与制冷，之后按年折旧。但峰值只有六周——一年 8760 h 中仅约 1008 h 在用，按 <code>efficiency = core-hours used / core-hours allocated</code> 衡量，年利用率仅约 11.5%，设备大部分时间在闲置。Design B 把峰值部分转为 <strong>OpEx（运营性支出）</strong>：按核时/按小时付费，只用六周就只付六周，支出曲线跟随需求；同时把硬件过时、容量锁死与闲置维护的风险转移给 provider。补充（拿分点）：若峰值年年满载、且云的单位价格溢价高于自建折旧，则长期看 A 更省——结论取决于<strong>峰值利用率与云溢价之比</strong>。</p>
+<p><strong>English answer</strong>：Design A is <strong>CapEx-heavy</strong>: servers, the machine room, power and cooling are bought up front and depreciated over several years. Its weakness is utilisation — the peak lasts only six weeks, i.e. about 1008 of 8760 hours a year (≈11.5% by <code>efficiency = core-hours used / core-hours allocated</code>), so capacity sized for the peak sits idle for most of the year. Design B converts the peak into <strong>OpEx</strong>: resources are paid for per core-hour only while they are needed, so cost tracks demand, and hardware refresh, capacity lock-in and idle maintenance risk move to the provider. In short, cloud converts CapEx into OpEx. The trade-off is that if the peak ran at full load every year, the cloud price premium could exceed depreciation, making Design A cheaper — the decision hinges on peak utilisation versus that premium.</p>
+<h3 id="s6-h">(c) 让 Design B 特别合适的两条云特征<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Identify two characteristics of cloud computing that make Design B particularly suitable for this workload. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：指出两条使方案 B 特别适合该负载的云计算特征。（约 25 词）</div>
+<p><em>笔记定位：01 章「五大特征」全在；旁注"故全天候运行不等于 cloud"，判据是整套特征。</em></p>
+<p><strong>中文回答</strong>：① <strong>rapid elasticity（快速弹性）</strong>：六周内把分配量从 20 个处理器扩到 400，campaign 结束后再缩回 20——扩容速度必须快于硬件采购周期，这是自建做不到的。② <strong>measured service（可计量服务）</strong>：按核时计费，只为实际使用的六周付费，与 (b) 的 OpEx 论证互为支撑。可再补 <strong>resource pooling（资源池化）</strong>：多租户共享物理资源，用户无需关心那 400 个处理器在哪里，也不必为峰值设备长期持有。注意：只写特征名不解释等于没答，要说明"这条特征对本 workload 意味着什么"。</p>
+<p><strong>可替换项（同样得分）</strong>：<strong>on-demand self-service（按需自助）</strong>——研究者无需与 provider 人工交互、无需走采购审批，自己就能把那 400 个处理器开出来，这同样是"六周峰值"能成立的前提。⚠️ 注意两点：① 规范写法是 <strong>on-demand self-service</strong>（NIST 原词），不要写成 "On demanded self service"；② 它的针对性比 rapid elasticity 弱——单独写 "on-demand self-service + measured service" 会丢掉"六周内扩缩"这个关键条件。最稳的组合仍是 <strong>rapid elasticity + measured service</strong>，把 on-demand self-service 放在补充句里。</p>
+<p><strong>English answer</strong>：Two characteristics make Design B particularly suitable. First, <strong>rapid elasticity</strong>: the allocation can grow from 20 to 400 processors within the six-week campaign and shrink back afterwards, which no hardware procurement cycle can match. Second, <strong>measured service</strong>: usage is metered and billed per core-hour, so InGen pays only for the campaign — the financial counterpart of the OpEx argument in (b). <strong>Resource pooling</strong> is also relevant: the 400 processors are drawn from a shared multi-tenant pool, so the researchers neither know nor care which physical machines they get. Note that naming the characteristics without explaining their effect on this workload would not earn full marks.</p>
+<p>An acceptable substitute is <strong>on-demand self-service</strong>: the researchers provision the extra 400 processors themselves, with no human interaction with the provider and no procurement approval, which is equally a precondition for meeting a six-week peak. Two cautions: the correct term is <em>on-demand self-service</em>, not "on demanded self service"; and it is less specific than rapid elasticity, since it says nothing about growing <em>and shrinking</em> within the campaign. The safest pair is therefore <strong>rapid elasticity + measured service</strong>, with on-demand self-service offered as a supporting point.</p>
+<h3 id="s7-h">(d) "在云里就一定高效"错在哪<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：A manager claims: “Design C must be efficient because the machines are in the cloud.” Explain why using a cloud provider does not automatically guarantee efficient resource utilisation. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：一位经理声称：“方案 C 一定高效，因为机器在云里。”解释为什么使用云提供商并不自动保证资源的高效利用。（约 50 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.1 新增整段问答「在 cloud 里工作就一定高效吗」</strong>——否定，理由三条：① cloud 只改变部分工作方式，<strong>与效率无关</strong>；② cloud 的价值在灵活性，本地够用还迁进 cloud 大可不必，因为云<strong>池化会有部分耗损与延迟</strong>；③ <strong>cloud 仅确保 capacity，而非 utilisation</strong>。旧版只能靠 03 章公式自推，现已可直接引用。</em></p>
+<p><strong>中文回答</strong>：云只改变"资源归谁、怎么付费"，没有改变"资源要被用满才高效"。① <strong>预留的机器闲置也计费</strong>：Design C 固定预留一整年，<code>core-hours allocated</code> 的分母一年都下不来，而分子只有六周的量，效率仍约 11.5%——和 Design A 一样难看。② <strong>效率取决于软件能否吃满</strong>：<code>efficiency</code> 的分子来自真实负载，单线程程序放进 64 核云主机，分母涨 64 倍、分子不变，效率跌到 1.6%。③ <strong>池化的代价进入时间模型</strong>：跨物理机/跨机架的网络抖动、超卖与"吵闹邻居"、I/O 争用，全部落进 <code>Tcommunication</code> 与 <code>Timbalance</code> 这两项"税"。④ <strong>固定预留等于放弃了弹性</strong>：Design C 本质上是"用 OpEx 的形式买下 CapEx 的容量"，把云最有价值的那条特征关掉。一句话：云提供的是 <strong>capability</strong>（能拿到资源），高效来自 <strong>utilisation</strong>（有没有用满），两者不是一回事。</p>
+<p><strong>English answer</strong>：Being in the cloud changes who owns the resources and how they are billed; it does not change the requirement to keep them busy. The reserved machines in Design C are paid for all year, so <code>core-hours allocated</code> never falls while actual use is confined to six weeks — efficiency stays around 11.5%, exactly as in Design A. Efficiency also depends on the software: a single-threaded program on a 64-core cloud host multiplies the denominator by 64 and leaves the numerator unchanged. Pooling adds its own costs, which appear as <code>Tcommunication</code> and <code>Timbalance</code> in <code>Ttotal ≈ Tparallelwork/P + Tserial + Tcommunication + Timbalance</code> — network jitter across racks, over-subscription and noisy neighbours, and I/O contention. Finally, a fixed annual reservation is simply CapEx capacity bought through an OpEx contract, discarding the elasticity that made cloud attractive. In one sentence: the cloud supplies <strong>capability</strong>, efficiency comes from <strong>utilisation</strong>, and the two are not the same thing.</p>
+<h3 id="s8-h">(e) 云可扩展性 vs 软件并行性<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：During the campaign, InGen increases its allocation from 20 processors to 400 processors, but the genome-analysis program still uses only one processor. Explain the difference between cloud scalability and software parallelism. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：任务期间 InGen 把分配量从 20 个处理器增加到 400 个，但基因组分析程序仍只使用一个处理器。解释 cloud scalability 与 software parallelism 的区别。（约 50 词）</div>
+<p><em>笔记定位：02 章数据/任务并行、06 章 <code>A = T₁/T∞</code> 与 <code>σ = A/P</code>（"σ &lt; 1：核心闲置"）、Amdahl 定律、03 章执行时间模型。</em></p>
+<p><strong>中文回答</strong>：<strong>scalability / elasticity 是供给侧属性</strong>：20 → 400 改变的是 worker 数 P，是 <code>T(P, N)</code> 里 P 那一维。<strong>parallelism 是需求侧属性</strong>：程序自身能同时跑多少 task，由依赖图与关键路径决定，度量是平均并行度 <code>A = T₁/T∞</code>。本题程序只用一个处理器，<strong>A ≈ 1</strong>。于是并行松弛度 <code>σ = A/P = 1/400 ≪ 1</code>——笔记原话"<strong>核心闲置</strong>"：多出来的处理器只在计费，不在干活。时间模型上 <code>Ttotal = Tparallelwork/P + Tserial + Tcomm + Timbalance</code>，100% 串行时第一项缩不下去，加速比 → 1；Amdahl 视角即 s ≈ 1，<code>S(P) → 1</code>，绝对上限 <code>1/s = 1</code>。</p>
+<p><strong>English answer</strong>：Scalability, or elasticity, is a <strong>supply-side</strong> property: increasing the allocation from 20 to 400 processors only changes P in <code>T(P, N)</code>. Parallelism is a <strong>demand-side</strong> property: how many tasks the program can actually execute concurrently, bounded by its dependency graph and critical path, measured by the average parallelism <code>A = T₁/T∞</code>. Here the program runs on one processor, so A ≈ 1 and the parallel slackness <code>σ = A/P = 1/400 ≪ 1</code> — the notes' phrase is <em>idle cores</em>. The extra processors are billed but not working. In the time model <code>Ttotal = Tparallelwork/P + Tserial + Tcommunication + Timbalance</code>, the first term cannot shrink for a fully serial program, so speedup tends to 1; equivalently, Amdahl's law with s ≈ 1 gives <code>S(P) → 1</code>, the absolute speedup limit <code>1/s = 1</code>. Cloud scalability provides the processors; only the software can use them.</p>
+<h3 id="s9-h">(f) 两个服务的模型分类<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Classify the following service models: (1) InGen rents virtual machines and installs its own operating system and software. (2) Each uploaded genome automatically triggers a short-lived analysis function. <em>Expected: 10–20 words.</em><br><strong>题干译文</strong>：为以下两项服务模型分类：(1) InGen 租用虚拟机并自行安装操作系统与软件；(2) 每个上传的基因组自动触发一次短生命周期的分析函数。（约 10–20 词）</div>
+<p><em>笔记定位：01 章「服务模型」四层——IaaS"创建／管理一台虚拟机"、FaaS"生命周期很短的函数功能"、PaaS"上传资源至平台"、SaaS"在线应用（以帐号使用）"。</em></p>
+<p><strong>中文回答</strong>：① <strong>IaaS（Infrastructure as a Service）</strong>：租虚拟机，自己安装操作系统与全部软件；provider 只管到虚拟化与硬件那一层，OS 以上都是用户的。② <strong>FaaS（Function as a Service）</strong>：每个上传的基因组自动触发一次短生命周期的函数，事件驱动、免运维，计费与生命周期都以"一次调用"为单位。排除项：若"上传资源、由平台提供运行环境"则偏 <strong>PaaS</strong>；"用帐号直接使用在线应用"则是 <strong>SaaS</strong>。</p>
+<p><strong>English answer</strong>：① <strong>IaaS — Infrastructure as a Service</strong>: InGen rents virtual machines and installs its own operating system and software, so the provider manages only down to the virtualisation and hardware layer. ② <strong>FaaS — Function as a Service</strong>: each uploaded genome triggers a short-lived analysis function automatically, an event-driven model where both billing and lifetime are measured per invocation and no server is managed. For contrast, uploading assets to a platform that supplies the runtime would be <strong>PaaS</strong>, and using an online application through an account would be <strong>SaaS</strong>.</p>
+<hr>
+</section>
+<section class="chapter" id="s10">
+<h2 id="s10-h"><span class="cn">Q2</span>依赖图、关键路径与扩展性定律 · Dependency graph, span and scalability laws</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：The Avengers' battle-analysis program contains the following tasks. A task may start only after all tasks pointing to it have completed.<br><strong>题干译文</strong>：复仇者的战斗分析程序包含以下任务。一个任务只有在指向它的所有任务都完成之后才能开始。</div>
+<pre><code>A: Load data (2s)
+│
+├──▶ B: Air analysis (4s) ──▶ D: Air prediction (3s) ──┐
+│                                                      ├──▶ F: Combine (2s) ──▶ G: Report (1s)
+└──▶ C: Ground analysis (5s) ─▶ E: Ground prediction (2s) ─┘</code></pre>
+<h3 id="s11-h">(a) 总工作量 T₁<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Calculate the total work T₁. <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：计算总工作量 T₁。（约 10 词 + 推导）</div>
+<p><em>笔记定位：02 章「Work 工作」——"全部运算操作的总量，衡量方式是仅用 1 个 worker 时所用的时间"。</em></p>
+<p><strong>中文回答</strong>：Work T₁ 是"仅用 1 个 worker 顺序执行全部 task 所需的时间"。依赖图里每个 task 都要执行且各执行一次，故 <code>T₁ = Σtᵢ = 2+4+3+5+2+2+1 = 19 s</code>。</p>
+<p><strong>English answer</strong>：The total work T₁ is the time one worker needs to execute every task sequentially. Since each task in the dependency graph executes exactly once, <code>T₁ = Σtᵢ = 2 + 4 + 3 + 5 + 2 + 2 + 1 = 19 s</code>.</p>
+<h3 id="s12-h">(b) Span T∞<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Assuming unlimited processors, calculate the span T∞. <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：假设处理器数量无限，计算 span T∞。（约 10 词 + 推导）</div>
+<p><em>笔记定位：06 章 Work Law——"T∞：critical / span path length，当有 ∞ 个 P 时的执行时间"；02 章"最小完成时间由最慢的一条链决定"。</em></p>
+<p><strong>中文回答</strong>：按"起止时间表"推：A 0–2；B 2–6；C 2–7；D 6–9；E 7–9；F <strong>9–11</strong>（必须等 D(9) 与 E(9) 都完成）；G 11–12。关键一步是 F 从 9 起算。即使有无限多处理器，这条链也串不起来，故 <code>T∞ = 12 s</code>。</p>
+<p><strong>English answer</strong>：Deriving start and finish times gives A 0–2, B 2–6, C 2–7, D 6–9, E 7–9, F 9–11 and G 11–12. The decisive step is F, which cannot start until both D (finish 9) and E (finish 9) have completed, so it starts at 9. No amount of parallelism can overlap the tasks on this chain, so the span is <code>T∞ = 12 s</code>.</p>
+<h3 id="s13-h">(c) 关键路径<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Identify the critical path or paths. <em>Expected: 10–20 words.</em><br><strong>题干译文</strong>：指出关键路径（可能不止一条）。（约 10–20 词）</div>
+<p><em>笔记定位：02 章"critical path: A → B → D → E"的同类计算；06 章 span。</em></p>
+<p><strong>中文回答</strong>：两条关键路径 <strong>A → B → D → F → G</strong>（2+4+3+2+1 = 12 s）与 <strong>A → C → E → F → G</strong>（2+5+2+2+1 = 12 s）。题目问的是 "critical path <strong>or paths</strong>"，<strong>必须两条都写</strong>：等长说明关键路径不唯一，加速其中任意一条都不改变 T∞，必须同时缩短两条（或缩短公共段 A/F/G）。</p>
+<p><strong>English answer</strong>：There are two critical paths of equal length: <strong>A → B → D → F → G</strong> (2+4+3+2+1 = 12 s) and <strong>A → C → E → F → G</strong> (2+5+2+2+1 = 12 s). Both must be listed. Because they are equal, the critical path is not unique: speeding up either branch alone does not reduce the span — both must be shortened, or the shared segments A, F and G.</p>
+<h3 id="s14-h">(d) 平均并行度 T₁/T∞<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Calculate the average parallelism T₁/T∞. What does this value tell you? <em>Expected: 25 words + working.</em><br><strong>题干译文</strong>：计算平均并行度 T₁/T∞。这个数值说明了什么？（约 25 词 + 推导）</div>
+<p><em>笔记定位：06 章「并行平均度」<code>A = T₁/T∞</code>——"理论上最大同时运行的任务数"；「并行松弛度」<code>σ = A/P</code>。</em></p>
+<p><strong>中文回答</strong>：<code>A = T₁/T∞ = 19/12 ≈ 1.58</code>。含义：整个执行过程中<strong>平均只有约 1.58 个 task 同时在跑</strong>，它同时是无限处理器下加速比的理论上限。再用松弛度：P = 4 时 <code>σ = 1.58/4 ≈ 0.40 &lt; 1</code>（连 4 核都吃不满），P = 16 时 <code>σ ≈ 0.10</code>（核心严重闲置）。结论：这是一张<strong>极度串行</strong>的 task 图，加速空间理论上不超过 1.58×。</p>
+<p><strong>English answer</strong>：<code>A = T₁/T∞ = 19/12 ≈ 1.58</code>. On average only about 1.58 tasks are in flight at any instant, and this is also the theoretical upper bound on speedup with unlimited processors. The parallel slackness makes the diagnosis explicit: with P = 4, <code>σ = A/P ≈ 0.40 &lt; 1</code>, so even four processors are under-used; with P = 16, <code>σ ≈ 0.10</code>. The graph is therefore highly serial: no amount of hardware can deliver more than about 1.58× speedup.</p>
+<h3 id="s15-h">(e) P = 4 时的 work/span 下界<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：For P = 4 processors, calculate the work/span lower bound T ≥ max(T₁/P, T∞). <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：对 P = 4 个处理器，计算 work/span 下界 T ≥ max(T₁/P, T∞)。（约 10 词 + 推导）</div>
+<p><em>笔记定位：06 章 Work Law <code>TP ≥ max(T₁/P, T∞)</code>——"取最大值：实际耗时不可能小于这两条下界中更大的那一个"。</em></p>
+<p><strong>中文回答</strong>：<code>T ≥ max(T₁/P, T∞) = max(19/4, 12) = 12 s</code>。两项分别是 <strong>work law</strong>（4.75 s，"把 19 s 的活摊到 4 个 worker 上"）与 <strong>span law</strong>（12 s，"有些任务必须一个接一个"）。取大者，故下界 12 s。诊断：<code>T∞</code> 远大于 <code>T₁/P</code>，瓶颈在<strong>关键路径而非核数</strong>——加核无用，必须拆开 A/F/G 这些串行段，与笔记例题"这道题被关键路径卡住，加核也没用"的结论一致。</p>
+<p><strong>English answer</strong>：<code>T ≥ max(T₁/P, T∞) = max(19/4, 12) = 12 s</code>. The first bound is the <strong>work law</strong>, 4.75 s, obtained by spreading 19 s of work over four workers; the second is the <strong>span law</strong>, 12 s, imposed by tasks that must run one after another. The larger of the two governs. Because T∞ ≫ T₁/P, the limit is set by the critical path rather than by the number of processors, so adding cores cannot help — the serial segments A, F and G would have to be split or shortened.</p>
+<h3 id="s16-h">(f) 为什么 16 个处理器给不了 16×<span class="badge b-part">部分收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Tony suggests using 16 processors. Explain why this cannot give a 16× speedup. In a much larger version of the program, 10% of the execution time cannot be parallelised. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：Tony 建议使用 16 个处理器。解释为什么这不可能带来 16 倍加速。在该程序的更大版本中，10% 的执行时间无法并行化。（约 50 词）</div>
+<p><em>笔记定位：结论句笔记没有，但 <code>A</code>、<code>σ = A/P</code>"核心闲置"、Work Law 与 <code>C = P·T(P,N)</code> 零件齐全，可直接推出。</em></p>
+<p><strong>中文回答</strong>：① <strong>理论上限只有 1.58×</strong>：加速比上界是 <code>T₁/T∞ = 19/12 ≈ 1.58</code>，所以不是"16× 打折"，而是差了一个数量级。② <strong>大多数核无事可做</strong>：<code>σ = A/P = 1.58/16 ≈ 0.10</code>；看时间轴更直观——t=0 只有 A 一个 task，B、C 并行时最多 2 个，整张图<strong>最大并发度只有 2</strong>，14 个核全程空闲。③ <strong>加核还要付负成本</strong>：线程创建、fork-join 的 join 屏障、调度抖动都会增加 <code>Tserial</code> 与 <code>Tcommunication</code>，<code>C = P·T(P,N)</code> 上升而 T 不降，16 核甚至可能比 4 核更慢。</p>
+<p><strong>English answer</strong>：Three reasons. First, the ceiling is only 1.58×: the speedup bound is <code>T₁/T∞ = 19/12 ≈ 1.58</code>, so 16× is not an optimistic estimate but an order of magnitude away. Second, most processors have nothing to do: <code>σ = A/P = 1.58/16 ≈ 0.10</code>, and on the timeline only A is runnable at t = 0 and at most two tasks overlap (B and C), so fourteen processors stay idle throughout. Third, extra processors add cost rather than speed: thread creation, the join barrier of fork-join and scheduling jitter increase <code>Tserial</code> and <code>Tcommunication</code>, so <code>C = P·T(P,N)</code> rises while T does not fall — sixteen processors can even be slower than four.</p>
+<h3 id="s17-h">(g) Amdahl 定律：16 核的理论加速比<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Using Amdahl's Law, S(P) = 1 / (s + (1−s)/P), calculate the theoretical speedup using 16 processors. <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：用 Amdahl 定律 S(P) = 1/(s + (1−s)/P) 计算使用 16 个处理器的理论加速比。（约 10 词 + 推导）</div>
+<p><em>笔记定位：02 章 <code>S(P) = 1/(f + (1−f)/P)</code>，"f 是性能瓶颈，P 越大增益越小"；符号差异：笔记用 f 或 S，题目用 s，含义相同。</em></p>
+<p><strong>中文回答</strong>：串行占比 <code>s = 0.1</code>，可并行部分 <code>1−s = 0.9</code>，故 <code>S(16) = 1/(0.1 + 0.9/16) = 1/0.15625 = 6.4</code>。即使 16 个处理器全部完美工作于并行部分，那 10% 的串行时间仍被 16 个核"围观"了一遍。</p>
+<p><strong>English answer</strong>：With serial fraction <code>s = 0.1</code> and parallel fraction <code>1 − s = 0.9</code>, Amdahl's law gives <code>S(16) = 1/(s + (1−s)/P) = 1/(0.1 + 0.9/16) = 1/0.15625 = 6.4</code>. Even with all sixteen processors working perfectly on the parallel part, the 10% serial portion is still traversed once with fifteen processors waiting.</p>
+<h3 id="s18-h">(h) P → ∞ 的极限加速比<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Calculate the maximum possible speedup as P → ∞. <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：计算 P → ∞ 时可能达到的最大加速比。（约 10 词 + 推导）</div>
+<p><em>笔记定位：02 章 "absolute speedup limit 绝对加速比上限 —— 无论加多少核，都超不过 1/f"。</em></p>
+<p><strong>中文回答</strong>：<code>S(∞) = 1/s = 1/0.1 = 10</code>。术语是 <strong>absolute speedup limit（绝对加速比上限）</strong>：可并行部分摊到无限多核上时间趋于 0，只有 10% 的串行部分永远留着，所以上限 10×。这是"只加核"这条路的物理天花板，也是 HPC 必须做算法级重构（减少串行段）的理由。</p>
+<p><strong>English answer</strong>：<code>S(∞) = 1/s = 1/0.1 = 10</code>. This is the <strong>absolute speedup limit</strong>: the parallel part is spread over infinitely many processors and its time tends to zero, leaving only the 10% serial fraction, so no processor count can exceed 10×. It is the ceiling of the "just add cores" approach and the reason HPC work must also restructure algorithms to reduce the serial fraction.</p>
+<h3 id="s19-h">(i) Gustafson 定律：P = 16 的缩放加速比<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：If the workload instead grows with the number of processors, use Gustafson's Law S_G(P) = P − s(P − 1) to calculate the scaled speedup for P = 16. <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：若负载随处理器数量一起增长，用 Gustafson 定律 S_G(P) = P − s(P − 1) 计算 P = 16 的缩放加速比。（约 10 词 + 推导）</div>
+<p><em>笔记定位：06 章 <code>S_G(P) = S + P(1−S)</code> 与 weak scaling；题目式 <code>P − s(P−1)</code> 与笔记式<strong>等价</strong>。</em></p>
+<p><strong>中文回答</strong>：<code>S_G(16) = 16 − 0.1×15 = 14.5</code>；等价写法 <code>s + P(1−s) = 0.1 + 16×0.9 = 14.5</code>，与笔记公式一致。对照 (g)：同为 16 核，<strong>固定负载 6.4× vs 缩放负载 14.5×</strong>——差别不在机器，在"问题规模是否跟着核数一起变大"。</p>
+<p><strong>English answer</strong>：<code>S_G(16) = P − s(P−1) = 16 − 0.1×15 = 14.5</code>, equivalently <code>s + P(1−s) = 0.1 + 16×0.9 = 14.5</code>, matching the notes' form. Contrast this with (g): the same sixteen processors give 6.4× under a fixed workload but 14.5× under a scaled workload. The difference is not the hardware but whether the problem size grows with the processor count — Amdahl assumes the work is fixed, Gustafson assumes it scales.</p>
+<hr>
+</section>
+<section class="chapter" id="s20">
+<h2 id="s20-h"><span class="cn">Q3</span>内存容量、MPI 与集群构成 · Memory capacity, MPI and cluster anatomy</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：Tony Stark develops a simulation that requires approximately 600 GB of memory. A new workstation contains 64 CPU cores and 128 GB RAM. He considers two strategies: Strategy A — use OpenMP on one workstation. Strategy B — use MPI across eight workstations.<br><strong>题干译文</strong>：Tony Stark 开发的仿真需要约 600 GB 内存。一台新工作站有 64 个 CPU 核心与 128 GB 内存。他考虑两种策略：策略 A —— 在单台工作站上用 OpenMP；策略 B —— 跨 8 台工作站用 MPI。</div>
+<h3 id="s21-h">(a) 64 核 OpenMP 为什么解决不了根本问题<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why simply using all 64 CPU cores with OpenMP does not solve the fundamental problem. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：解释为什么仅用 OpenMP 把 64 个核心全部用上并不能解决根本问题。（约 50 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.4 原句</strong>——"OpenMP 是单节点共享内存模型，<strong>只解决算力、不解决内存不足的问题</strong>"；配合 p.4「when does a job fit」的内存条件（申请内存 ≤ 节点空闲内存）。旧版这一点要靠推导，现已成原话。</em></p>
+<p><strong>中文回答</strong>：① <strong>OpenMP 是单节点共享内存模型</strong>：64 个线程共享<strong>同一块</strong> 128 GB 物理内存，加线程只是加"读这份内存的手"，不增加内存容量。② <strong>按"作业能否放下"判据</strong>：申请内存 600 GB &gt; 节点空闲内存 128 GB → 该 job 从一开始就放不进这个节点，问题在<strong>容量（memory-bound）</strong>而非算力。③ <strong>强行跑的后果</strong>：必然触发 swap/paging 与 thrashing，有效带宽骤降，时间模型里表现为 <code>Tserial</code> 与 <code>Timbalance</code> 暴涨，<code>Tparallelwork/P</code> 缩得再多也救不回来。④ Amdahl 视角：串行占比 s 由算法与数据布局决定，加核改不了 s。</p>
+<p><strong>English answer</strong>：OpenMP is a <strong>shared-memory, single-node</strong> model: all 64 threads share the same 128 GB of physical memory, so adding cores adds consumers of that memory but not capacity. Applying the fit test — requested memory ≤ free memory on the node — a 600 GB dataset exceeds the 128 GB available, so the job does not fit on that node at all; the problem is capacity (it is memory-bound), not arithmetic throughput. If it is forced to run, the working set spills to swap and the process thrashes, which inflates <code>Tserial</code> and <code>Timbalance</code> in <code>Ttotal ≈ Tparallelwork/P + Tserial + Tcommunication + Timbalance</code> and destroys the benefit of the parallel term. From Amdahl's perspective, the serial fraction is fixed by the algorithm and data layout, so extra cores cannot remove it.</p>
+<h3 id="s22-h">(b) 至少需要多少个 128 GB 节点<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Ignoring operating-system overhead, calculate the minimum number of 128 GB nodes required to hold the dataset. <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：忽略操作系统开销，计算容纳该数据集至少需要多少个 128 GB 节点。（约 10 词 + 推导）</div>
+<p><em>笔记定位：03 章「作业能否放下」——内存条件；<code>core-hours</code> 同节。</em></p>
+<p><strong>中文回答</strong>：<code>⌈600 / 128⌉ = ⌈4.69⌉ = 5</code> 个节点（4 个只有 512 GB &lt; 600 GB，装不下）。补一句：真实 MPI 程序还要放 halo/ghost 层与通信缓冲区，每节点实际占用高于 600/5 = 120 GB，所以 5 是<strong>理论下限</strong>。</p>
+<p><strong>English answer</strong>：<code>⌈600/128⌉ = ⌈4.69⌉ = 5</code> nodes; four nodes provide only 512 GB, which is insufficient. Because rounding up costs nothing, five is the minimum. Note that in practice each node also holds halo/ghost cells and message buffers, so actual usage exceeds 600/5 = 120 GB per node — five is a theoretical lower bound.</p>
+<h3 id="s23-h">(c) 为什么 MPI 更自然<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why MPI is a more natural programming model for Strategy B. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：解释为什么 MPI 是策略 B 更自然的编程模型。（约 50 词）</div>
+<p><em>笔记定位：03 章「MPI：跨节点」——"将数据拆分为多个节点上的各个进程"；「OpenMP：单节点内」；04 章 SPMD。</em></p>
+<p><strong>中文回答</strong>：① <strong>模型匹配</strong>：MPI 是 <strong>SPMD + 分布式内存</strong>，每个 rank 各持一份数据；OpenMP 的共享内存语义跨机器不成立（没有跨机器的一致地址空间），跨节点只能靠显式消息传递。② <strong>数据布局天然吻合</strong>：600 GB 本来就要按 5 份切开（domain decomposition），一个 rank 对应一个节点，各自只看得到自己那块。③ <strong>通信可控</strong>：跨节点没有缓存一致性的"魔法"，所有数据流动都必须显式写出（halo 交换、集合通信），因此可以用 <code>T ≈ α + nβ</code> 预测与优化——既是负担也是优点。</p>
+<p><strong>English answer</strong>：MPI is a <strong>SPMD, distributed-memory</strong> model in which each rank holds its own partition of the data, whereas OpenMP's shared-memory semantics do not extend across machines because there is no cross-node coherent address space; across nodes, data can only move through explicit messages. The data layout matches naturally as well: 600 GB must be split into five partitions anyway, and one rank per node sees only its own block. Communication also becomes explicit and therefore controllable — halo exchanges and collective operations are written in the code, so their cost can be estimated with <code>T ≈ α + nβ</code> and optimised, which is both a burden and an advantage.</p>
+<h3 id="s24-h">(d) 四类组件的角色<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Briefly explain the role of: the head node, compute nodes, the interconnect, shared storage. <em>Expected: 75 words.</em><br><strong>题干译文</strong>：简要说明各组件的角色：head node、compute nodes、interconnect、shared storage。（约 75 词）</div>
+<p><em>笔记定位：03 章「集群的层级结构」五类组件原文：Head node 用户接入并提交 tasks；Compute nodes 执行 tasks；Interconnect 传输控制消息与程序数据；Storage 提供统一的文件与数据访问；I/O nodes 在节点之间搬运资源。</em></p>
+<p><strong>中文回答</strong>：<strong>head node</strong>：用户唯一入口，负责登录、提交作业、排队与监控，本身不做重计算，从而把"人的访问"与"计算"解耦。<strong>compute nodes</strong>：真正执行 task 的机器（cluster → node → socket → core 逐层拆解）。<strong>interconnect</strong>：承载控制消息与程序数据，决定 MPI 的 <code>Tcommunication</code>，因此追求低延迟与高带宽（InfiniBand、低跳数胖树）。<strong>shared storage</strong>：提供统一文件访问，使所有节点看到同一份输入输出，600 GB 数据集放在这里避免单点与重复拷贝。可补第五项 <strong>I/O nodes</strong>：把海量 I/O 从计算节点卸载。另：SSI 让这一堆在软件层"像一台机器"，但"仍会受硬件故障、传输损耗影响"。</p>
+<p><strong>English answer</strong>：The <strong>head node</strong> is the single entry point: users log in there to submit and monitor jobs, and it normally performs no heavy computation, which decouples human access from compute. The <strong>compute nodes</strong> execute the tasks and contain the sockets and cores. The <strong>interconnect</strong> carries control messages and program data and determines <code>Tcommunication</code>, so it is specified for low latency and high bandwidth, typically InfiniBand on a low-diameter fat-tree topology. <strong>Shared storage</strong> provides common file access so that every node sees the same input and output, keeping the 600 GB dataset in one place. A fifth component, <strong>I/O nodes</strong>, offloads bulk data movement from the compute nodes. Software can present this collection as a single system image (SSI), but hardware failures and interconnect losses still propagate.</p>
+<h3 id="s25-h">(e) 单一超大仿真的负载分类<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：If the main objective is to complete one enormous simulation as quickly as possible, classify the workload as HPC, HTC, or HA. <em>Expected: 10–20 words.</em><br><strong>题干译文</strong>：若主要目标是尽快完成一个超大仿真，把该负载归类为 HPC、HTC 或 HA。（约 10–20 词）</div>
+<p><em>笔记定位：03 章三种负载 HPC / HTC / HA 原文；07 章辨析表"HPC 的负载形态是一个 tightly coupled 大任务，要求 Low Latency"。</em></p>
+<p><strong>中文回答</strong>：<strong>HPC（High Performance Computing，高性能计算）</strong>，主指标 <strong>time-to-solution（完工时间）</strong>。判据是目标函数而非机器规模：只有一个 tightly coupled 的大任务、目标是尽快跑完，因此可以独占整个集群、可以要求低时延网络，甚至可以接受成本上升换取时间缩短。</p>
+<p><strong>English answer</strong>：It is <strong>HPC — High Performance Computing</strong>, and the objective to maximise is <strong>time-to-solution</strong>. The classification follows the objective rather than the machine size: a single tightly coupled simulation whose goal is to finish as quickly as possible can legitimately take over the whole cluster and demand a low-latency interconnect, trading cost for completion time.</p>
+<h3 id="s26-h">(f) 分类如何改变<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：How would the classification change if: (1) the system processed thousands of independent simulations? (2) the main objective were to keep a service running despite hardware failures? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：在下列情形下分类会如何改变：(1) 系统处理数千个相互独立的仿真；(2) 主要目标是在硬件故障时仍保持服务运行。（约 25 词）</div>
+<p><em>笔记定位：03 章 HTC"完成大量独立 tasks"、HA"发生硬件故障后仍可持续监视平台"；07 章 HTC 载体是 Grid、"吞吐量优先"。</em></p>
+<p><strong>中文回答</strong>：① 数千个独立仿真 → <strong>HTC（High Throughput Computing，高通量计算）</strong>，主指标 <strong>throughput = 单位时间完成的作业数（jobs completed per unit time）</strong>；因为作业之间不通信，可以任意排序与插空，单个作业的等待时间可以让步。② 目标改为故障后服务不断 → <strong>HA（High Availability，高可用）</strong>，主指标 <strong>availability（可用性 / uptime）</strong>；判据从"跑得快"变成"故障后能否继续提供服务"，因此需要冗余、副本与故障转移，而不是更多算力。</p>
+<p><strong>English answer</strong>：① Thousands of independent simulations is <strong>HTC — High Throughput Computing</strong>, where the metric to maximise is <strong>throughput</strong>, that is jobs completed per unit time. Because the jobs do not communicate they can be reordered and back-filled freely, and the waiting time of an individual job may be sacrificed for overall throughput. ② If the objective becomes keeping a service running despite hardware failures, the workload is <strong>HA — High Availability</strong>, and the metric becomes <strong>availability</strong> (uptime): redundancy, replication and failover matter, not raw compute capacity.</p>
+<hr>
+</section>
+<section class="chapter" id="s27">
+<h2 id="s27-h"><span class="cn">Q4</span>集群调度与作业管理 · Cluster scheduling and job management</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：Hogwarts has a large shared computing cluster. Hundreds of students submit simulations every day. Hermione suggests using Slurm. Draco disagrees: “Schedulers just make us wait. Everyone should SSH directly into the compute nodes and run whatever they want.”<br><strong>题干译文</strong>：Hogwarts 有一个大型共享计算集群，每天有数百名学生提交仿真作业。Hermione 建议使用 Slurm。Draco 反对：“调度器只会让我们等。大家都应该直接 SSH 到计算节点上，想跑什么就跑什么。”</div>
+<h3 id="s28-h">(a) 用户手动 SSH 到计算节点的两个问题<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Give two problems that could occur if users manually launch programs on compute nodes. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：举出用户直接在计算节点上手动启动程序可能引起的两个问题。（约 25 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.4 在 job scheduler 旁以「否则」列出三后果</strong>——① 资源调配失衡、相互拖慢（unfair）；② <strong>无法审计、失去监视</strong>；③ 计算资源被个别用户占用。旧版只有"反例"两句，现三后果齐全。</em></p>
+<p><strong>中文回答</strong>：① <strong>oversubscription（超订）</strong>：多人登到同一节点各跑满核，实际进程数远超核数，所有作业互相拖慢；更糟的是<strong>计时失真</strong>，<code>Timbalance</code> 无法估计，实验结论作废。② <strong>资源冲突与霸占</strong>：内存吃满触发 OOM killer 杀掉别人的进程，GPU/许可证/临时目录被抢占；某个用户长期占着节点且无回收机制，别人排不进来（笔记："计算资源被个别用户占用"）。可补第三条：<strong>不可计量、不可审计</strong>——谁用了多少核时无从统计，无法计费、无法公平（对应 08 章 <code>Accounting &amp; audit</code>）。</p>
+<p><strong>English answer</strong>：① <strong>Oversubscription</strong>: several users log in to the same node and each tries to use every core, so the number of runnable processes far exceeds the number of cores. Every job slows down, and — worse — the measurements become meaningless because load imbalance cannot be estimated, invalidating any performance experiment. ② <strong>Resource conflict and monopolisation</strong>: memory exhaustion triggers the OOM killer, which terminates other users' processes, while GPUs, licences and scratch space are grabbed on a first-come basis; a user who never releases a node blocks everyone else. A third consequence is that usage becomes unaccountable and unauditable, so consumption cannot be metered, billed or shared fairly.</p>
+<h3 id="s29-h">(b) 调度器如何改善资源分配与公平<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain how a scheduler improves resource allocation and fairness. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：解释调度器如何改善资源分配与公平性。（约 25 词）</div>
+<p><em>笔记定位：03 章「调度器与核心指标」三件事 + 「调度策略」Pareto / Backfilling / Priority / Fairshare / DRF。</em></p>
+<p><strong>中文回答</strong>：① <strong>按申请量严格控制（allocation）</strong>：<code>CPU allocated = tasks × CPUs_per_task</code>，<code>core-hours = CPU allocated × hours</code>；申请多少只给多少，从根上消除超订与霸占。② <strong>排队与优先级（fairness）</strong>：<code>Priority = Wage×Age + Wfs×FairShare + Wsize×Size</code>，其中 <code>Fairshare = 2^(−usage/share)</code>——用得越多、越超自己份额，优先级越低，避免大用户饿死小用户。③ <strong>多资源下用 DRF（Dominant Resource Fairness）</strong>：取"用户占比最高的那一类资源"比较（80% CPU / 10% 内存 vs 40% / 40%），"才不会让某种资源被悄悄吃空"。④ <strong>backfilling 提高利用率</strong>：两个条件——所需 nodes ≤ 空闲 nodes，且 当前时刻 + 运行时刻 ≤ 排队作业开工时刻，小作业可插空但不推迟大作业。⑤ <strong>可评价性</strong>：好策略应 <strong>Pareto 占优</strong>（平均等待、平均周转、利用率三项都不差且至少一项更好）。</p>
+<p><strong>English answer</strong>：The scheduler enforces allocation, orders jobs and shares resources by policy. Allocation is strict — <code>CPU allocated = tasks × CPUs_per_task</code> and <code>core-hours = CPU allocated × hours</code> — so a job receives exactly what it requested, which removes oversubscription and monopolisation. Fairness comes from priority scheduling, <code>Priority = Wage×Age + Wfs×FairShare + Wsize×Size</code> with <code>Fairshare = 2^(−usage/share)</code>, so the heavier a user's consumption relative to their share, the lower their priority. Under multiple resource types, <strong>dominant resource fairness</strong> compares users on the resource dimension in which they dominate, preventing one resource from being silently exhausted. <strong>Backfilling</strong> raises utilisation by inserting small jobs into idle gaps when requested nodes ≤ free nodes and now + runtime ≤ the queued job's start time. A good policy should be <strong>Pareto optimal</strong> — no worse on average waiting time, average turnaround time or utilisation, and better on at least one.</p>
+<h3 id="s30-h">(c) 大量独立作业的负载分类与核心指标<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Most submitted jobs are independent of one another. Classify this workload as HPC, HTC, or HA and state the main metric that should be maximised. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：大多数提交的作业彼此独立。把该负载归类为 HPC、HTC 或 HA，并指出应当最大化的主要指标。（约 25 词）</div>
+<p><em>笔记定位：03 章 HTC + <code>throughput</code>；07 章"拥有大量独立作业，且作业间不通信"。</em></p>
+<p><strong>中文回答</strong>：<strong>HTC（High Throughput Computing）</strong>。判据：作业之间不通信、彼此独立，可任意排序、批量、插空执行。主指标 <strong>throughput（jobs per unit time）</strong>；辅助指标是平均等待/周转时间与 <code>Utilisation = node-minutes used / (nodes × total minutes)</code>，但<strong>单项作业的完成时间可以让步</strong>——这也解释了为什么 HTC 的典型载体是 Grid。</p>
+<p><strong>English answer</strong>：<strong>HTC — High Throughput Computing</strong>, because the jobs are independent and do not communicate, so they can be reordered, batched and back-filled at will. The metric to maximise is <strong>throughput</strong>, the number of jobs completed per unit time; average waiting time, average turnaround time and <code>Utilisation = node-minutes used / (nodes × total minutes)</code> are secondary, and the completion time of an individual job may be sacrificed. This is precisely why grids are the natural carrier for HTC workloads.</p>
+<h3 id="s31-h">(d) 64 节点 MPI 作业为何要被区别对待<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Another application requires 64 nodes simultaneously because its MPI processes communicate continuously. Explain why Slurm must treat this job differently from the independent jobs. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：另一个应用的 MPI 进程持续通信，因此需要同时占用 64 个节点。解释为什么 Slurm 必须区别对待该作业与那些独立作业。（约 50 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.4 新增</strong>——"<strong>MPI 的所有节点相互不断通信，缺少任一节点都会导致集体等待</strong>，这也导致地理距离远对 MPI 的影响巨大，因为要互相等待、时延非常高"。术语 gang scheduling 笔记仍未出现，但"为何必须同时给齐"的理由已是笔记原话。</em></p>
+<p><strong>中文回答</strong>：① <strong>必须"全有或全无"（all-or-nothing）</strong>：64 个 MPI 进程持续通信，如果只先给 63 个节点，剩下 1 个进程起不来，<code>MPI_Init</code> 之后的集合通信会<strong>永久等待</strong>——作业挂住，同时白占 63 个节点。所以需要 <strong>gang scheduling（协同/成组调度）</strong>：原子地一次性分配全部 64 个节点。② <strong>不能用回填的"插空"逻辑</strong>：MPI 作业不可拆分，只能靠 <strong>reservation（预留）</strong> 先锁一段未来时间窗。③ <strong>拓扑相关</strong>：节点间跳数与带宽决定 <code>Tcommunication</code>，需 topology-aware 分配。④ <strong>对公平的冲击</strong>：它一次吃掉 64 个节点很久，必须靠 Fairshare / Priority 平衡，并注意 <code>efficiency = core-hours used / allocated</code>。</p>
+<p><strong>English answer</strong>：An MPI job must be scheduled all-or-nothing. Its 64 processes communicate continuously, so if only 63 nodes are granted the remaining rank never starts and the subsequent collective operations block indefinitely, stalling the whole job while 63 nodes are held idle. The scheduler therefore has to apply <strong>gang scheduling</strong>, allocating all 64 nodes atomically, and cannot treat the job like the independent jobs that back-filling can split and postpone. It must instead make a <strong>reservation</strong> for a future time window. Topology also matters, since hop count and bisection bandwidth set <code>Tcommunication</code>, so the allocation should be topology-aware, placing ranks on nearby nodes. Finally the job consumes 64 nodes for a long time, which must be balanced against other users through fair-share and priority, and its <code>efficiency = core-hours used / core-hours allocated</code> should be monitored.</p>
+<hr>
+</section>
+<section class="chapter" id="s32">
+<h2 id="s32-h"><span class="cn">Q5</span>MPI 死锁与消息语义 · MPI deadlock and message semantics</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：Consider the following MPI program executed with exactly two processes:<br><strong>题干译文</strong>：考虑下面这个恰好以两个进程运行的 MPI 程序：</div>
+<pre><code>#include &lt;mpi.h&gt;
+int main(int argc, char **argv)
+{
+    MPI_Init(&amp;argc, &amp;argv);
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &amp;rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &amp;size);
+    int value;
+    if (rank == 0) {
+        MPI_Recv(&amp;value, 1, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        value = 10;
+        MPI_Send(&amp;value, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
+    }
+    if (rank == 1) {
+        MPI_Recv(&amp;value, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        value = 20;
+        MPI_Send(&amp;value, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    }
+    MPI_Finalize();
+    return 0;
+}</code></pre>
+<h3 id="s33-h">(a) size / rank / MPI_COMM_WORLD<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：What values are returned by MPI_Comm_size and MPI_Comm_rank in this run? What does MPI_COMM_WORLD represent? <em>Expected: 50 words.</em><br><strong>题干译文</strong>：本次运行中 MPI_Comm_size 与 MPI_Comm_rank 分别返回什么值？MPI_COMM_WORLD 代表什么？（约 50 词）</div>
+<p><em>笔记定位：04 章 SPMD 与 Hello World——"<code>MPI_COMM_WORLD</code> 是全局通信子，代表这次启动的全部 MPI 进程"，并附勘误："取总进程数用的是 <code>MPI_Comm_size</code>"。</em></p>
+<p><strong>中文回答</strong>：<strong>这两个值不是从代码里读出来的，而是从题干条件推出来的</strong>——题干明说 <em>"executed with exactly two processes"</em>，所以 <code>size = 2</code>。代码里没有任何一行设定进程数（<code>MPI_Init</code> 只读取命令行参数，不决定数量）。</p>
+<p>于是：<strong>size = 2</strong>（进程总数）；<strong>rank 取 0 和 1</strong>——MPI 标准保证 rank 在 <code>0 … size−1</code> 上<strong>连续编号且互不相同</strong>，size = 2 时只能是 0 和 1（0 习惯上当 root/manager）。代码里 <code>if (rank == 0)</code> 与 <code>if (rank == 1)</code> 两个分支、以及互发的 <code>MPI_Recv(..., 1, ...)</code> / <code>MPI_Recv(..., 0, ...)</code>，也印证了确实只有这两个 rank。<strong>加分句</strong>：<code>rank</code> 是<strong>逻辑编号</strong>，哪个物理节点/核拿到哪个 rank 由运行时决定，不保证（所以不能把 rank 当作机器编号来用）。</p>
+<p><code>MPI_COMM_WORLD</code> 是<strong>全局通信子（communicator）</strong>，包含本次启动的<strong>全部</strong> MPI 进程，是点对点与集合通信的默认上下文；它还界定消息匹配的组，后续可用 <code>MPI_Comm_split</code> 划分子组。</p>
+<p><strong>English answer</strong>：Neither value is read from the code; both follow from the stem, which states that the program is executed with <strong>exactly two processes</strong>. No line in the program sets the process count — <code>MPI_Init</code> only consumes the command line, so the count comes from the run configuration (<code>mpirun -n 2</code>).</p>
+<p>Hence <code>MPI_Comm_size</code> returns <strong>2</strong>, and <code>MPI_Comm_rank</code> returns <strong>0 and 1</strong>: the standard guarantees ranks are unique and contiguous over <code>0 … size−1</code>, so with two processes only 0 and 1 exist, with rank 0 conventionally the root. The two branches <code>if (rank == 0)</code> and <code>if (rank == 1)</code>, together with the mutually addressed <code>MPI_Recv(..., 1, ...)</code> and <code>MPI_Recv(..., 0, ...)</code>, confirm that exactly these two ranks participate. A useful extra point: a rank is a <strong>logical</strong> identifier, and which physical node or core receives which rank is decided by the runtime and is not guaranteed, so a rank must not be treated as a machine number.</p>
+<p><code>MPI_COMM_WORLD</code> is the <strong>global communicator</strong>: it contains every process started by this run, it is the default context for point-to-point and collective communication, it defines the group within which messages are matched, and subgroups can later be formed with <code>MPI_Comm_split</code>.</p>
+<h3 id="s34-h">(b) 为什么会死锁<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why the program deadlocks. <em>Expected: 75 words.</em><br><strong>题干译文</strong>：解释该程序为什么会死锁。（约 75 词）</div>
+<p><em>笔记定位：04 章「阻塞、死锁与非阻塞」——"Send / Recv 均需等本地操作完成后才返回…若收发双方都在等待对方，就触发了死锁"。</em></p>
+<p><strong>中文回答</strong>：① <code>MPI_Recv</code> 是<strong>阻塞（blocking）</strong>调用：只有消息真正到达并写入缓冲区才返回。② 两个进程都是<strong>先 Recv、后 Send</strong>：rank 0 等 rank 1，rank 1 等 rank 0。③ 形成<strong>循环等待（circular wait）</strong>：各自的 Send 都要等自己的 Recv 返回，而 Recv 又在等对方的 Send → 没有进程能推进 → 永久挂起。④ <strong>精确性提醒</strong>：不要说"Send 一定阻塞"——标准模式下 <code>MPI_Send</code> 可能被 <strong>eager 协议</strong>缓冲后立即返回，真正致命的是"两边都先 Recv"这个顺序。⑤ 把顺序改成"rank 0 先 Send、rank 1 先 Recv"能跑通，但那只是<strong>恰好装得下缓冲区</strong>，消息一大就会重新死锁——这种"碰巧能跑"正是不该依赖的写法。</p>
+<p><strong>English answer</strong>：<code>MPI_Recv</code> is a <strong>blocking</strong> call: it returns only when the message has arrived and been copied into the receive buffer. Both processes call <code>MPI_Recv</code> before <code>MPI_Send</code>, so rank 0 waits for a message from rank 1 while rank 1 waits for a message from rank 0. This is a <strong>circular wait</strong>: each process's send depends on its own receive returning, and each receive depends on the other process's send, so no process can make progress and the program hangs. A precise answer should not claim that <code>MPI_Send</code> always blocks — in standard mode it may be buffered by an eager protocol and return immediately — the fatal factor is the ordering, with both ranks receiving first. Reversing the order so that rank 0 sends first would appear to work, but only because the message happens to fit in the buffer; larger messages would deadlock again, which is why such code must not be relied upon.</p>
+<h3 id="s35-h">(c) 用 MPI_Sendrecv 改写<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Rewrite the exchange using MPI_Sendrecv so that it cannot deadlock. <em>Expected: 25 words + 5–8 lines of code.</em><br><strong>题干译文</strong>：用 MPI_Sendrecv 重写这次数据交换，使其不可能死锁。（约 25 词 + 5–8 行代码）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.7 已收录 MPI_Sendrecv</strong>——把"发"与"收"<strong>绑进同一次调用</strong>，以避免（先 MPI_Recv 再 MPI_Send 造成的）circular wait；并给出 <code>sendval = (rank == 0) ? 10 : 20</code> 与 <code>recvval</code>，明确 <strong>recvval 不可与 sendval 重叠</strong>。旧版"未收录"的判断已作废。</em></p>
+<p><strong>中文回答</strong>：先把 <code>MPI_Sendrecv</code> 的签名拆开看——它共 12 个参数，就是"一组发送（5 个）+ 一组接收（5 个）+ 两个公共参数"拼起来的：</p>
+<pre><code>MPI_Sendrecv(sendbuf, sendcount, sendtype, dest,   sendtag,    /* 发送侧 5 个，与 MPI_Send 同序 */
+             recvbuf, recvcount, recvtype, source, recvtag,    /* 接收侧 5 个，与 MPI_Recv 同序 */
+             comm, status);                                    /* 两个公共参数 */</code></pre>
+<p><strong>为什么它不会死锁</strong>：原程序死锁的根因是"两边都先阻塞在 Recv"。<code>MPI_Sendrecv</code> 把"发"与"收"绑进<strong>同一次调用</strong>，标准要求通信子系统自己处理两者的先后（<em>the communication subsystem takes care of these issues</em>）——实现可以用非阻塞收发或内部缓冲推进，因此不存在"我等你发、你等我发"的循环等待。</p>
+<p><strong>逐行对应（右侧注释即变量含义）</strong>：</p>
+<pre><code>int other   = 1 - rank;                 /* 对话的另一方：rank0→1，rank1→0 */
+int sendval = (rank == 0) ? 10 : 20;    /* 复现原程序：rank0 发 10，rank1 发 20 */
+int recvval = 0;                        /* 收件箱：必须与 sendval 分开，标准禁止 sendbuf/recvbuf 重叠 */
+
+MPI_Sendrecv(&amp;sendval, 1, MPI_INT, other, 0,   /* 发：把 sendval 发给 other，tag 0 */
+             &amp;recvval, 1, MPI_INT, other, 0,   /* 收：从 other 收进 recvval，tag 0 */
+             MPI_COMM_WORLD, MPI_STATUS_IGNORE);</code></pre>
+<p><strong>参数逐项对照</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>位置</th><th>代码中的值</th><th>签名参数名</th><th>含义</th></tr></thead><tbody><tr><td>1</td><td><code>&amp;sendval</code></td><td><code>sendbuf</code></td><td>要发出去的值</td></tr><tr><td>2</td><td><code>1</code></td><td><code>sendcount</code></td><td>发几个元素</td></tr><tr><td>3</td><td><code>MPI_INT</code></td><td><code>sendtype</code></td><td>发送数据类型</td></tr><tr><td>4</td><td><code>other</code></td><td><code>dest</code></td><td>发给谁（本进程的对家）</td></tr><tr><td>5</td><td><code>0</code></td><td><code>sendtag</code></td><td>发送标签</td></tr><tr><td>6</td><td><code>&amp;recvval</code></td><td><code>recvbuf</code></td><td>收到的值放这里</td></tr><tr><td>7</td><td><code>1</code></td><td><code>recvcount</code></td><td>收几个元素</td></tr><tr><td>8</td><td><code>MPI_INT</code></td><td><code>recvtype</code></td><td>接收数据类型</td></tr><tr><td>9</td><td><code>other</code></td><td><code>source</code></td><td>从谁那里收（同一个对家）</td></tr><tr><td>10</td><td><code>0</code></td><td><code>recvtag</code></td><td>接收标签（必须与对方 sendtag 一致）</td></tr><tr><td>11</td><td><code>MPI_COMM_WORLD</code></td><td><code>comm</code></td><td>通信子</td></tr><tr><td>12</td><td><code>MPI_STATUS_IGNORE</code></td><td><code>status</code></td><td>不关心状态信息</td></tr></tbody></table></div>
+<p><strong>跑完的结果</strong>：rank 0 的 <code>recvval = 20</code>，rank 1 的 <code>recvval = 10</code>（各自收到对方发的值）。顺带一提，原程序里 <code>value = 10;</code> 写在 <code>Recv</code> 之后，把刚收到的值<strong>覆盖掉了</strong>；重写版把收到的值保留在 <code>recvval</code>，语义更清楚。</p>
+<p><strong>两条提醒</strong>：① 两侧 tag 必须一致（都是 0），且 <code>dest</code> 与对方的 <code>source</code> 要对得上，否则会一直等下去；② 不建议像 PDF 原答案那样让 <code>&amp;value</code> 既当 <code>sendbuf</code> 又当 <code>recvbuf</code>，标准要求两者不重叠。</p>
+<p><strong>English answer</strong>：The signature <code>MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status)</code> is simply a send half and a receive half joined together. The first five arguments appear in exactly the same order as in <code>MPI_Send</code>, the next five exactly as in <code>MPI_Recv</code>, and the last two — communicator and status — are shared.</p>
+<p>Mapping the rewritten code: <code>&amp;sendval</code> is the sendbuf holding the value to transmit, <code>1</code> the sendcount, <code>MPI_INT</code> the sendtype, <code>other</code> the destination, <code>0</code> the sendtag; <code>&amp;recvval</code> is the recvbuf that receives the partner's value, <code>1</code> the recvcount, <code>MPI_INT</code> the recvtype, <code>other</code> the source, <code>0</code> the recvtag; and <code>MPI_COMM_WORLD</code> with <code>MPI_STATUS_IGNORE</code> close the call. <code>other = 1 - rank</code> names the partner, so rank 0 talks to rank 1 and vice versa, and <code>sendval</code> reproduces the original values, rank 0 sending 10 and rank 1 sending 20.</p>
+<p>It cannot deadlock because the original program failed by having both ranks block in a receive first. <code>MPI_Sendrecv</code> binds the send and the receive into one call, and the standard requires the communication subsystem to resolve their ordering internally, for instance with non-blocking operations or buffering, so neither side can wait for a send that is itself waiting for a receive. After the call rank 0 holds 20 in <code>recvval</code> and rank 1 holds 10; note that the original code overwrote the received value with <code>value = 10;</code>, whereas the rewrite keeps it. Two cautions remain: the tags on both sides must agree and each rank's destination must match its partner's source, and the send and receive buffers must be distinct variables because the standard forbids them to overlap.</p>
+<h3 id="s36-h">(d) source / destination / tag / communicator<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：In an MPI message, explain the purpose of: source, destination, tag, communicator. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：在 MPI 消息中解释以下各项的作用：source、destination、tag、communicator。（约 50 词）</div>
+<p><em>笔记定位：04 章「非阻塞收发函数的参数」表：<code>0 信息源／目标进程</code>、<code>10 标签 tag，收发双方必须一致</code>、<code>MPI_COMM 通信子</code>；halo 例子示范 right/left。</em></p>
+<p><strong>中文回答</strong>：这四件事在 <code>MPI_Send</code> / <code>MPI_Recv</code> 里的<strong>位置是固定的</strong>，先记住位置，再用本题代码举例：</p>
+<div class="table-wrap"><table><thead><tr><th>参数</th><th><code>MPI_Send</code> 第几位</th><th><code>MPI_Recv</code> 第几位</th></tr></thead><tbody><tr><td>buf（缓冲区）</td><td>1</td><td>1</td></tr><tr><td>count（元素个数）</td><td>2</td><td>2</td></tr><tr><td>datatype（数据类型）</td><td>3</td><td>3</td></tr><tr><td><strong>destination / source</strong></td><td><strong>4</strong></td><td><strong>4</strong></td></tr><tr><td><strong>tag</strong></td><td><strong>5</strong></td><td><strong>5</strong></td></tr><tr><td><strong>communicator</strong></td><td><strong>6</strong></td><td><strong>6</strong></td></tr><tr><td>status</td><td>—（没有）</td><td>7</td></tr></tbody></table></div>
+<p>也就是说：<strong>destination 与 source 都固定在第 4 位，tag 第 5 位，communicator 第 6 位</strong>，发送与接收完全对称。</p>
+<p><strong>用题目里的两行代码对照</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>调用</th><th>第 4 位</th><th>第 5 位</th><th>第 6 位</th></tr></thead><tbody><tr><td>rank 0 发送 <code>MPI_Send(&amp;value, 1, MPI_INT, 1, 0, MPI_COMM_WORLD)</code></td><td><strong>destination = 1</strong></td><td><strong>tag = 0</strong></td><td><code>MPI_COMM_WORLD</code></td></tr><tr><td>rank 0 接收 <code>MPI_Recv(&amp;value, 1, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE)</code></td><td><strong>source = 1</strong></td><td><strong>tag = 0</strong></td><td><code>MPI_COMM_WORLD</code></td></tr></tbody></table></div>
+<p>（两条调用前三个参数都是 <code>&amp;value, 1, MPI_INT</code>，即 buf / count / datatype；<code>MPI_Recv</code> 还多一个第 7 位 <code>status</code>。）</p>
+<p>于是：rank 0 拿 <code>(WORLD, source=1, tag=0)</code> 等消息，rank 1 拿 <code>(WORLD, dest=0, tag=0)</code> 发消息 —— <strong>发送方的 (communicator, dest, tag) 与接收方的 (communicator, source, tag) 一一对上</strong>，消息才被投递。反例（最容易人为制造的"假死锁"）：若 rank 1 改用 <code>tag = 5</code> 发送，rank 0 那条 <code>tag = 0</code> 的接收就永远等不到，程序卡死但并没有"循环等待"。</p>
+<p><strong>四个量各自管什么</strong>：<strong>destination</strong>（第 4 位、发送侧）这条消息发给哪个 rank。<strong>source</strong>（第 4 位、接收侧）只接受来自这个 rank 的消息；<code>MPI_ANY_SOURCE</code> 表示不限，真实来源由 <code>status.MPI_SOURCE</code> 给出。<strong>tag</strong>（第 5 位）用户自定义的消息类型编号，<strong>收发双方必须一致</strong>（笔记原话），用于在同一 communicator 内区分不同用途的消息（halo 数据用 0、结果用 1）以防错配；<code>MPI_ANY_TAG</code> 表示不限。<strong>communicator</strong>（第 6 位）通信组上下文，<strong>消息只在同一 communicator 内匹配</strong>，因此是天然的隔离边界（不同模块/子组用不同 communicator 就不会互相收到）。匹配三要素：<code>(communicator, source, tag)</code> 同时吻合才投递。</p>
+<p><strong>English answer</strong>：All four occupy fixed argument positions, and the positions are identical on both sides: buffer 1, count 2, datatype 3, <strong>source or destination 4</strong>, <strong>tag 5</strong>, <strong>communicator 6</strong>, with <code>status</code> as the seventh argument of <code>MPI_Recv</code> only.</p>
+<p>Taking the two lines in the program, rank 0 sends <code>MPI_Send(&amp;value, 1, MPI_INT, 1, 0, MPI_COMM_WORLD)</code>, in which the fourth argument gives <strong>destination = 1</strong>, the fifth <strong>tag = 0</strong> and the sixth <strong>communicator = MPI_COMM_WORLD</strong>; and rank 0 receives <code>MPI_Recv(&amp;value, 1, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE)</code>, in which the fourth argument gives <strong>source = 1</strong>, the fifth <strong>tag = 0</strong> and the sixth <strong>communicator = MPI_COMM_WORLD</strong>, followed by <code>MPI_STATUS_IGNORE</code>. The send is addressed to rank 1 with tag 0 and the receive expects rank 1 with tag 0 in the same communicator, so the sender's (communicator, destination, tag) matches the receiver's (communicator, source, tag) and the message is delivered.</p>
+<p>Their purposes: the <strong>destination</strong> names the rank the message is addressed to, while the <strong>source</strong> restricts which rank a receive will accept, with <code>MPI_ANY_SOURCE</code> as the wildcard and the real sender reported in <code>status.MPI_SOURCE</code>. The <strong>tag</strong> is a user-defined message-type identifier that must agree on both sides; it separates different kinds of traffic inside one communicator — halo data with tag 0, results with tag 1 — and so prevents mismatches, with <code>MPI_ANY_TAG</code> as the wildcard. The <strong>communicator</strong> is the context in which matching happens, which makes it an isolation boundary between modules or subgroups. A message is identified by the triple <code>(communicator, source, tag)</code>: if rank 1 sent with tag 5, rank 0's tag-0 receive would wait forever, which is the easiest way to produce an artificial deadlock.</p>
+<h3 id="s37-h">(e) 通信前加 MPI_Barrier 能解决死锁吗<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Would placing MPI_Barrier() immediately before the communication solve the deadlock? Explain. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：在通信之前立即放置 MPI_Barrier() 能否解决死锁？请解释。（约 25 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.7 原句</strong>——"MPI_Barrier：将两个 processes 强制对齐至同一时刻，但<strong>不改变操作顺序</strong>；打破死锁必须改变 <strong>communication pattern</strong>"。这一句本身就是 Q5(e) 的完整答案。</em></p>
+<p><strong>中文回答</strong>：不能。<code>MPI_Barrier</code> 只把两个进程<strong>对齐到同一时刻</strong>，不改变各自的<strong>操作顺序</strong>；同步完成后它们仍然同时进入阻塞式 <code>MPI_Recv</code>，循环等待原样复现。要打破死锁必须改变<strong>通信模式</strong>（<code>MPI_Sendrecv</code>、非阻塞 <code>Isend</code>/<code>Irecv</code> + <code>Waitall</code>，或让两端收发方向不对称）。</p>
+<p><strong>English answer</strong>：No. A barrier only brings the processes to a common point in time; it does not change the order of their operations. Once both leave the barrier they enter the same blocking receives simultaneously and the circular wait reappears exactly as before. Breaking the deadlock requires changing the communication pattern — a combined <code>MPI_Sendrecv</code>, non-blocking <code>MPI_Isend</code> and <code>MPI_Irecv</code> with <code>MPI_Waitall</code>, or an asymmetric send/receive arrangement.</p>
+<hr>
+</section>
+<section class="chapter" id="s38">
+<h2 id="s38-h"><span class="cn">Q6</span>MPI 归约与集合通信 · MPI reduction and collective communication</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：Four Rebel Alliance bases calculate local threat scores:<br><strong>题干译文</strong>：四个反抗军基地各自计算本地威胁评分：</div>
+<pre><code>rank        0    1    2    3
+local      12    8   15    5
+
+int global = 0;
+MPI_Reduce(&amp;local, &amp;global, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);</code></pre>
+<h3 id="s39-h">(a) root 上的 global 值<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：What value is stored in global on rank 0? <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：rank 0 上的 global 中存入什么值？（约 10 词 + 推导）</div>
+<p><em>笔记定位：04 章「MPI_Reduce 归约」——"将多个进程的结果处理，并保存在 root（根进程）"。</em></p>
+<p><strong>中文回答</strong>：四个进程各贡献一个 <code>MPI_INT</code>，<code>MPI_SUM</code> 逐元素求和：<code>12 + 8 + 15 + 5 = 40</code>，结果<strong>只写回 root（rank 0）的 <code>global</code></strong>。其余 rank 的 <code>global</code> 仍是各自的初始值 0，且按标准其内容未定义，不应读取。</p>
+<p><strong>English answer</strong>：Each of the four ranks contributes one <code>MPI_INT</code> and <code>MPI_SUM</code> adds them element-wise, so rank 0's <code>global</code> holds <code>12 + 8 + 15 + 5 = 40</code>. The reduced result is written only to the root's receive buffer; the other ranks' <code>global</code> variables are left undefined by the standard and must not be read.</p>
+<h3 id="s40-h">(b) MPI_INT / MPI_SUM / 0 / MPI_COMM_WORLD<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain the purpose of: MPI_INT, MPI_SUM, the value 0, MPI_COMM_WORLD. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：解释以下各项的作用：MPI_INT、MPI_SUM、数值 0、MPI_COMM_WORLD。（约 25 词）</div>
+<p><em>笔记定位：04 章 Reduce 参数表四项 + SPMD 段的 communicator 定义。</em></p>
+<p><strong>中文回答</strong>：<strong>MPI_INT</strong>：数据类型（datatype），说明每个元素的内存大小与解释方式，与 <code>count = 1</code> 共同决定搬运的字节数。<strong>MPI_SUM</strong>：归约操作（reduction operation），逐元素求和；可换 <code>MPI_MAX</code> / <code>MPI_MIN</code> / <code>MPI_PROD</code> 等，且必须满足结合律与交换律（归约顺序不保证，浮点结果可能有微小差异）。<strong>0</strong>：root rank，结果的落点，不改变"谁参与"——communicator 内所有进程都必须调用。<strong>MPI_COMM_WORLD</strong>：通信子，界定参与这次归约的进程集合。</p>
+<p><strong>English answer</strong>：<code>MPI_INT</code> is the <strong>datatype</strong>, fixing the size and interpretation of each element, which together with <code>count = 1</code> determines how many bytes are transferred. <code>MPI_SUM</code> is the <strong>reduction operation</strong>, an element-wise sum; it could be replaced by <code>MPI_MAX</code>, <code>MPI_MIN</code> or <code>MPI_PROD</code>, all of which must be associative and commutative because the reduction order is unspecified, so floating-point results may differ slightly. The value <code>0</code> is the <strong>root rank</strong>, the destination of the result only — every process in the communicator must still take part. <code>MPI_COMM_WORLD</code> is the <strong>communicator</strong>, which defines the participating set.</p>
+<h3 id="s41-h">(c) 为什么通常只有 rank 0 能用最终值<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Why should only rank 0 normally use the final value after this particular call? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：为什么在这类调用之后，通常只有 rank 0 可以使用最终结果？（约 25 词）</div>
+<p><em>笔记定位：04 章"结果保存在 root"；语义推论（笔记未逐句写）。</em></p>
+<p><strong>中文回答</strong>：<code>MPI_Reduce</code> 的语义是归约结果<strong>只</strong>留在 root 的 recvbuf，<strong>非 root 的 recvbuf 内容未定义（undefined）</strong>——不是"保持原值"，而是标准没承诺，读它得到垃圾值，结果不确定且难复现（与 Q7 的非确定性同源）。若非 root 确实需要该值，两条路：root 再 <code>MPI_Bcast</code> 一次（两次通信、两次同步），或直接改用 <code>MPI_Allreduce</code>（一次完成）。</p>
+<p><strong>English answer</strong>：By definition <code>MPI_Reduce</code> writes the result <strong>only</strong> to the root's receive buffer; the receive buffers of the non-root ranks are undefined — the standard does not promise they keep their old contents, so reading them yields garbage and makes the result irreproducible. If every rank genuinely needs the value, there are two options: the root broadcasts it afterwards, which costs a second collective and a second synchronisation, or the operation is replaced by <code>MPI_Allreduce</code>, which delivers the result to all ranks in one call.</p>
+<h3 id="s42-h">(d) 每个进程都要这个值 → 换成哪个集合操作<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Every rank now needs the global value for its next calculation. Which collective operation should replace MPI_Reduce? <em>Expected: 10–20 words.</em><br><strong>题干译文</strong>：现在每个 rank 都需要这个全局值做下一步计算。应当用哪个集合操作替代 MPI_Reduce？（约 10–20 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.8 已收录 MPI_Allreduce</strong>——"归约后把结果写回所有进程，<strong>相当于 Reduce + Bcast</strong>"。旧版"名字未收录"的判断已作废。</em></p>
+<p><strong>中文回答</strong>：<strong><code>MPI_Allreduce</code></strong>。归约运算与参数与 <code>MPI_Reduce</code> 完全一致，区别只是<strong>结果写回所有进程</strong>；它等价于 <code>Reduce + Bcast</code>，但由实现一次完成，通常更快（少一轮延迟）。</p>
+<p><strong>English answer</strong>：<strong><code>MPI_Allreduce</code></strong> should replace <code>MPI_Reduce</code>. It takes the same datatype, count and reduction operation, but writes the reduced result into the receive buffer of <strong>every</strong> rank. It is semantically equivalent to a reduce followed by a broadcast, yet is implemented as one collective, which usually saves a round of latency.</p>
+<h3 id="s43-h">(e) 集合通信为什么优于手写 Send/Recv<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Why is a collective operation generally preferable to manually implementing the same reduction using many MPI_Send and MPI_Recv calls? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：为什么用集合操作通常优于用大量 MPI_Send 与 MPI_Recv 手动实现同样的归约？（约 25 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.8 原句</strong>——"集合通信写法简洁、统一格式、<strong>可读性高</strong>、<strong>多进程下延迟低</strong>，故通常优于手写 Send/Recv 等"。三条理由可直接照抄，再用 04 章的 <code>α + nβ</code> 展开。</em></p>
+<p><strong>中文回答</strong>：① <strong>算法</strong>：集合通信由实现选择树形 / 递归倍增（recursive doubling）算法，深度约 <code>log P</code>；手写"root 逐个收"是 <code>P−1</code> 轮串行等待。② <strong>延迟</strong>：<code>T ≈ α + nβ</code>，<code>P−1</code> 轮意味着 <code>(P−1)·α</code> 的启动开销，小消息时几乎全被 α 吃掉。③ <strong>正确性</strong>：集合通信把"所有进程必须参与"、缓冲区不得重叠、类型与 tag 匹配这些坑封在库里，手写极易踩死锁与错配。④ <strong>可优化</strong>：实现可用拓扑感知选路、网络内归约（如 SHARP）、与计算重叠，用户代码无法触及。⑤ <strong>可维护</strong>：意图明确，替换算法（Reduce → Allreduce）只改一行。</p>
+<p><strong>English answer</strong>：Five reasons. Algorithmically, the library picks tree or recursive-doubling schedules of depth about <code>log P</code>, whereas a hand-written reduction needs <code>P−1</code> sequential rounds at the root. In terms of latency, <code>T ≈ α + nβ</code> means those <code>P−1</code> rounds cost <code>(P−1)·α</code> of start-up overhead, which dominates for small messages. Correctness is safer: the requirement that all processes participate, the ban on overlapping buffers and the matching of datatypes and tags are all handled inside the library, whereas hand-written code readily deadlocks or mismatches. Performance can be tuned below the API — topology-aware routing, in-network reduction such as SHARP, and overlap with computation — none of which user code can reach. Finally, the intent is explicit and swapping the algorithm, for instance reduce to allreduce, is a one-line change.</p>
+<hr>
+</section>
+<section class="chapter" id="s44">
+<h2 id="s44-h"><span class="cn">Q7</span>OpenMP 竞态与数据作用域 · OpenMP race conditions and data scope</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：A student parallelises the following loop. The program becomes faster, but different executions sometimes produce different answers.<br><strong>题干译文</strong>：一名学生把下面的循环并行化。程序确实变快了，但不同次运行有时会给出不同的结果。</div>
+<pre><code>double total = 0.0;
+#pragma omp parallel for
+for (int i = 0; i &lt; n; ++i) {
+    total += values[i];
+}</code></pre>
+<h3 id="s45-h">(a) 竞态 + 两次丢更新<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Identify the problem and explain how two threads can lose an update to total. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：指出问题所在，并解释两个线程如何丢失一次对 total 的更新。（约 50 词）</div>
+<p><em>笔记定位：05 章「竞态与四种同步手段」——"在 fork 出来的线程进行写入时，可能会相互覆盖"；03 章"同一块内存大家都能读写——这也是竞态条件的根源"。</em></p>
+<p><strong>中文回答</strong>：<code>total += values[i]</code> 被编译器拆成<strong>读—改—写</strong>三步（<code>tmp = total</code>；<code>tmp = tmp + values[i]</code>；<code>total = tmp</code>），三步不是原子操作，构成 <strong>race condition（竞态条件）</strong>。<strong>丢更新（lost update）</strong> 的时序（<code>total</code> 初值 10，线程 A 加 5、线程 B 加 7）：A 读到 <code>tmpA = 10</code> → 切换到 B，B 也读到 <code>tmpB = 10</code>（A 尚未写回）→ B 写回 <code>total = 17</code> → A 写回 <code>total = 15</code>，<strong>B 的更新被覆盖</strong>；正确结果 22，实得 15。<strong>为什么结果时好时坏</strong>：线程在哪个指令处切换、循环怎么切块，由运行时与 OS 调度决定 → <strong>非确定性（non-determinism）</strong>。<strong>为什么还变快了</strong>：并行是真的，只是正确性坏了——快而错，且小规模时常常"看起来正常"，最难查。</p>
+<p><strong>English answer</strong>：The statement <code>total += values[i]</code> is compiled into three non-atomic steps — read <code>total</code> into a temporary, add <code>values[i]</code>, write the temporary back — so concurrent threads update a shared variable without synchronisation, which is a <strong>race condition</strong>. A <strong>lost update</strong> occurs as follows: with <code>total</code> initially 10, thread A reads 10 into its temporary, then is pre-empted; thread B also reads 10, adds 7 and writes back 17; thread A resumes, adds 5 to the stale 10 and writes back 15, destroying B's contribution. The correct answer is 22, the observed value 15. Different runs produce different answers because pre-emption points and loop chunking depend on the OpenMP runtime and the OS scheduler, making the result <strong>non-deterministic</strong>. The program is genuinely faster, but it is fast and wrong — the classic failure that hides in small runs.</p>
+<h3 id="s46-h">(b) 用最合适的机制改写<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Rewrite the loop using the most appropriate OpenMP mechanism. <em>Expected: 5–6 lines of code.</em><br><strong>题干译文</strong>：用最合适的 OpenMP 机制重写该循环。（约 5–6 行代码）</div>
+<p><em>笔记定位：05 章「① Reduction 归约」——"开销最低，适用于合并变量"，"每个线程各自攒一份局部结果，退出时自动合并，不需要手动加锁"。</em></p>
+<p><strong>中文回答</strong>：用 <strong><code>reduction</code> 子句</strong>：每个线程拿一份<strong>私有副本</strong>各自累加，到 join 屏障时按 <code>+</code> 合并。它既消除竞态，又不产生锁竞争；在笔记的手段对比表里<strong>开销最低、保护范围是整个变量</strong>，正好匹配"循环求累加"。</p>
+<pre><code>double total = 0.0;
+#pragma omp parallel for reduction(+:total)
+for (int i = 0; i &lt; n; ++i) {
+    total += values[i];
+}</code></pre>
+<p><strong>English answer</strong>：Use the <strong><code>reduction</code> clause</strong>. Each thread accumulates into a private copy of <code>total</code>, and the copies are combined with <code>+</code> at the implicit join barrier. This removes the race without introducing lock contention, and the reduction clause has the lowest overhead of the available mechanisms because it protects the whole variable in one place — exactly the right match for a loop accumulating a sum.</p>
+<h3 id="s47-h">(c) 为什么 critical 正确但不合适<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Why would “#pragma omp critical” applied to total += values[i]; produce a correct result but normally be less appropriate for this operation? <em>Expected: 50 words.</em><br><strong>题干译文</strong>：为什么在 total += values[i]; 上加 #pragma omp critical 能得到正确结果，但通常不如其他方案合适？（约 50 词）</div>
+<p><em>笔记定位：05 章「③ critical 临界区」——"同一时间只允许一个 thread 进入"，代价："临界区代码容易退化为串行——保护的范围越大，并行度就损失得越多"。</em></p>
+<p><strong>中文回答</strong>：<code>critical</code> 保证互斥，所以结果正确，但代价是<strong>粒度灾难</strong>：<code>n</code> 次迭代就要进出临界区 <code>n</code> 次、加解锁 <code>n</code> 次，而真正加进 <code>total</code> 的计算只有一次浮点加法（纳秒级），<strong>锁的开销远大于它</strong>。其次<strong>完全串行化</strong>：临界区一次只许一个线程进，这个循环的并行部分被压成一条串行队列，<code>Tparallelwork/P</code> 缩不下去（等价于把 s 抬到接近 1，Amdahl 退化成 1×）。再加上线程排队等待与缓存行在核间弹跳，<code>Timbalance</code> 与开销上升。对比：<code>reduction</code> 是"每线程局部副本、<strong>只在结束时合并一次</strong>"，<code>critical</code> 是"<strong>每次更新都排队一次</strong>"，次数差 <code>n</code> 倍。</p>
+<p><strong>English answer</strong>：A <code>critical</code> section is correct because it guarantees mutual exclusion, but its granularity is wrong for this operation. Each of the <code>n</code> iterations enters and leaves the critical section and acquires and releases a lock, while the protected work is a single floating-point addition, so the synchronisation costs far more than the operation it protects. The loop is also fully serialised: only one thread may be inside the critical section at a time, so the parallel term cannot shrink and Amdahl's law degenerates towards a speedup of 1. Waiting threads and cache lines bouncing between cores add further <code>Timbalance</code> and overhead. A reduction accumulates in per-thread private copies and combines them <strong>once</strong> at the end, whereas <code>critical</code> forces <strong>n</strong> serialised updates.</p>
+<h3 id="s48-h">(d) values / total / i 的作用域<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：In the corrected implementation, classify the following: values, total, i. <em>Expected: 10–20 words.</em><br><strong>题干译文</strong>：在修正后的实现中，为以下变量分类：values、total、i。（约 10–20 词）</div>
+<p><em>笔记定位：05 章「数据作用域」四类——shared"所有 threads 共享，例 a[n][n]"；private"每个 thread 独立副本值，例循环里那个 i"；reduction"每个 thread 独立执行，最后归约，例 total"。</em></p>
+<p><strong>中文回答</strong>：<code>values</code> → <strong>shared</strong>（只被读、不被写，所有线程读同一份最省内存也最快）。<code>total</code> → <strong>reduction</strong>（被所有线程累加，需私有副本 + 末尾按 <code>+</code> 合并）。<code>i</code> → <strong>private</strong>（循环控制变量，每线程必须有自己的计数；<code>parallel for</code> 的循环变量默认即 private）。防错提示：若写成 <code>#pragma omp parallel</code> 手动分区而 <code>i</code> 又在循环外声明，则 <code>i</code> 默认 <strong>shared</strong>，会再造成一次竞态。</p>
+<p><strong>English answer</strong>：<code>values</code> is <strong>shared</strong>: it is only read, never written, so one copy serves all threads. <code>total</code> is a <strong>reduction</strong> variable, since every thread accumulates into it and the private copies are combined with <code>+</code> at the end. <code>i</code> is <strong>private</strong>: it is the loop control variable and each thread needs its own counter, which is the default for the variable of a <code>parallel for</code>. Note that if the loop were parallelised with a plain <code>parallel</code> region and <code>i</code> were declared outside the loop, <code>i</code> would default to shared and introduce a second race.</p>
+<h3 id="s49-h">(e) 为什么 default(none) 更安全<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why default(none) can make OpenMP programs safer to develop. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：解释为什么 default(none) 能让 OpenMP 程序在开发中更安全。（约 25 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.10 已收录 default(none)</strong>——"forces data-scoping decisions：任何没在 DataScope 里声明的变量都会报错，从而消除隐性隐患"。旧版"未收录"的判断已作废。</em></p>
+<p><strong>中文回答</strong>：因为它<strong>强制你为每个变量显式声明数据作用域</strong>——任何未列在 <code>shared</code> / <code>private</code> / <code>firstprivate</code> / <code>lastprivate</code> / <code>reduction</code> 里的变量都会<strong>编译报错</strong>，从而把"忘了声明导致变量意外共享"这类隐蔽竞态在编译期暴露出来，而不是留到运行期表现为偶发错误答案。</p>
+<p><strong>English answer</strong>：Because it forces an explicit data-scope decision for every variable: any variable not listed in a <code>shared</code>, <code>private</code>, <code>firstprivate</code>, <code>lastprivate</code> or <code>reduction</code> clause becomes a compilation error. Accidental sharing — the most common source of subtle races — is therefore caught at compile time instead of surfacing later as occasionally wrong results.</p>
+<h3 id="s50-h">(f) firstprivate(scale) 做什么<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Suppose a variable is declared as double scale = 0.5; What would the clause firstprivate(scale) do inside a parallel region? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：假设声明 double scale = 0.5; 在并行区内 firstprivate(scale) 子句会做什么？（约 25 词）</div>
+<p><em>笔记定位：05 章数据作用域——"<code>firstprivate</code>：最开始的初始化副本值，例：代码开头 <code>int a = 1;</code> 的值会被带进每个副本"。</em></p>
+<p><strong>中文回答</strong>：每个线程得到 <code>scale</code> 的一份<strong>自己的副本</strong>，并且<strong>用进入并行区那一刻的值（0.5）初始化</strong>。与 <code>private</code> 的区别是后者"每线程一份但<strong>不初始化</strong>"（内容未定义，读到的是垃圾）。线程修改自己的副本互不影响，退出并行区后外部的 <code>scale</code> <strong>仍是 0.5</strong>；若要把最后的值带回外层，要用 <code>lastprivate</code>。一句话：<strong>firstprivate = private + 入口时的初值拷贝</strong>。</p>
+<p><strong>English answer</strong>：Each thread receives its own copy of <code>scale</code>, initialised with the value the variable had on entry to the parallel region, namely 0.5. This is what distinguishes <code>firstprivate</code> from <code>private</code>, whose per-thread copies are uninitialised and therefore undefined if read. Modifications affect only the thread's copy, and the original <code>scale</code> is still 0.5 after the region; <code>lastprivate</code> would be needed to copy the final value back out. In short, <code>firstprivate</code> is <code>private</code> plus a copy of the initial value.</p>
+<hr>
+</section>
+<section class="chapter" id="s51">
+<h2 id="s51-h"><span class="cn">Q8</span>性能度量、强缩放与弱缩放 · Performance measurement, strong and weak scaling</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：An MPI program contains the following timing code. For the same problem size, the results in the table are measured.<br><strong>题干译文</strong>：某个 MPI 程序包含下面的计时代码。对同一个问题规模，测得下表结果。</div>
+<pre><code>MPI_Barrier(MPI_COMM_WORLD);
+double start = MPI_Wtime();
+solve();
+double local_time = MPI_Wtime() - start;
+MPI_Reduce(&amp;local_time, &amp;parallel_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+
+P          1     4     8    16
+T_P (s)  120    34    19    14</code></pre>
+<h3 id="s52-h">(a) 为什么计时前放 MPI_Barrier<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Why is MPI_Barrier placed before the timer? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：为什么把 MPI_Barrier 放在计时器之前？（约 25 词）</div>
+<p><em>笔记定位：04 章补充函数——"<code>MPI_Barrier</code>：计时前同步所有进程——保证起跑线一致"。</em></p>
+<p><strong>中文回答</strong>：MPI 进程的启动、初始化与读输入耗时彼此不同；若各自 <code>MPI_Wtime()</code> 就开始计时，<strong>先到的进程会把等待时间算进自己的计时</strong>，测到的是含启动抖动的墙钟时间而非 <code>solve()</code> 的真实耗时。<code>MPI_Barrier</code> 让所有进程对齐到<strong>同一时刻</strong>再取 <code>start</code>，各进程的 <code>local_time</code> 才可比，<code>MPI_MAX</code> 才能取到真正的瓶颈进程。严格来说，Barrier 之后由一个进程取 <code>start</code> 再广播最精确。</p>
+<p><strong>English answer</strong>：Process start-up, initialisation and input reading take different amounts of time on different ranks, so if each rank calls <code>MPI_Wtime()</code> independently the earlier ones include their waiting time in their own measurement, and what is measured is a wall-clock interval containing start-up jitter rather than the duration of <code>solve()</code>. A barrier brings every rank to a common instant before the timer is read, which makes the per-rank intervals comparable so that <code>MPI_MAX</code> identifies the true bottleneck. For maximum rigour one rank should read the start time after the barrier and broadcast it.</p>
+<h3 id="s53-h">(b) 为什么用 MPI_MAX 而不是 SUM 或平均<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Why is MPI_MAX used instead of MPI_SUM or an average? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：为什么使用 MPI_MAX 而不是 MPI_SUM 或平均值？（约 25 词）</div>
+<p><em>笔记定位：04 章——"<code>MPI_MAX</code>：获取最慢进程的运行时间——并行程序的总耗时由最慢的那个决定"。</em></p>
+<p><strong>中文回答</strong>：<strong>MAX → "墙钟时间是多少"</strong>：所有进程同时开跑、全部结束才算完，整体耗时 = <code>max(local_time)</code>，这是唯一有物理意义的量。<strong>SUM 错在</strong>：各进程是<strong>同时</strong>在跑的，时间不能相加；P 个进程各跑 14 s 总耗时仍是 14 s，不是 14P 秒（SUM 得到的是 CPU 总时间，属另一指标）。<strong>AVG 错在</strong>：平均值会<strong>掩盖最慢者</strong>——一个进程 14 s、其余 8 s 时平均只有 9 s，严重低估真实耗时，也掩盖了 <code>Timbalance</code> 这个瓶颈。</p>
+<p><strong>English answer</strong>：<code>MPI_MAX</code> answers the right question, namely what the wall-clock time was: the processes run concurrently and the run ends when the last one finishes, so the elapsed time is the maximum of the per-rank times. <code>MPI_SUM</code> is wrong because concurrent times cannot be added — P ranks each taking 14 s take 14 s in total, not 14P s; a sum measures aggregate CPU time, which is a different quantity. An average is wrong because it conceals the slowest rank: with one rank at 14 s and the rest at 8 s the mean is 9 s, which badly underestimates the real duration and hides the load imbalance. The parallel runtime is determined by the slowest participant.</p>
+<h3 id="s54-h">(c) 计算 S(16)<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Calculate the speedup S(16). <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：计算加速比 S(16)。（约 10 词 + 推导）</div>
+<p><em>笔记定位：06 章 <code>S(P, N) = T(1, N)/T(P, N)</code>——"分子是单核串行耗时，分母是 P 核并行耗时"。</em></p>
+<p><strong>中文回答</strong>：<code>T(1) = 120 s</code>，<code>T(16) = 14 s</code>，故 <code>S(16) = 120/14 ≈ 8.57</code>。8.57 &lt; 16，说明 16 个核并未等价于 16 倍速度，差额就是下一问的效率。</p>
+<p><strong>English answer</strong>：<code>S(16) = T(1)/T(16) = 120/14 ≈ 8.57</code>. Because 8.57 is far below 16, sixteen processors do not deliver sixteen times the performance; the shortfall is quantified by the efficiency in the next part.</p>
+<h3 id="s55-h">(d) 计算 E(16)<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Calculate the parallel efficiency E(16). <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：计算并行效率 E(16)。（约 10 词 + 推导）</div>
+<p><em>笔记定位：06 章 <code>E(P, N) = S(P, N)/P</code>——"加进来的每个核，到底贡献了几成"；并行开销 <code>C = P·T(P,N)</code>。</em></p>
+<p><strong>中文回答</strong>：<code>E(16) = S/P = 8.57/16 ≈ 0.536 → 53.6%</code>；等价写法 <code>E = T(1)/(P·T(P)) = 120/(16×14) = 0.536</code>。解读：<strong>每个核平均只贡献了半成多的算力</strong>，其余被串行段、通信、同步与负载不均吃掉。再看并行开销 <code>C = P·T(P,N) = 16×14 = 224</code> 核·秒 vs 串行 <code>120</code> 核·秒 → 开销是串行的 1.87 倍：<strong>更快，但更贵</strong>。</p>
+<p><strong>English answer</strong>：<code>E(16) = S(16)/16 = 8.57/16 ≈ 0.536</code>, that is 53.6%; equivalently <code>E = T(1)/(P·T(P)) = 120/(16×14) = 0.536</code>. On average each processor contributes only about a half of its capacity, the remainder being consumed by serial work, communication, synchronisation and load imbalance. The parallel cost makes the trade-off explicit: <code>C = P·T(P,N) = 16×14 = 224</code> core-seconds against 120 core-seconds for the serial run, so the program is 1.87 times more expensive in total work — faster, but less cost-effective.</p>
+<h3 id="s56-h">(e) 这是强缩放还是弱缩放<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Is this a strong-scaling or weak-scaling experiment? <em>Expected: 75 words.</em><br><strong>题干译文</strong>：这是强缩放实验还是弱缩放实验？（约 75 词）</div>
+<p><em>笔记定位：06 章——Amdahl"计算的是固定负载下的 speedup，这叫 strong scaling：效率持续下降"；弱缩放"核变多的同时问题也变大"。</em></p>
+<p><strong>中文回答</strong>：<strong>strong scaling（强缩放）</strong>。判据是"问题规模 N 有没有变"：题目明说 "For the same problem size"，P 从 1 → 4 → 8 → 16 而 N 固定，对应 Amdahl 的固定负载视角。证据：T 从 120 → 34 → 19 → 14，加速比 3.53 / 6.32 / 8.57，效率 88% / 79% / 53.6%——<strong>效率随 P 单调下降</strong>，正是笔记"P 越多，增益反而越来越少"。推论：强缩放回答"我只有这么大一个问题，加核能快多少"，它必然收敛到 <code>1/s</code> 的绝对上限；曲线下降不是实现不好，而是<strong>问题规模不够大</strong>。若改为弱缩放，应保持每处理器负载不变（<code>N(P) = P·N₁</code>），看 T 是否基本不变，即 (h) 的第二个实验。</p>
+<p><strong>English answer</strong>：This is a <strong>strong-scaling</strong> experiment. The criterion is whether the problem size changes, and the question states that the problem size is the same while P goes from 1 to 4, 8 and 16, which is Amdahl's fixed-workload setting. The evidence matches: the times fall from 120 to 34, 19 and 14 s, giving speedups of 3.53, 6.32 and 8.57 and efficiencies of 88%, 79% and 53.6%, so efficiency decreases monotonically with P. Strong scaling asks how much faster one fixed problem can run and necessarily converges to the absolute limit <code>1/s</code>; the falling curve reflects insufficient problem size rather than a poor implementation. A weak-scaling experiment would instead keep the work per processor constant, with <code>N(P) = P·N₁</code>, and check whether the runtime stays roughly constant, which is the second experiment reported in (h).</p>
+<h3 id="s57-h">(f) 换成 64 个处理器为什么可能不划算<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：The programmer proposes running the same problem on 64 processors. Explain why this may provide poor value. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：程序员提议在 64 个处理器上运行同一个问题。解释为什么这可能性价比很低。（约 50 词）</div>
+<p><em>笔记定位：<strong>EX 笔记 p.11 末尾「四条总结」</strong>——① 看效率趋势（如 1→20 降 a%、1→25 降 b%，b% &gt; a% 即说明边际收益恶化）；② <strong>加核会增加通信开销／延迟，"加 N 核提 N 倍"纯属幻想</strong>；③ 用 <code>T = Tparallel + Tserial + Tcommunication + Timbalance</code> 先降串行度；④ <strong><code>C = P·T(1,N)</code> 成本爆炸</strong>。旧版只能从 E 外推，现四条骨架齐备。</em></p>
+<p><strong>中文回答</strong>：① <strong>趋势外推</strong>：8 → 16 只把 T 从 19 降到 14（省 5 s），效率却从 79% 掉到 53.6%；继续加到 64 大概只能压到 10–11 s，<strong>收益远小于翻两番的核数</strong>。② <strong>成本爆炸</strong>：<code>C = P·T(P,N)</code>；16 核要 224 核·秒，64 核即便 T 降到 11 s 也要 <strong>704 核·秒</strong>，是单核串行的 5.9 倍——在按核时计费的集群/云上直接是钱。③ <strong>Amdahl 天花板</strong>：<code>S(∞) = 1/s</code> 是硬上限，64 核已进入"贴着上限爬"的区间，边际收益趋零。④ <strong>负效应</strong>：更多进程带来更多通信与同步、更多内存与调度压力，甚至让 T <strong>不降反升</strong>。正确做法：按弱缩放放大问题规模，或先优化串行段与通信以降低 s。</p>
+<p><strong>English answer</strong>：Extrapolating the trend, going from 8 to 16 processors saved only 5 s while efficiency fell from 79% to 53.6%, so 64 processors would probably bring the time to around 10–11 s — a small return for four times the hardware. The cost side is decisive: <code>C = P·T(P,N)</code> gives 224 core-seconds at 16 processors, and even if 64 processors reached 11 s the cost would be 704 core-seconds, 5.9 times the serial work, which is expensive on a core-hour billed cluster. Amdahl's absolute limit <code>S(∞) = 1/s</code> leaves little headroom, so the marginal gain tends to zero. Beyond that, more ranks mean more communication, synchronisation and memory pressure, so the runtime may even increase. The sensible alternatives are to scale the problem with the machine (weak scaling) or to reduce the serial fraction and communication cost first.</p>
+<h3 id="s58-h">(g) 效率下降的两个可能原因<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Give two possible causes of declining parallel efficiency. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：给出并行效率下降的两个可能原因。（约 50 词）</div>
+<p><em>笔记定位：<strong>几乎就是 03 章执行时间模型的原文对应</strong>——<code>Ttotal ≈ Tparallelwork/P + Tserial + Tcommunication + Timbalance</code>，"后面三项都是加不掉的'税'"。</em></p>
+<p><strong>中文回答</strong>：① <strong>通信与同步</strong>：消息按 <code>T ≈ α + nβ</code> 计时；P 增大时进程更多、消息轮数更多、集合通信更深，而每进程分到的计算更少 → <strong>固定启动开销 α 在总时间中的占比上升</strong>，<code>MPI_Barrier</code> 的等待也计入其中。② <strong>串行部分与负载不均</strong>：Amdahl 的 s 不随 P 缩小（I/O、初始化、全局归约）；同时 P 越大、<code>Tparallelwork/P</code> 越小，任何一点不均衡都会让其余进程在屏障处空等，<code>Timbalance</code> 相对变大。可补③：更多核共享同一内存总线/缓存导致带宽受限、跨 NUMA 访问延迟上升，使有效 P 打折。</p>
+<p><strong>English answer</strong>：Two main causes, both visible in <code>Ttotal ≈ Tparallelwork/P + Tserial + Tcommunication + Timbalance</code>. First, <strong>communication and synchronisation</strong>: message passing costs <code>T ≈ α + nβ</code>, and as P grows there are more ranks, more message rounds and deeper collective operations while each rank has less computation, so the fixed start-up cost α becomes a larger share of the total, with barrier waiting added on top. Second, <strong>serial work and load imbalance</strong>: the serial fraction, covering I/O, initialisation and global reductions, does not shrink with P, and as the parallel term <code>Tparallelwork/P</code> gets smaller any imbalance leaves the remaining ranks waiting at the barrier, so <code>Timbalance</code> grows in relative importance. A third factor is hardware: more cores share the same memory bus and caches, so bandwidth limits and cross-NUMA latency effectively discount P.</p>
+<h3 id="s59-h">(h) 每处理器工作量不变的实验属于哪种缩放<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：What type of scaling experiment is this? <em>Expected: 10–20 words.</em><br><strong>题干译文</strong>：这是哪种缩放实验？（约 10–20 词）</div>
+<p><em>笔记定位：06 章弱缩放——"核数翻 P 倍，就把问题规模也放大 P 倍，再看时间涨了多少"＋<code>N(P) = P·N₁</code>。</em></p>
+<p><strong>中文回答</strong>：<strong>weak scaling（弱缩放）</strong>。判据是"<strong>每个处理器分到的负载恒定</strong>"（题目：keep the amount of work per processor constant），即 <code>N ∝ P</code>，与 (e) 的 "same problem size" 正好相反，对应 Gustafson 的缩放负载视角。</p>
+<p><strong>English answer</strong>：This is <strong>weak scaling</strong>. The criterion is that the work per processor is held constant, so the problem size grows in proportion to the processor count, <code>N ∝ P</code>. This is the opposite of the fixed-size experiment in (e) and corresponds to Gustafson's scaled-workload view.</p>
+<h3 id="s60-h">(i) 计算弱缩放效率 E_W(16)<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Calculate the weak-scaling efficiency E_W(16) = T(1)/T(16). <em>Expected: 10 words + working.</em><br><strong>题干译文</strong>：计算弱缩放效率 E_W(16) = T(1)/T(16)。（约 10 词 + 推导）</div>
+<p><em>笔记定位：06 章弱缩放效率 <code>E = T(N₁) / T(P, N)</code>——"看时间涨了多少"。</em></p>
+<p><strong>中文回答</strong>：分子 <code>T(1) = 10.0 s</code> 是"一个处理器干一份活"的基准，分母 <code>T(16) = 11.5 s</code> 是"16 个处理器干 16 份活"的实际时间；理想弱缩放应 <code>T(P) = T(1)</code>（效率 100%），故 <code>E_W(16) = 10/11.5 ≈ 0.870 → 87.0%</code>。那 <strong>13%</strong> 的额外时间就是加核带来的"税"：<code>Tcommunication</code>（16 个进程要交换边界与归约）、<code>Tserial</code>（不随规模摊薄的全局步骤）与 <code>Timbalance</code>。与 (d) 对照：同一程序强缩放 53.6% vs 弱缩放 87.0%——<strong>不是程序变好了，而是问题变大把串行段摊薄了</strong>。</p>
+<p><strong>English answer</strong>：The numerator <code>T(1) = 10.0 s</code> is the time one processor needs for one unit of work and the denominator <code>T(16) = 11.5 s</code> is the time sixteen processors need for sixteen units. Ideal weak scaling would give <code>T(P) = T(1)</code>, so <code>E_W(16) = 10/11.5 ≈ 0.870</code>, that is 87.0%. The remaining 13% is the tax of parallelism: <code>Tcommunication</code> for exchanging halos and performing reductions among sixteen ranks, <code>Tserial</code> for global steps that are not amortised by a larger problem, and <code>Timbalance</code>. Compared with (d), the same program achieves 53.6% under strong scaling but 87.0% under weak scaling — not because the code improved, but because the larger problem dilutes the serial fraction.</p>
+<h4 id="s61-h">Q8 速查表 / Formula sheet</h4>
+<div class="table-wrap"><table><thead><tr><th>量 Quantity</th><th>公式 Formula</th><th>本题值 Value</th></tr></thead><tbody><tr><td>Speedup 加速比</td><td><code>S = T(1)/T(P)</code></td><td><code>120/14 ≈ 8.57</code></td></tr><tr><td>Efficiency 并行效率</td><td><code>E = S/P = T(1)/(P·T(P))</code></td><td><code>≈ 53.6%</code></td></tr><tr><td>Parallel cost 并行开销</td><td><code>C = P·T(P)</code></td><td><code>16×14 = 224</code> core-s (serial 120)</td></tr><tr><td>Weak-scaling efficiency 弱缩放效率</td><td><code>E_W = T(1)/T(P,N)</code></td><td><code>10/11.5 ≈ 87.0%</code></td></tr><tr><td>Work law 工作量下界</td><td><code>TP ≥ T₁/P</code></td><td>—</td></tr><tr><td>Span law 关键路径下界</td><td><code>TP ≥ T∞</code></td><td>—</td></tr></tbody></table></div>
+<hr>
+</section>
+<section class="chapter" id="s62">
+<h2 id="s62-h"><span class="cn">Q9</span>Grid 与虚拟组织 · Grids and virtual organisations</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：Jujutsu Headquarters needs to process millions of curse-related images. Tokyo Jujutsu High, Kyoto Jujutsu High, and several independent organisations temporarily contribute spare computing resources. The machines are located at different sites, use different hardware, and remain under the administrative control of their owners. Together they form a temporary Virtual Organisation (VO).<br><strong>题干译文</strong>：咒术总部需要处理数百万张与咒灵相关的图像。东京咒术高专、京都咒术高专以及若干独立组织临时贡献出空闲的计算资源。这些机器位于不同站点、硬件不同，并且仍由各自的所有者管理。它们临时组成一个虚拟组织（VO）。</div>
+<h3 id="s63-h">(a) 为什么更像 Grid 而不是 Cluster<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why this system is better described as a grid than as a conventional cluster. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：解释为什么该系统更适合被描述为 grid 而非传统 cluster。（约 50 词）</div>
+<p><em>笔记定位：07 章判据——"Cluster 与 Grid 的区别在于：所有权是否唯一"；图注"四者的边界不是技术，而是'这批机器归谁'和'资源离用户多远'"。</em></p>
+<p><strong>中文回答</strong>：题目给了三条线索：不同地点、不同硬件、仍由各自所有者管理。逐条对上判据：① <strong>多所有者、跨机构（多行政域）</strong> 是 Grid 的定义性特征，Cluster 是 "under one administrative domain"，所有权与管理边界唯一。② <strong>地理分散、硬件异构</strong> → 笔记"它们的地点、硬件、系统等均可能不同"；Cluster 通常同机房、同构、低延迟互联。③ <strong>耦合程度</strong>：Cluster 是 <strong>tightly coupled</strong>、"一台放大版的系统"；Grid 是松耦合，靠 <strong>middleware</strong> 把多个 provider 的资源汇成"用户看到的一个单一入口的 useful pool"。判据一句话：<strong>"这批机器归谁、谁说了算"</strong>——500 台电脑只要同属一个行政域就是 cluster，要成为 Grid 必须"通过 grid middleware 对外暴露，并建立相同的 access policies"。</p>
+<p><strong>English answer</strong>：The scenario supplies three facts — different sites, heterogeneous hardware and continued ownership by each provider — and each one maps onto the defining criterion, which is ownership. A cluster is a set of nodes under a single administrative domain, tightly coupled and behaving like one scaled-up machine, typically co-located and homogeneous. Here the machines belong to independent organisations across Tokyo, Kyoto and elsewhere, so there are several administrative domains and no single owner. They are loosely coupled and brought together by <strong>grid middleware</strong>, which hides the heterogeneity behind a single entry point presenting one useful pool of resources to the user. The dividing line is therefore not the technology but who owns and controls the machines; making a single-domain cluster into a grid requires exposing it through middleware with common access policies.</p>
+<h3 id="s64-h">(b) Virtual Organisation 的含义<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain the meaning of a Virtual Organisation in this scenario. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：解释在本 scenario 中 Virtual Organisation 的含义。（约 25 词）</div>
+<p><em>笔记定位：07 章「VO 虚拟组织」五要素 temporary / shared goal / membership / access rights / rules，以及"它们共享使用权，但并不会合并——一起干一件事不等于变成一家"。</em></p>
+<p><strong>中文回答</strong>：<strong>VO（Virtual Organisation，虚拟组织）</strong> 是一群<strong>临时</strong>同意在<strong>共同规则</strong>下共享资源的独立组织集合，五要素套到本 scenario：<strong>temporary</strong>（只在处理这批图像期间成立，任务结束即解散）；<strong>shared goal</strong>（共同完成这批图像分析）；<strong>membership</strong>（东京校、京都校、若干独立组织）；<strong>access rights</strong>（各自贡献的机器上谁能跑什么、能访问哪些数据）；<strong>rules</strong>（认证授权审计、资源使用策略与结算方式）。本质：<strong>跨机构、基于规则的资源使用协议</strong>，各成员保留自己的所有权与管理权——"共享使用权，但不会合并"。</p>
+<p><strong>English answer</strong>：A <strong>Virtual Organisation (VO)</strong> is a group of otherwise independent organisations that temporarily agree to share resources under common rules in order to pursue a <strong>shared goal</strong>. In this scenario the five elements are: it is <strong>temporary</strong>, existing only for the duration of the image-processing campaign; the goal is shared, namely processing the millions of curse-related images; <strong>membership</strong> consists of Tokyo Jujutsu High, Kyoto Jujutsu High and the independent contributors; <strong>access rights</strong> define who may run what on whose machines and which data they may reach; and <strong>rules</strong> cover authentication, authorisation, accounting and usage policy. The essential point is that a VO is a rules-based agreement for sharing use, not a merger — each member keeps ownership and administrative control of its own resources.</p>
+<h3 id="s65-h">(c) 京都撤回一半机器，中间件应如何响应<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Kyoto suddenly withdraws half of its machines for local work. How should the grid middleware respond? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：京都突然撤回一半机器用于本地工作。grid middleware 应如何响应？（约 25 词）</div>
+<p><em>笔记定位：07 章「本地优先」——"当本地有任务时，Grid 将排队任务自动分配到其它资源上"；「两条边界」——"Middleware 与 VO 不会凭空创造资源"。</em></p>
+<p><strong>中文回答</strong>：① <strong>监测与失效感知</strong>：middleware 持续做资源发现与心跳，已分配作业若被强制中断要能被检测（08 章 <code>Accounting &amp; audit</code>——每次使用可追溯）。② <strong>重新调度（本地优先原则的推广）</strong>：把<strong>排队中</strong>的作业改派到其它成员的空闲资源；<strong>正在跑</strong>的作业靠 checkpoint/restart 或任务级重试在其它站点继续——Grid 的本钱就是"资源可替换"，因为作业通常互相独立（HTC）。③ <strong>不夸大能力</strong>：middleware 只能重新分配<strong>已有容量</strong>，不能凭空补上那 50% 硬件，所以真实后果是<strong>总吞吐下降、排队变长</strong>。④ <strong>策略更新</strong>：更新 VO 的资源视图与配额/公平份额，把撤回反映到后续调度权重；对被中断的作业要有补偿或重跑语义。</p>
+<p><strong>English answer</strong>：The middleware must detect, migrate and re-plan. It continuously performs resource discovery and heartbeats, so the loss of half of Kyoto's machines and any forcibly terminated allocations are noticed, with the accounting and audit trail recording what was interrupted. Jobs still queued are redirected to spare resources at other providers, following the local-first principle that work is automatically moved elsewhere when the local resource is unavailable; jobs already running are migrated or restarted from a checkpoint, or retried at task granularity, which is feasible because grid workloads are normally independent (HTC) and therefore replaceable. Critically, the middleware cannot create capacity: it can only reallocate existing resources, so the honest consequence is reduced throughput and longer queues rather than unchanged performance. Finally the VO's resource view, quotas and fair-share weights are updated to reflect the withdrawal, with compensation or re-run semantics for interrupted work.</p>
+<h3 id="s66-h">(d) 四层归属<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Place the following into the most appropriate layer: user workflow application, grid middleware / resource broker, compute cluster, physical CPUs and network hardware. Use: Applications → Middleware → Resources → Fabric. <em>Expected: 10–20 words.</em><br><strong>题干译文</strong>：把以下各项放入最合适的层：user workflow application、grid middleware / resource broker、compute cluster、physical CPUs and network hardware。层序：Applications → Middleware → Resources → Fabric。（约 10–20 词）</div>
+<p><em>笔记定位：07 章「Grid 的分层」四层原文：Application 解决用户实际问题／Middleware 协调 user 与 provider 的供求／Resources 暴露可用 capability／Fabric 保障 capability 能被访问。</em></p>
+<p><strong>中文回答</strong>：<strong>user workflow application → Applications（Layer 1）</strong>：直接解决用户实际科研问题，不理解资源细节。<strong>grid middleware / resource broker → Middleware（Layer 2）</strong>：协调 user 与 provider 的供求——资源发现、需求匹配、认证授权与调度。<strong>compute cluster → Resources（Layer 3）</strong>：暴露"可用 capability"（能提供多少节点/核/存储），仍由各所有者管理。<strong>physical CPUs &amp; network hardware → Fabric（Layer 4）</strong>：保障 capability 能被访问的最底层物理资源。记忆法：<strong>自上而下从"用户问题"落到"物理资源"</strong>。</p>
+<p><strong>English answer</strong>：The <strong>user workflow application</strong> sits in the <strong>Applications</strong> layer, layer 1, where the user's scientific problem is expressed without reference to resource details. The <strong>grid middleware</strong> or <strong>resource broker</strong> belongs to the <strong>Middleware</strong> layer, layer 2, which matches supply and demand between users and providers by discovering resources, authenticating and authorising requests, and scheduling work. The <strong>compute cluster</strong> sits in the <strong>Resources</strong> layer, layer 3, advertising the capability it can offer in nodes, cores and storage while remaining under its owner's control. The <strong>physical CPUs and network hardware</strong> form the <strong>Fabric</strong> layer, layer 4, the bottom layer that makes that capability physically accessible. The stack reads from the user's problem down to the physical resources.</p>
+<h3 id="s67-h">(e) middleware 能分配资源但不能创造算力<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why middleware can allocate resources but cannot create additional physical CPU capacity. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：解释为什么 middleware 能分配资源，却不能创造额外的物理 CPU 容量。（约 25 词）</div>
+<p><em>笔记定位：07 章「两条边界」原文——"Middleware 与 VO 不会凭空创造资源——它们只是把已有的东西组织起来"。</em></p>
+<p><strong>中文回答</strong>：middleware 是"组织者"不是"生产者"：它做发现、匹配、认证、调度、监控，把分散的 capacity <strong>汇聚并调度</strong>，让用户看到一个"单一入口的 useful pool"；但<strong>物理上限由 provider 决定</strong>，总核数、内存与带宽是所有成员贡献之和，middleware 只能决定"这一份给谁、什么时候给"，不能提高分母。它确实创造三样东西（加分点）：<strong>可用性</strong>（把碎片资源凑成够用规模）、<strong>可达性</strong>（跨域认证后远程可用）、<strong>利用率</strong>（把别人的空闲时间用起来）——但都是"把既有的东西用起来"，不是"变多"。推论：所以 (c) 里京都撤回一半机器，middleware 只能重排，不能补足。</p>
+<p><strong>English answer</strong>：Middleware is an organiser, not a producer. It discovers, matches, authenticates, schedules and monitors, thereby aggregating scattered capacity and presenting one useful pool to the user, but the physical ceiling is set by the providers: total cores, memory and bandwidth are the sum of what the members contribute, and the broker can only decide who gets which share and when — it cannot raise the denominator. What it genuinely creates is availability, by assembling fragments into a usable size; reachability, since cross-domain authentication makes remote resources usable; and utilisation, by exploiting other organisations' idle time. All of these organise existing resources rather than create new ones, which is why when Kyoto withdraws half its machines the middleware can only re-plan and throughput necessarily falls.</p>
+<h3 id="s68-h">(f) 一个紧耦合 MPI 程序跨站点跑会怎样<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：A researcher proposes running one tightly coupled MPI program whose processes communicate continuously between all the geographically separated sites. Why might this perform poorly compared with running independent jobs on the grid? <em>Expected: 50 words.</em><br><strong>题干译文</strong>：有研究者提议运行一个紧耦合的 MPI 程序，其进程在所有地理上分离的站点之间持续通信。为什么这比在 grid 上运行独立作业表现更差？（约 50 词）</div>
+<p><em>笔记定位：07 章「两次辨析 · 例二」表——HPC 载体是 Cluster、负载是"一个 tightly coupled 大任务"、要求 <strong>Low Latency</strong>；HTC 载体是 Grid、负载是"大量独立作业且互不通信"、"吞吐量优先"。</em></p>
+<p><strong>中文回答</strong>：① <strong>通信模型直接吃亏</strong>：<code>T ≈ α + nβ</code>。跨站点把 <code>α</code> 从微秒抬到毫秒级 RTT，<code>β</code> 被公网限制；MPI 每步都要交换 halo/做集合通信，<strong>每步多几毫秒 × 上百万步 = 灾难</strong>。② <strong>同步放大最慢者</strong>：每个 <code>MPI_Barrier</code> 与集合通信都等最慢者，WAN 抖动与丢包让"最慢者"变成随机变量 → <code>Timbalance</code> 与 <code>Tcommunication</code> 暴涨。③ <strong>失效与异构</strong>：跨域没有统一调度，站点随时可能被收回（见 (c)）；一个进程掉线整个作业直接失败，不像独立作业可以重试。④ <strong>对比独立作业</strong>：无需通信 → 延迟无关、可任意切分重跑、天然容错，正是 Grid 的设计目标（HTC + throughput）。结论：<strong>这是"把 HPC 负载放到 HTC 载体上"</strong>——载体与负载形态错配。若必须跨站点，需要专网、把通信域限制在单站点内（站点内 MPI + 站点间极少通信的层级化并行），或换算法降低通信频率。</p>
+<p><strong>English answer</strong>：This is an HPC workload placed on an HTC carrier. Tightly coupled MPI depends on low-latency, predictable communication, but geographically separated sites raise α from microseconds to milliseconds of round-trip time and cap β at wide-area bandwidth. Every halo exchange and collective operation pays that latency, so a few extra milliseconds per step multiplied by millions of steps dominates the runtime. Synchronisation also amplifies the slowest participant: each barrier and collective waits for the last rank to arrive, and WAN jitter and loss make that arrival time unpredictable, inflating <code>Tcommunication</code> and <code>Timbalance</code>. Failure behaviour compounds the problem, since a single lost rank normally aborts the whole job, whereas independent jobs can simply be retried. Independent jobs, by contrast, do not communicate, so they are latency-insensitive, freely partitionable and inherently fault tolerant — exactly what a grid is designed for. If cross-site coupling is unavoidable, the remedies are a dedicated low-latency network, hierarchical parallelism that confines MPI communication within a site and communicates rarely between sites, or an algorithm with much lower communication frequency.</p>
+<hr>
+</section>
+<section class="chapter" id="s69">
+<h2 id="s69-h"><span class="cn">Q10</span>Grid 安全：密钥、PKI 与代理 · Grid security: keys, PKI and proxies</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：Ethan Hunt launches a scientific grid job that will execute for 36 hours. A colleague suggests copying Ethan's long-term private key onto the remote compute nodes so that the job can authenticate to other services later.<br><strong>题干译文</strong>：Ethan Hunt 启动了一个将运行 36 小时的科研 grid 作业。一位同事建议把 Ethan 的长期私钥拷贝到远端计算节点上，以便该作业之后能向其它服务认证。</div>
+<h3 id="s70-h">(a) 公钥与私钥的区别<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain the difference between a public key and a private key in asymmetric cryptography. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：解释非对称密码学中公钥与私钥的区别。（约 25 词）</div>
+<p><em>笔记定位：08 章「密钥对」表——Public key 公开分享 <code>.pub</code>；Private key 必须保密；分工：加密数据/验证签名用公钥，解密数据/创建签名用私钥。</em></p>
+<p><strong>中文回答</strong>：一对<strong>数学上配对、用途上互补</strong>的密钥。<strong>公钥（public key，后缀 <code>.pub</code>）</strong>：可公开分发，用于<strong>加密数据</strong>（发给所有者）与<strong>验证签名</strong>。<strong>私钥（private key）</strong>：必须保密，用于<strong>解密收到的数据</strong>与<strong>创建数字签名</strong>。两点易错：① 公钥本身被看到没关系，<strong>被换掉才是灾难</strong>——所以"公钥与身份的绑定"也需要保护，这正是 PKI 的理由。② 私钥通常是硬件载体，<strong>禁止发送给他人</strong>，"私钥一旦离身，整套身份就归别人了"。</p>
+<p><strong>English answer</strong>：A key pair consists of two mathematically related keys with complementary uses. The <strong>public key</strong>, conventionally with the <code>.pub</code> suffix, is distributed openly and is used to encrypt data for its owner and to verify digital signatures. The <strong>private key</strong> must remain secret and is used to decrypt received data and to create digital signatures. Two points are easily confused. First, a public key being seen is harmless, but a public key being <strong>replaced</strong> is a disaster, so the binding between key and identity must itself be protected — which is the reason PKI exists. Second, a private key usually resides in a hardware token and must never be sent to anyone, since once it leaves its owner the entire identity belongs to whoever holds it.</p>
+<h3 id="s71-h">(b) 为什么绝不能把长期私钥拷到远端<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Why should Ethan never copy or share his long-term private key with the remote machine? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：为什么 Ethan 绝不应把长期私钥拷贝或共享给远端机器？（约 25 词）</div>
+<p><em>笔记定位：08 章「两条容易搞错的」②——"私钥通常是硬件载体，禁止发送给他人，否则就失去了意义"；Proxy 段答题提示要求"说明保护 private key 的重要性 + 分发 private key 的缺点"。</em></p>
+<p><strong>中文回答</strong>：① <strong>身份被永久劫持</strong>：私钥就是身份；拷到共享计算节点（最不可信的地方：root、恶意同租户、磁盘残留）＝身份离开掌控，攻击者能<strong>以 Ethan 的名义</strong>登录任何接受该身份的 Grid 服务。② <strong>不可撤销、影响面极大</strong>：这是<strong>长期</strong>密钥，绑定所有服务而非某一个作业；撤销要走 CA 的吊销流程（CRL/OCSP），代价极高，且已发生的访问无法回滚。③ <strong>归责失效</strong>：日志上所有操作都记成 "Ethan 做的"，无法区分真人与攻击者，直接摧毁 <code>Accounting &amp; audit</code> 的可信度。④ <strong>违反最小权限/委托原则</strong>：36 小时的作业只需要"跑这一件事"的权限，不需要全部权限——<code>Delegation 委托</code> 的要求正是"<strong>权限与使用时间受限</strong>"。正确做法：用 <strong>proxy credential</strong>（见 (f)），长期私钥留在本地。</p>
+<p><strong>English answer</strong>：The private key <strong>is</strong> the identity, so copying it to a remote node hands the identity to a machine he does not control — and a shared compute node is the least trustworthy place, with root access, untrusted co-tenants and residual data on disk. Anyone who compromises that node can then authenticate to every grid service as Ethan. Because the key is long-term it is bound to all services rather than to one 36-hour job, so the blast radius is the whole Grid; revocation requires the CA's revocation machinery (CRL or OCSP), is slow and disruptive, and cannot undo access that has already happened. Accountability also collapses, since every action in the audit trail is attributed to Ethan and an attacker is indistinguishable from him, which undermines the <code>Accounting &amp; audit</code> requirement. This also violates least privilege and delegation: a single job needs permission to run that job, with rights and duration restricted, not the user's entire authority. The correct mechanism is a short-lived <strong>proxy credential</strong>.</p>
+<h3 id="s72-h">(c) 什么是 PKI<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：What is a Public Key Infrastructure (PKI)? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：什么是公钥基础设施（PKI）？（约 25 词）</div>
+<p><em>笔记定位：08 章——"PKI：一个 connecting public keys to trusted identities 的体系，帮助使用者确认某把公钥确实属于它所声称的网站、组织"。</em></p>
+<p><strong>中文回答</strong>：<strong>PKI（Public Key Infrastructure，公钥基础设施）</strong> 是"把公钥绑定到可信身份"的一整套体系，解决的问题不是加密而是<strong>信任传递</strong>："我怎么知道这把公钥真属于 hud.ac.uk 而不是中间人被换给我的？" 它包含：<strong>角色</strong>（CA、RA、持有者、依赖方）、<strong>数据结构</strong>（X.509 证书、CRL 吊销列表）、<strong>流程/协议</strong>（签发、分发、验证、吊销、更新）。答案的核心句：<strong>信任 CA，于是可以信任 CA 签过的东西。</strong></p>
+<p><strong>English answer</strong>：<strong>PKI — Public Key Infrastructure</strong> — is the framework that connects public keys to trusted identities, and it solves trust distribution rather than encryption: how can a relying party know that a public key really belongs to the organisation it claims, rather than having been substituted by a man in the middle? It comprises roles such as the certification authority, the registration authority, the subject and the relying party; data structures such as X.509 certificates and revocation lists; and the processes of issuing, distributing, validating, revoking and renewing credentials. In one sentence: you trust the CA, and therefore you can trust what the CA has signed.</p>
+<h3 id="s73-h">(d) CA 在 PKI 中的作用<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：What role does a Certificate Authority (CA) play in a PKI? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：证书颁发机构（CA）在 PKI 中扮演什么角色？（约 25 词）</div>
+<p><em>笔记定位：08 章图 8-2 注——"CA 验证身份后签发证书：确定'身份与公钥'的绑定可以被信赖"。</em></p>
+<p><strong>中文回答</strong>：① <strong>验证身份（identity proofing）</strong>：签发前核实申请者确实是它声称的主体。② <strong>签发（sign）</strong>：用自己的<strong>私钥</strong>对证书内容做数字签名，任何人可用 CA 的<strong>公钥</strong>验证。③ <strong>定义约束</strong>：写入 <code>validity</code>（有效期）与 <code>constraints</code>（用途/域名/路径约束），限制这张证书能干什么。④ <strong>生命周期管理</strong>：私钥泄露或身份变更时，通过 CRL/OCSP 让证书提前失效。⑤ <strong>它是信任锚（trust anchor）</strong>：整个体系的安全性最终落在"CA 的私钥不泄露"上——所以 CA 被攻破是 PKI 的灾难级事件。</p>
+<p><strong>English answer</strong>：The certification authority verifies a subject's identity before issuing anything, signs the certificate with its own private key so that anyone holding the CA's public key can validate it, and defines the <code>validity</code> period and <code>constraints</code> such as permitted usage, domains or path length that limit what the certificate may be used for. It also manages the lifecycle by revoking certificates through CRL or OCSP when a key is compromised or an identity changes. The CA is the <strong>trust anchor</strong> of the whole system: security ultimately reduces to the secrecy of the CA's private key, which is why compromise of a CA is a catastrophic event for a PKI.</p>
+<h3 id="s74-h">(e) X.509 绑定什么，CA 签名为何重要<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：What does an X.509 certificate bind together, and why is the CA's signature important? <em>Expected: 50 words.</em><br><strong>题干译文</strong>：X.509 证书把什么绑定在一起？CA 的签名为什么重要？（约 50 词）</div>
+<p><em>笔记定位：08 章「X.509 certification」——"一份公开的、被 CA 数字签名的声明，绑定身份与公钥，并说明 validity 与 constraints"；图 8-2 三块拼图 identity + Public key + Restriction → CA signature。</em></p>
+<p><strong>中文回答</strong>：<strong>X.509 证书绑定四件东西</strong>：① <strong>identity（身份）</strong>——主体是谁（站点名/用户名/主机名）；② <strong>public key（公钥）</strong>——要绑到该身份上的那把公钥；③ <strong>restriction / constraints + validity（限制与有效期）</strong>——能用于什么、能用于哪些域、何时过期；④ <strong>CA signature（CA 签名）</strong>——把以上内容封成不可篡改的声明。<strong>CA 签名为什么重要</strong>：没有签名，证书只是一张<strong>自述</strong>，任何人都能生成"我是 hud.ac.uk + 我的公钥"，中间人攻击就此成立；签名覆盖全部字段，改一个字节就验不过，<strong>防的是"公钥被换掉"这种真正的灾难</strong>；同时让信任可传递——依赖方只需信任 CA 公钥，无需与每个站点事先建立信任（解决 <code>n²</code> 信任配置问题）；签名与有效期、约束共同限制爆炸半径。</p>
+<p><strong>English answer</strong>：An X.509 certificate binds four things: an <strong>identity</strong>, that is the subject — a hostname, site or username; the <strong>public key</strong> to be bound to that identity; the <strong>restrictions</strong> recorded in the constraints and validity fields, which limit what the certificate may be used for, for which domains, and until when; and the <strong>CA's signature</strong>, which seals all of the above into a tamper-evident statement. The signature matters because without it a certificate is merely a self-declaration — anyone could assert "I am hud.ac.uk and this is my key" and man-in-the-middle attacks would succeed. Because the signature covers every field, changing a single byte invalidates it, so the real danger, a substituted public key, is prevented. It also makes trust transitive: a relying party only has to trust the CA's public key rather than pre-establishing trust with every site, avoiding quadratic trust configuration. Together with validity and constraints, it bounds the damage a leaked certificate can do.</p>
+<h3 id="s75-h">(f) 为什么短命 proxy 更安全（优点 + 代价成对讲）<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why a short-lived proxy credential is safer for the long-running grid job than Ethan's long-term private key. <em>Expected: 50 words.</em><br><strong>题干译文</strong>：解释为什么对长时间运行的 grid 作业而言，短生命周期的 proxy 凭据比 Ethan 的长期私钥更安全。（约 50 词）</div>
+<p><em>笔记定位：08 章「Proxy 证书」——short lifetime、"Proxy 有自己的私钥签名…故不需要用户私钥…把长期私钥留在本地，只放出一把短命的替身"；并明确答题提示："优点和代价要成对讲，只讲一半不算答完"。</em></p>
+<p><strong>中文回答</strong>：<strong>优点</strong>：① <strong>不暴露长期私钥</strong>——36 小时的作业只需在远端持有一把替身，长期私钥始终留在本地/硬件令牌。② <strong>短寿命 = 自动失效</strong>——泄露窗口被压缩到作业时长量级，作业结束钥匙自然作废，无需有人来撤销。③ <strong>权限可缩小（受限委托）</strong>——proxy 可写入更小权限与约束（只能访问某 VO 的某几个服务），符合 <code>Delegation</code>——"权限与使用时间受限"。④ <strong>可追溯</strong>——由谁签发清楚可查，日志能追到签发链。⑤ <strong>可续期而不动长期密钥</strong>。<strong>代价</strong>：① <strong>proxy 仍是私钥</strong>，被偷后在有效期内照样能用——安全性是"把无限期风险压缩成有限窗口"，不是消灭风险。② <strong>需要有人托管它</strong>，作业期间远端必须有可用 proxy（或刷新机制），这是新的攻击面与管理负担。③ <strong>委托链越长越危险</strong>，若允许再签子 proxy 必须限制深度。④ <strong>依赖本地私钥可用</strong>，续期时若密钥在硬件令牌上需要交互或特殊 agent。⑤ <strong>短寿命不能替代审计</strong>——"有身份不等于能授权，授权后不等于不被监视"。</p>
+<p><strong>English answer</strong>：Its advantages are: the long-term private key never leaves the user's local machine or hardware token, so the remote node only ever holds a stand-in; the short lifetime makes the credential expire automatically at the end of the job, shrinking the exposure window to the order of hours and removing the need for someone to revoke it; the proxy can carry reduced rights and constraints, for instance access to only a few services of one VO, which is exactly the <strong>delegation</strong> requirement that rights and duration be limited; the issuer is identifiable, so usage can be traced back through the issuance chain; and it can be renewed without touching the long-term key. Its costs are: the proxy is still a private key and remains usable by a thief until it expires, so the risk is compressed into a window rather than eliminated; it has to be stored somewhere during the job, which is a new attack surface and an administrative burden; chains of delegation become hard to audit unless their depth is limited; renewal depends on local access to the long-term key, which may require interaction with a hardware token; and a short lifetime does not replace audit, because a valid identity does not imply permission, and permission does not remove the need to monitor.</p>
+<h3 id="s76-h">(g) 过期后才被偷，为何损失有限<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：If the proxy credential is stolen only after it has expired, why is the potential damage limited? <em>Expected: 25 words.</em><br><strong>题干译文</strong>：若 proxy 凭据是在过期之后才被窃取，为什么潜在损失有限？（约 25 词）</div>
+<p><em>笔记定位：08 章 short lifetime 与 <code>Delegation</code>"权限与使用时间受限"、<code>Accounting &amp; audit</code>；批注"permission doesn't remove the need for audit"。</em></p>
+<p><strong>中文回答</strong>：① <strong>验证方会检查有效期</strong>：服务端在认证时校验 <code>validity</code>，过期即拒绝——"偷到一张废票"不产生新的访问。② <strong>不能续期、也不能签新凭据</strong>（在禁止 proxy 转签的配置下）：长期私钥不在远端，攻击者拿不到"生产新钥匙的模具"，无法把一次泄露延长为长期控制。③ <strong>损害被时间盒（time-boxed）住</strong>：影响只限于过期前那段时间里、以那个受限身份做过的操作，而 <code>Delegation</code> 已同时限制了权限与时间。④ <strong>可用审计界定范围</strong>：<code>Accounting &amp; audit</code> 能查清"这把 proxy 在窗口内访问过什么"，便于评估与补救。</p>
+<p><strong>English answer</strong>：Damage is limited because the relying services check validity and reject an expired credential, so a stolen expired proxy grants no further access; because the long-term key was never on the remote machine, the attacker cannot mint fresh credentials and cannot turn a one-off theft into lasting control; and because delegation had already restricted both the rights and the lifetime, the impact is boxed into whatever operations that limited identity performed before expiry. The audit trail then establishes the scope of the damage by showing exactly what the credential accessed within that window, which is why accounting and audit are still required even when authentication succeeded.</p>
+<hr>
+</section>
+<section class="chapter" id="s77">
+<h2 id="s77-h"><span class="cn">Q11</span>GPU 与异构计算 · GPUs and heterogeneous computing</h2>
+<div class="qbox"><span class="lbl">STEM</span><strong>Question stem（原题）</strong>：A research team is simulating heat transfer through a material. The model contains 10⁷ independent cells, and during each time step the same mathematical operation is applied to every cell. The researchers are deciding whether to run the calculation on a CPU or a GPU.<br><strong>题干译文</strong>：某研究团队在模拟材料中的热传导。模型包含 10⁷ 个相互独立的单元，每个时间步都对每个单元施加相同的数学运算。研究者在考虑把计算放到 CPU 还是 GPU 上运行。</div>
+<h3 id="s78-h">(a) 为什么这个负载适合 GPU<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Explain why this workload is well suited to GPU execution. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：解释为什么该负载适合在 GPU 上执行。（约 25 词）</div>
+<p><em>笔记定位：09 章——GPU"many threads hide latency，擅长处理大量可反复利用的独立元素"；kernel"GPU 对许多元素执行的同一个函数…由 index 挑选元素，元素间无通信"；写法表 <code>a[i] = update(a[i])</code> <strong>适合</strong>。</em></p>
+<p><strong>中文回答</strong>：题目给了两条关键线索：<strong>10⁷ 个独立单元</strong> ＋ <strong>每个时间步对每个单元施加同一运算</strong>。① <strong>数据并行（data parallelism）</strong>：即"同一段代码作用在不同数据上"，天然映射成"大量线程 + 同一 kernel"。② <strong>元素间无通信</strong>：并行单元之间不共享数据、不需同步 → 没有 <code>Tcommunication</code>，只有 <code>Tparallelwork/P</code>。③ <strong>可反复利用的独立元素</strong>：网格/时间步迭代正是"数据上了显存就在设备侧反复运算"的理想形态——一次搬运、多轮计算。④ <strong>吞吐优先</strong>：GPU 用大量小核把 throughput 堆高、"用大量线程把延迟藏起来"，10⁷ 个单元足以喂饱它，也不属于笔记列的"不适合 GPU 的三类"（短的并行链、分支多、启动调度开销吃掉收益）。</p>
+<p><strong>English answer</strong>：The workload is a natural fit for a GPU because it exposes massive <strong>data parallelism</strong>: 10⁷ independent cells, each subjected to the same mathematical operation at every time step, is precisely the pattern "the same code applied to different data". The cells do not communicate, so no message passing or synchronisation is required and the cost model reduces to <code>Tparallelwork/P</code> with no <code>Tcommunication</code> term. The iteration over cells and time steps is also the ideal form of GPU work, because once the data is in device memory it is reused many times on the device — one transfer followed by many kernel launches. Finally the GPU is designed to maximise <strong>throughput</strong> by hiding latency with many threads, and 10⁷ elements are enough to keep it busy; the workload does not fall into the three unsuitable categories, namely short parallel chains, heavy branching, and launch or scheduling overhead that outweighs the gain.</p>
+<h3 id="s79-h">(b) 反复搬运为什么会吃掉加速比<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：The CPU repeatedly copies the full dataset to the GPU, launches one kernel, copies the result back to the CPU, performs a small calculation, and then sends the data to the GPU again. Why could this design significantly reduce the expected GPU speed-up? <em>Expected: 50 words.</em><br><strong>题干译文</strong>：CPU 反复把完整数据集拷到 GPU、启动一个内核、把结果拷回 CPU、做一点小计算，然后再把数据送回 GPU。为什么这种设计会显著削弱预期的 GPU 加速？（约 50 词）</div>
+<p><em>笔记定位：09 章——"数据搬运的开销大，故通常在 GPU 中经过多次运算后，仅把最终结果传回 CPU…把操作从 GPU 转到 CPU 会因为搬运数据效率奇差"；图 9-2"只有过这条橙色的搬运线，才产生换边的代价"。</em></p>
+<p><strong>中文回答</strong>：① <strong>每次搬运都是 <code>α + nβ</code> 的钱</strong>：PCIe/NVLink 的启动延迟 + 按字节的带宽代价；10⁷ 个单元若每个是 double 加几个场变量，一次全量搬运就是数百 MB，<strong>单次搬运可能比一次 kernel 计算还贵</strong>。② <strong>严格串行</strong>：题目模式是"拷贝→启动一个 kernel→拷贝回→CPU 小计算→再拷回"，四步无重叠，GPU 在等待时完全空闲。③ <strong>kernel 太小</strong>：每次只做一个时间步，<code>T_kernel</code> 很小而 <code>T_launch + T_copy</code> 固定 → 加速比被固定开销锁死在 1 附近，甚至比纯 CPU 更慢。④ <strong>同步点太多</strong>：每次拷回都必须等 kernel 结束（隐式同步），无法流水。一句话公式：<code>S = T_cpu / (T_kernel + T_transfer + T_launch + T_cpu_small)</code>，分母里的 transfer 若与 <code>T_cpu</code> 同量级，则 S ≈ 1——<strong>GPU 算力再强也补偿不了"数据在路上"的时间</strong>。</p>
+<p><strong>English answer</strong>：The host-device round trip is the problem. Every transfer costs <code>α + nβ</code>, a fixed start-up latency plus a per-byte bandwidth term; with 10⁷ double-precision cells and several field variables per cell, a full copy is hundreds of megabytes and can cost more than the kernel that consumes it. The pattern described is also strictly serial — copy in, launch one kernel, copy out, do a small calculation on the CPU, copy in again — so there is no overlap and the GPU idles while data moves. Each kernel then covers only a single time step, so <code>T_kernel</code> is tiny while <code>T_launch + T_copy</code> is fixed, pinning the speedup near 1 and potentially making it slower than the CPU alone. The implicit synchronisation required before every copy back also prevents any pipelining. In short, <code>S = T_cpu/(T_kernel + T_transfer + T_launch + T_cpu_small)</code>, and when the transfer term is comparable to the CPU time, S ≈ 1: no amount of GPU throughput compensates for time spent moving data.</p>
+<h3 id="s80-h">(c) 更好的组织方式<span class="badge b-ok">已收录</span></h3>
+<div class="qbox"><span class="lbl">QUESTION</span><strong>Question（原题）</strong>：Suggest a better strategy for organising the computation. <em>Expected: 25 words.</em><br><strong>题干译文</strong>：为组织该计算提出更好的策略。（约 25 词）</div>
+<p><em>笔记定位：09 章——"数据搬运的开销大，故通常在 GPU 中经过多次运算后，仅把最终结果传回 CPU"；框架可代做 device-memory management / host-device data movement / kernel selection and launch。</em></p>
+<p><strong>中文回答</strong>：① <strong>合批（batching，时间步循环下沉）</strong>：把整个时间步循环搬进设备侧——一次 H2D、跑完 N 个时间步、一次 D2H，搬运次数从 <code>O(N)</code> 降到 <code>O(1)</code>。② <strong>kernel 之间不落回 CPU</strong>：中间结果留在显存，用 device-to-device 拷贝或原地更新（double buffering <code>a → b → a</code>），CPU 只做"决定下一步"这类控制决策。③ <strong>重叠与异步</strong>：用 streams 把拷贝与计算重叠、用异步拷贝（pinned memory + <code>cudaMemcpyAsync</code>），把搬运时间藏到计算后面。④ <strong>减少数据量</strong>：只上送必要精度/字段（必要时单精度），只下送最终关心的结果。⑤ <strong>工程建议</strong>：这类"内存/搬运/kernel 选择"的活优先交给 PyTorch/TensorFlow 或现成 stencil 库，"越往下设计越复杂，且回报率低"。</p>
+<p><strong>English answer</strong>：The dataset should stay resident on the device: copy it in once, execute the whole time-step loop as a sequence of kernels, and copy back only the final result, reducing the number of transfers from <code>O(N)</code> to <code>O(1)</code>. Intermediate results must not return to the host — they stay in device memory and are updated in place or through device-to-device copies using double buffering, while the CPU only makes control decisions. Copies and computation should be overlapped with streams and asynchronous transfers from pinned memory, so that transfer time is hidden behind kernel execution. The volume of data can also be cut by transferring only the precision and fields actually needed, sending back only the quantities of interest. Finally, memory management, data movement and kernel selection are best left to a framework such as PyTorch or TensorFlow, or to a library stencil, rather than hand-written, since descending towards the hardware raises complexity while lowering the return.</p>
+<hr>
+</section>
+<section class="chapter" id="s81">
+<h2 id="s81-h"><span class="cn">A</span>附录 A · 笔记里有、但这套题没考到的考点 / Topics in the notes not examined here</h2>
+<div class="table-wrap"><table><thead><tr><th>章</th><th>未考考点 Topic</th><th>可能的问法 Likely question</th></tr></thead><tbody><tr><td>01</td><td>五大特征的旁注：<strong>全天候运行 ≠ cloud</strong></td><td>判断题："某服务 7×24 运行，所以它是云"→ 错，判据是整套特征（on-demand self-service, pooling, elasticity, measured service）</td></tr><tr><td>01</td><td>PaaS / SaaS 边界</td><td>"上传资源至平台"归 PaaS；"以帐号使用在线应用"归 SaaS</td></tr><tr><td>02</td><td><strong>数据并行 vs 任务并行</strong></td><td>data parallelism：同一段代码作用在不同数据上；task parallelism：不同代码段沿依赖链接力</td></tr><tr><td>03</td><td>进程 / 线程 / SSI</td><td>SSI：软件层像一台机器，但"挡不住硬件故障与传输损耗"</td></tr><tr><td>03</td><td><strong>core-hours 与 efficiency</strong></td><td>给 tasks、CPUs_per_task、hours 算分配量与成本（用于 Q1(b)、Q4(d)）</td></tr><tr><td>03</td><td><strong>Utilisation / turn-around time / waiting time</strong></td><td>给到达/开始/结束时间算三个指标</td></tr><tr><td>03</td><td><strong>Pareto optimality</strong></td><td>比较两种调度顺序，判断哪个 dominates</td></tr><tr><td>03</td><td><strong>Backfilling 两条件</strong></td><td>nodes ≤ free nodes 且 now + runtime ≤ queued job's start</td></tr><tr><td>03</td><td><strong>Priority 三项加权 / Fairshare / DRF</strong></td><td>算优先级；问"为什么不能只看 CPU 占比"</td></tr><tr><td>03</td><td><strong>能耗 <code>E = P × t</code></strong></td><td>"运行越快不一定越省电"</td></tr><tr><td>04</td><td><strong>halo 交换的重叠收益</strong></td><td>为什么 <code>update_interior()</code> 要夹在 <code>Isend/Irecv</code> 与 <code>Waitall</code> 之间</td></tr><tr><td>04</td><td><strong>通信时间模型 <code>α + nβ</code></strong></td><td>"为什么多传几次小包比一次传大包更亏"</td></tr><tr><td>05</td><td><strong>atomic / Omp_lock_t</strong></td><td>与 critical 的取舍（保护范围 / 开销 / 手动配对）</td></tr><tr><td>05</td><td><strong>lastprivate</strong></td><td>"把最后一次迭代的值带回外层变量"（与 firstprivate 成对记）</td></tr><tr><td>05</td><td><strong>task 与 depend</strong></td><td><code>depend(in:/out:)</code> 声明数据依赖，运行时自行排序</td></tr><tr><td>06</td><td><strong>并行松弛度 <code>σ = A/P</code></strong></td><td>判"核够不够用"（Q2(d)(f)、Q1(e) 都用它）</td></tr><tr><td>07</td><td><strong>ClassAd</strong></td><td>Job "我需要什么" vs Machine "我能给什么 + 策略"</td></tr><tr><td>07</td><td><strong>"500 台电脑算什么"</strong></td><td>同行政域 → cluster；需 middleware + 统一 access policy 才成 grid</td></tr><tr><td>08</td><td><strong>访问请求四问</strong></td><td>authentication / authorisation / accounting &amp; audit / delegation</td></tr><tr><td>08</td><td><strong>零信任</strong></td><td>"在内网不是身份，走完验证才是"</td></tr><tr><td>09</td><td><strong>不适合 GPU 的三类</strong></td><td>short parallel chains / heavy branching / excessive launch overhead</td></tr><tr><td>09</td><td><strong>框架抽象层三件事</strong></td><td>device-memory management / host-device data movement / kernel selection and launch</td></tr></tbody></table></div>
+</section>
+<section class="chapter" id="s82">
+<h2 id="s82-h"><span class="cn">B</span>附录 B · 最容易被扣分的地方 / Common deductions checklist</h2>
+<ol>
+<li><strong>只给结论不给理由</strong>：Q1(b)(d)、Q4(a)、Q6(e) 的原答案都是结论句，老师说的"不完整"就是指这个；每题至少补一句机制。Only giving a conclusion without the mechanism costs marks.</li>
+<li><strong>该给过程的地方只给数字</strong>：Q2(a)(b)(d)(e)、Q8(c)(d)(i) 明确要求 "plus working"，必须写代入过程（<code>T₁ = Σ = 19 s</code>、<code>T ≥ max(19/4, 12)</code>）。</li>
+<li><strong>"or paths" 被忽略</strong>：Q2(c) 有<strong>两条</strong>等长关键路径，只写一条丢分。</li>
+<li><strong>取整方向</strong>：Q3(b) 是<strong>向上</strong>取整 <code>⌈600/128⌉ = 5</code>，写成 4 或 4.69 都算错。</li>
+<li><strong>术语不写全名</strong>：IaaS / FaaS / HPC / HTC / HA / PKI / VO / DRF 要能展开全称，strong / weak scaling 要说明判据。</li>
+<li><strong>混淆 SUM / MAX / AVERAGE</strong>：Q8(b) 用 SUM 或 AVG 都是概念错误（时间不能相加、平均值掩盖最慢者）。</li>
+<li><strong>说 "Send 一定阻塞"</strong>：准确表述是"<code>MPI_Recv</code> 阻塞 + 两边都先收 → circular wait"；标准模式 <code>MPI_Send</code> 可能被 eager 缓冲。</li>
+<li><strong>Q5(c) 缓冲区重叠</strong>：原答案 <code>&amp;value</code> 既发又收，不合标准，应用两个变量。</li>
+<li><strong>OpenMP 处方的理由</strong>：Q7(b) 要写 <code>reduction</code>，Q7(c) 要说清 critical 的 "n 次串行"代价，不能只说"critical 慢"。</li>
+<li><strong>"云 = 高效"的默认假设</strong>：任何"因为它在云上/机器多所以快"都要用 efficiency / utilisation / Amdahl 顶回去。</li>
+<li><strong>符号对照</strong>：笔记 Amdahl 用 <code>f</code> 或 <code>S</code> 表示串行占比，题目用 <code>s</code>；笔记 <code>S_G = S + P(1−S)</code> 与题目 <code>P − s(P−1)</code> <strong>等价</strong>，作答时用题目的符号。</li>
+<li><strong>笔记自带的两条勘误别抄错</strong>：① 06 章例题原稿 <code>T∞</code> 记作 15 ms，正确应为 13 ms（A→B→D→F 或 A→C→E→F）；② 04 章 Hello World 原稿把 <code>MPI_Comm_size</code> 误记成 <code>MPI_Comm_rank</code>。</li>
+<li><strong>英式拼写一致性</strong>：UK 阅卷环境下统一用 utilisation、authorisation、synchronisation、parallelise、minimise、organisation、programme（注意：计算机语境 "program" 指程序仍可写 program，但 "programme" 指计划）。</li>
+</ol>
+<hr>
+</section>
+<section class="chapter" id="s83">
+<h2 id="s83-h"><span class="cn">C</span>附录 C · EX 笔记带来的判定变化</h2>
+<div class="table-wrap"><table><thead><tr><th>小问</th><th>旧判定</th><th>EX 判定</th><th>EX 笔记给出的原话（页）</th></tr></thead><tbody><tr><td>Q1(a)</td><td>🟡 无 private/public/hybrid 三分</td><td>✅</td><td>p.1 四种部署形态：Public / Private / Community / Hybrid</td></tr><tr><td>Q1(c)</td><td>✅</td><td>✅（加强）</td><td>p.1 On-demand self-service 旁注：重点在"自"，平台自身要有资源池</td></tr><tr><td>Q1(d)</td><td>🟡 只能靠 03 章公式自推</td><td>✅</td><td>p.1 "cloud 仅确保 capacity，而非 utilisation"</td></tr><tr><td>Q3(a)</td><td>🟡 无直接结论</td><td>✅</td><td>p.4 "OpenMP 只解决算力、不解决内存不足"</td></tr><tr><td>Q4(a)</td><td>🟡 只有"反例"两句</td><td>✅</td><td>p.4 三后果：调配失衡 / 无法审计 / 资源被个别占用</td></tr><tr><td>Q4(d)</td><td>🟡 术语未收录</td><td>✅</td><td>p.4 "缺少任一节点都会导致集体等待"</td></tr><tr><td>Q5(c)</td><td>❌ 未收录</td><td>✅</td><td>p.7 MPI_Sendrecv 原文与 recvval 不重叠</td></tr><tr><td>Q5(e)</td><td>❌ 未收录</td><td>✅</td><td>p.7 "Barrier 不改变操作顺序，须改变 communication pattern"</td></tr><tr><td>Q6(c)</td><td>✅</td><td>✅（加强）</td><td>p.8 "其它进程 recvbuf 里都是 garbage"</td></tr><tr><td>Q6(d)</td><td>🟡 名称未收录</td><td>✅</td><td>p.8 "MPI_Allreduce = Reduce + Bcast"</td></tr><tr><td>Q6(e)</td><td>🟡 无直接对比</td><td>✅</td><td>p.8 "写法简洁、可读性高、多进程延迟低"</td></tr><tr><td>Q7(e)</td><td>❌ 未收录</td><td>✅</td><td>p.10 default(none) forces data-scoping decisions</td></tr><tr><td>Q8(f)</td><td>🟡</td><td>✅</td><td>p.11 "加 N 核提 N 倍纯属幻想" + "C = P·T 成本爆炸"</td></tr><tr><td>Q9(c)</td><td>✅</td><td>✅（加强）</td><td>p.13 "对中断的任务要补偿或重新运行"</td></tr><tr><td>Q10(b)</td><td>✅</td><td>✅（加强）</td><td>p.15 "私钥泄露……无法撤销"</td></tr><tr><td>Q10(g)</td><td>✅</td><td>✅（加强）</td><td>p.16 "过期 proxy 被泄露也不能认证"</td></tr><tr><td>Q11(a)(b)</td><td>✅</td><td>✅（加强）</td><td>p.17 CPU 适用场景 + 搬运开销三分</td></tr></tbody></table></div>
+<div class="note"><span class="lbl">要点</span>用法：考试时优先写"原话"（上表右列），再用各题「中文回答／English answer」里的机制把它撑开——EX 笔记已经把最容易被扣分的结论句补齐了。</div>
+</section>
+</main>
+</div>
+<footer class="foot">并行计算机 · Exam Review 题目 + 答案（EX 版）　|　原题英文 + 中文译文 + 中文回答 + English answer，判定依据：猫燐笔记 EX</footer>
+</body>
+</html>
